@@ -45,7 +45,8 @@ public class CommandClearEntities extends CommandBase {
 	public void processCommand(ICommandSender sender, String[] args) {
 		if (args.length != 1)
 			throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
-		
+
+		getWorldNames();
 		World world = MinecraftServer.getServer().worldServers[worldNames.get(args[0]).intValue()];
 		List<Entity> toRemove = new ArrayList<Entity>();
 		
