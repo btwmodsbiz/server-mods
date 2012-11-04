@@ -88,7 +88,8 @@ public class CommandDumpEntities extends CommandBase {
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
 		long startTime = System.currentTimeMillis();
-		
+
+		getWorldNames();
 		if (args.length < 1 || !worldNames.containsKey(args[0]))
 			throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
 		
