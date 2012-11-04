@@ -9,12 +9,12 @@ import net.minecraft.src.EntityPlayerMP;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.WrongUsageException;
 
-public class WhoCommand extends CommandBase {
+public class CommandWho extends CommandBase {
 	
 	private final mod_AdminCommands mod;
 	private final MinecraftServer mcServer;
 	
-	public WhoCommand(mod_AdminCommands mod) {
+	public CommandWho(mod_AdminCommands mod) {
 		this.mod = mod;
 		mcServer = MinecraftServer.getServer();
 	}

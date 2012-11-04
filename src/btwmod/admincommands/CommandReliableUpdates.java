@@ -5,7 +5,7 @@ import net.minecraft.src.ICommandSender;
 import net.minecraft.src.WrongUsageException;
 import net.minecraft.src.mod_FCBetterThanWolves;
 
-public class ReliableUpdatesCommand extends CommandBase {
+public class CommandReliableUpdates extends CommandBase {
 
 	@Override
 	public String getCommandName() {

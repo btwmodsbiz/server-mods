@@ -20,15 +20,15 @@ import net.minecraft.src.EntityTrackerEntry;
 import net.minecraft.src.EntityXPOrb;
 import net.minecraft.src.ICommandSender;
 
-public class DumpTrackedCommand extends CommandBase {
+public class CommandDumpTracked extends CommandBase {
 	
 	private static Set[] trackedEntitiesSet = null;
 	
-	public DumpTrackedCommand() {
+	public CommandDumpTracked() {
 		Field trackedEntitiesSetField = ReflectionAPI.getPrivateField(EntityTracker.class, "trackedEntitySet");
 		
 		if (trackedEntitiesSetField == null) {
-			ModLoader.outputError(DumpTrackedCommand.class.getSimpleName() + " failed to get " + EntityTracker.class.getName() + "#trackedEntitySet Field");
+			ModLoader.outputError(CommandDumpTracked.class.getSimpleName() + " failed to get " + EntityTracker.class.getName() + "#trackedEntitySet Field");
 		}
 		else {
 			try {
@@ -39,7 +39,7 @@ public class DumpTrackedCommand extends CommandBase {
 					trackedEntitiesSet[i] = (Set)trackedEntitiesSetField.get(server.worldServers[i].getEntityTracker());
 				}
 			} catch (IllegalAccessException e) {
-				ModLoader.outputError(e, DumpTrackedCommand.class.getSimpleName() + " failed to get trackedEntitySet instance: " + e.getMessage());
+				ModLoader.outputError(e, CommandDumpTracked.class.getSimpleName() + " failed to get trackedEntitySet instance: " + e.getMessage());
 			}
 		}
 	}

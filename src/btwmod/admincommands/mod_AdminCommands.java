@@ -23,9 +23,9 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	private long secondsForAFK = 300;
 	private final Map<EntityPlayerMP, Long> lastPlayerAction = new HashMap<EntityPlayerMP, Long>();
 	
-	private WhoCommand whoCommand;
+	private CommandWho commandWho;
 	//private DumpTrackedCommand dumpTrackedCommand;
-	private ReliableUpdatesCommand reliableUpdatesCommand;
+	private CommandReliableUpdates commandReliableUpdates;
 	private CommandDumpEntities commandDumpEntities;
 	private CommandClearEntities commandClearEntities;
 
@@ -46,9 +46,9 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	@Override
 	public void init(Settings settings) throws Exception {
 		NetworkAPI.addListener(this);
-		CommandsAPI.registerCommand(whoCommand = new WhoCommand(this), this);
+		CommandsAPI.registerCommand(commandWho = new CommandWho(this), this);
 		//CommandsAPI.registerCommand(dumpTrackedCommand = new DumpTrackedCommand(), this);
-		CommandsAPI.registerCommand(reliableUpdatesCommand = new ReliableUpdatesCommand(), this);
+		CommandsAPI.registerCommand(commandReliableUpdates = new CommandReliableUpdates(), this);
 		CommandsAPI.registerCommand(commandDumpEntities = new CommandDumpEntities(settings), this);
 		CommandsAPI.registerCommand(commandClearEntities = new CommandClearEntities(), this);
 
@@ -61,9 +61,9 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	@Override
 	public void unload() throws Exception {
 		NetworkAPI.removeListener(this);
-		CommandsAPI.unregisterCommand(whoCommand);
+		CommandsAPI.unregisterCommand(commandWho);
 		//CommandsAPI.unregisterCommand(dumpTrackedCommand);
-		CommandsAPI.unregisterCommand(reliableUpdatesCommand);
+		CommandsAPI.unregisterCommand(commandReliableUpdates);
 		CommandsAPI.unregisterCommand(commandDumpEntities);
 		CommandsAPI.unregisterCommand(commandClearEntities);
 	}
