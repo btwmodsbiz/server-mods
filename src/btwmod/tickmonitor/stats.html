@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tick Stats - BTWMods Tick Monitor</title>
+
+<!--<link rel="stylesheet" href="overviewer.css" type="text/css" />-->
+<style type="text/css">
+body {
+	font-family: Helvetica;
+	font-size: 14px;
+	background-color: #FFF;
+	padding: 12px;
+	height: auto;
+}
+#mcmap {
+    background-color: #000;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 160%;
+}
+.datatable {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+.datatable thead th {
+	text-align: left;
+}
+.datatable tbody th {
+	text-align: right;
+}
+.datatable th, .datatable td {
+	padding: 4px;
+}
+.datatable th.divider {
+	padding: 12px 0 0 0;
+}
+.hideDetailed .detailed {
+	display: none;
+}
+.statsheader {
+	text-align: center;
+	font-size: 16px;
+	font-weight: bold;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #999;
+}
+</style>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+
+<script type="text/javascript" src="stats.js"></script>
+
+<!--<script type="text/javascript" src="underscore.js"></script>
+<script type="text/javascript" src="backbone.js"></script>
+<script type="text/javascript" src="overviewerConfig.js"></script>
+<script type="text/javascript" src="overviewer.js"></script>
+<script type="text/javascript" src="baseMarkers.js"></script>-->
+
+<script>
+jQuery(function() {
+	BTWStats.start("/dev/stats.txt");
+});
+</script>
+
+</head>
+
+<body>
+
+<div id="GeneralStats" class="hideDetailed">
+
+<table border="0" class="datatable">
+<tbody>
+
+<tr><th>Last Updated:</th><td id="Field_time"></td></tr>
+<tr><th>Players Online:</th><td id="Field_players" class="type_players"></td></tr>
+
+<tr><th colspan="2" class="divider"></th></tr>
+
+<tr><th>Tick #:</th><td id="Field_tickCounter"></td></tr>
+<tr><th>Since Last Tick:</th><td><span id="Field_timeSinceLastTick"></span> ms</td></tr>
+<tr><th>Average Ticks/Sec:</th><td id="Field_ticksPerSecondArray" class="type_average"></td></tr>
+<tr><th>Average Tick Time:</th><td id="Field_tickTime" class="type_average_nano"></td></tr>
+
+<tr><th colspan="2" class="divider"></th></tr>
+
+<tr><th>Average Sent Packet Count:</th><td id="Field_sentPacketCount" class="type_average"></td></tr>
+<tr><th>Average Received Packet Count:</th><td id="Field_receivedPacketCount" class="type_average"></td></tr>
+
+<tr><th colspan="2" class="divider"></th></tr>
+
+<tr><th>Average Sent Packet Size:</th><td><span id="Field_sentPacketSize" class="type_average"></span> bytes</td></tr>
+<tr><th>Average Received Packet Size:</th><td><span id="Field_receivedPacketSize" class="type_average"></span> bytes</td></tr>
+
+<tr><th colspan="2" class="divider"></th></tr>
+
+<tr><th>Bytes Sent to Players:</th><td><span id="Field_bytesSentToPlayers"></span> bytes</td></tr>
+<tr><th>Bytes Recieved from Players:</th><td><span id="Field_bytesReceivedFromPlayers"></span> bytes</td></tr>
+
+<!--<tr><th colspan="2" class="divider"></th></tr>
+
+<tr><th>Average Stats Thread Queue Count:</th><td id="Field_statsThreadQueueCount" class="type_average"></td></tr>
+<tr><th>Average Stats Thread Time:</th><td id="Field_statsThreadTime" class="type_average_nano"></td></tr>
+<tr><th>Ticks Since Last StatsAction:</th><td id="Field_ticksSinceLastStatsAction"></td></tr>
+<tr><th>Time for Stats Action:</th><td id="Field_statsActionTime" class="type_average_nano"></td></tr>
+<tr><th>Time for JSON:</th><td><span id="Field_jsonTime"></span> ms</td></tr>-->
+
+</tbody>
+</table>
+
+<table border="0"><tbody><tr id="WorldStats">
+	<td>
+		<h2>World <span class="worldnum">0</span></h2>
+		<table border="0" class="datatable">
+		<tbody>
+		<tr><th>World Tick Time:</th><td id="Field_worlds_0_worldTickTime" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Measurements:</th><td id="Field_worlds_0_measurementQueue" class="type_average"></td></tr>
+		<tr class="detailed"><th>Living Entity Spawning:</th><td id="Field_worlds_0_mobSpawning" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Living Entities Spawned:</th><td id="Field_worlds_0_spawnedLiving" class="type_average"></td></tr>
+		<tr class="detailed"><th>Block Tick:</th><td id="Field_worlds_0_blockTick" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Weather:</th><td id="Field_worlds_0_weather" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Entities:</th><td id="Field_worlds_0_entities" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Time Sync:</th><td id="Field_worlds_0_timeSync" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Build Active ChunkSet:</th><td id="Field_worlds_0_buildActiveChunkSet" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Check Player Light:</th><td id="Field_worlds_0_checkPlayerLight" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Entities Regular:</th><td id="Field_worlds_0_entitiesRegular" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Entities Remove:</th><td id="Field_worlds_0_entitiesRemove" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Entities Tile:</th><td id="Field_worlds_0_entitiesTile" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Entities Tile Pending:</th><td id="Field_worlds_0_entitiesTilePending" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Update Player Entities:</th><td id="Field_worlds_0_updatePlayerEntities" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Update Tracked Entities:</th><td id="Field_worlds_0_updateTrackedEntityPlayerLists" class="type_average_nano"></td></tr>
+		<tr class="detailed"><th>Weather Effects:</th><td id="Field_worlds_0_weatherEffects" class="type_average_nano"></td></tr>
+		<tr><th>Total Loaded Chunks:</th><td id="Field_worlds_0_loadedChunks" class="type_average"></td></tr>
+		<tr><th>Chunk Loading:</th><td id="Field_worlds_0_chunkLoading" class="type_average"></td></tr>
+		<tr><th>Chunk Loading Time:</th><td id="Field_worlds_0_chunkLoadingTime" class="type_average_nano"></td></tr>
+		<tr><th>Chunk Cache:</th><td id="Field_worlds_0_id2ChunkMap" class="type_average"></td></tr>
+		<tr><th>Total Loaded Entities:</th><td id="Field_worlds_0_loadedEntityList" class="type_average"></td></tr>
+		<tr><th>Total Loaded Tile Entities:</th><td id="Field_worlds_0_loadedTileEntityList" class="type_average"></td></tr>
+		<tr><th>Total Entities Tracked:</th><td id="Field_worlds_0_trackedEntities" class="type_average"></td></tr>
+		</tbody>
+		</table>
+	</td>
+</tr></tbody></table>
+
+<hr size="1" class="detailed" />
+
+<div id="WorldStatDetails" class="detailed">
+
+<h2>World <span class="worldnum">0</span> Top <span class="top_amount"></span></h2>
+
+<table border="0">
+<thead>
+<tr>
+<td class="statsheader">Chunk Stats</td><td></td><td></td>
+<td class="statsheader">Entity Stats</td><td></td><td></td>
+<td class="statsheader">Tile Entity Stats</td><td></td><td></td>
+<td class="statsheader">Tracked Entity Stats</td>
+</tr>
+</thead>
+
+<tbody><tr><td valign="top">
+
+<table border="0" class="datatable">
+<thead><tr>
+<th>Chunk</th>
+<th>Tick Time</th>
+<th>Entities</th>
+</tr>
+</thead>
+<tbody id="Field_worlds_0_chunkStats" class="type_stats"></tbody>
+</table>
+
+</td><td style="width: 10px; border-right: 1px solid #666;"></td><td style="width: 10px;"></td><td valign="top">
+
+<table border="0" class="datatable">
+<thead><tr>
+<th>Entity</th>
+<th>Tick Time</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody id="Field_worlds_0_entityStats" class="type_stats"></tbody>
+</table>
+
+</td><td style="width: 10px; border-right: 1px solid #666;"></td><td style="width: 10px;"></td><td valign="top">
+
+<table border="0" class="datatable">
+<thead><tr>
+<th>Tile Entity</th>
+<th>Tick Time</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody id="Field_worlds_0_tileEntityStats" class="type_stats"></tbody>
+</table>
+
+</td><td style="width: 10px; border-right: 1px solid #666;"></td><td style="width: 10px;"></td><td valign="top">
+
+<table border="0" class="datatable">
+<thead><tr>
+<th>Tracked Entity</th>
+<th>Tick Time</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody id="Field_worlds_0_trackedEntityStats" class="type_stats"></tbody>
+</table>
+
+</td></tr></tbody></table>
+
+</div>
+
+</div>
+
+</body>
+</html>
