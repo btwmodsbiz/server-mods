@@ -5,7 +5,6 @@ import java.util.List;
 import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.BlockBed;
 import net.minecraft.src.ChunkCoordinates;
-import net.minecraft.src.Entity;
 import net.minecraft.src.EntityMob;
 import net.minecraft.src.EntityPlayer;
 import btwmods.IMod;
@@ -74,7 +73,8 @@ public class BTWModSpawnBeds implements IMod, IBlockListener, IInstanceListener 
 	                    var15 = (var15 + (double)z + 0.5D) / 2.0D;
 	                }
 	
-	                event.getWorld().newExplosion((Entity)null, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), 5.0F, true);
+	                // TODO: Add explosion back after fixing argument issue.
+	                //event.getWorld().newExplosion((Entity)null, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), 5.0F, true);
 	                return;
 	            }
 				
@@ -106,7 +106,7 @@ public class BTWModSpawnBeds implements IMod, IBlockListener, IInstanceListener 
 	                return; // EnumStatus.NOT_SAFE;
 	            }
 	
-				player.setSpawnChunk(new ChunkCoordinates(event.getX(), event.getY(), event.getZ()));
+				player.setSpawnChunk(new ChunkCoordinates(event.getX(), event.getY(), event.getZ()), false);
 				player.sendChatToPlayer("... but you feel as if this is your new home.");
 	
 		        //return EnumStatus.OK;
