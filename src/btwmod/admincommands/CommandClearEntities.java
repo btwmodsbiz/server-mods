@@ -50,17 +50,22 @@ public class CommandClearEntities extends CommandBase {
 		World world = MinecraftServer.getServer().worldServers[worldNames.get(args[0]).intValue()];
 		List<Entity> toRemove = new ArrayList<Entity>();
 		
+		int count = 0;
+		long startTime = System.currentTimeMillis();
 		Iterator iterator = world.loadedEntityList.iterator();
 		while (iterator.hasNext()) {
 			Object obj = iterator.next();
 			if (obj instanceof EntityMob || obj instanceof EntityGhast) {
 				toRemove.add((Entity)obj);
+				count++;
 			}
 		}
 		
 		for (Entity entity : toRemove) {
 			world.removeEntity(entity);
 		}
+		
+		sender.sendChatToPlayer("Removed " + count + " entities in " + (System.currentTimeMillis() - startTime) + "ms");
 	}
 	
 	private void getWorldNames() {
