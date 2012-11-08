@@ -18,6 +18,11 @@
 		<link>
 			<name>lib</name>
 			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>lib/javalib</name>
+			<type>2</type>
 			<locationURI>DEV_ENVIRONMENT/bin/javalib</locationURI>
 		</link>
 	</linkedResources>
