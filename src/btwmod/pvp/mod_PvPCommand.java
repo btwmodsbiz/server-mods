@@ -1,5 +1,6 @@
 package btwmod.pvp;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.PlayerAPI;
+import btwmods.ServerAPI;
 import btwmods.WorldAPI;
 import btwmods.io.Settings;
 import btwmods.player.IActionListener;
@@ -21,8 +23,11 @@ import btwmods.player.IInstanceListener;
 import btwmods.player.InstanceEvent;
 import btwmods.player.InstanceEvent.METADATA;
 import btwmods.player.PlayerActionEvent;
+import btwmods.server.ITickListener;
+import btwmods.server.TickEvent;
+import btwmods.server.TickEvent.TYPE;
 
-public class mod_PvPCommand extends CommandBase implements IMod, IInstanceListener, IActionListener {
+public class mod_PvPCommand extends CommandBase implements IMod, IInstanceListener, IActionListener, ITickListener {
 	
 	private long minPvpMinutes = 5L;
 	private long maxPvpMinutes = 60L;
@@ -55,12 +60,14 @@ public class mod_PvPCommand extends CommandBase implements IMod, IInstanceListen
 		server = MinecraftServer.getServer();
 		CommandsAPI.registerCommand(this, this);
 		PlayerAPI.addListener(this);
+		ServerAPI.addListener(this);
 	}
 
 	@Override
 	public void unload() throws Exception {
 		CommandsAPI.unregisterCommand(this);
 		PlayerAPI.removeListener(this);
+		ServerAPI.removeListener(this);
 	}
 
 	@Override
@@ -204,7 +211,7 @@ public class mod_PvPCommand extends CommandBase implements IMod, IInstanceListen
 				if (event.getNBTTagCompound().hasKey("pvpRemainingSeconds")) {
 					// Read in the players remaining PvP time.
 					playerTimers.put(event.getPlayerInstance().username, new Long(event.getNBTTagCompound().getLong("pvpRemainingSeconds") + getCurrentTimeSeconds()));
-					PlayerAPI.playerMetadataChanged(event.getPlayerInstance(), METADATA.IS_PVP, new Boolean(true));
+					PlayerAPI.onPlayerMetadataChanged(event.getPlayerInstance(), METADATA.IS_PVP, new Boolean(true));
 				}
 			}
 			catch (Exception e) {
@@ -271,5 +278,26 @@ public class mod_PvPCommand extends CommandBase implements IMod, IInstanceListen
 			sb.append(seconds == 0 ? "0 seconds" : "1 second");
 		
 		return sb.toString();
+	}
+
+	@Override
+	public void onTick(TickEvent event) {
+		if (event.getType() == TYPE.START && event.getTickCounter() % 20 == 0 && playerTimers.size() > 0) {
+			long currentSeconds = getCurrentTimeSeconds();
+			
+			Iterator<Map.Entry<String, Long>> iterator = playerTimers.entrySet().iterator();
+			while (iterator.hasNext()) {
+				Map.Entry<String, Long> entry = iterator.next();
+				if (entry.getValue() <= currentSeconds) {
+					EntityPlayer player = server.getConfigurationManager().getPlayerEntity(entry.getKey());
+					iterator.remove();
+					
+					if (player != null) {
+						PlayerAPI.onPlayerMetadataChanged(player, METADATA.IS_PVP);
+						player.sendChatToPlayer("You are no longer PvP flagged.");
+					}
+				}
+			}
+		}
 	}
 }
