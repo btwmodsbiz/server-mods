@@ -173,6 +173,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 					playerSettings.put(player.username, settings = new HideSettings());
 				}
 				
+				boolean oldIsHidingArmor = settings.isHidingArmor();
 				boolean state = args[0].equalsIgnoreCase("hide");
 				
 				if (args.length == 1) {
@@ -196,6 +197,13 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 							throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
 					}
 				}
+				
+				if (settings.isHidingArmor())
+					sender.sendChatToPlayer("The following is now hidden: " + settings.toString());
+				else if (!oldIsHidingArmor)
+					sender.sendChatToPlayer("You are not hiding any armor.");
+				else
+					sender.sendChatToPlayer("You are no longer hiding any armor.");
 				
 				WorldAPI.sendEntityEquipmentUpdate(player);
 			}
