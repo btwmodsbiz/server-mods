@@ -10,6 +10,7 @@ import net.minecraft.src.Entity;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityPlayerMP;
 import net.minecraft.src.FCItemRefinedArmor;
+import net.minecraft.src.FCItemSpecialArmor;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
@@ -32,6 +33,7 @@ import btwmods.player.InstanceEvent.TYPE;
 public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerListener, IInstanceListener {
 	
 	private boolean plateAlwaysVisible = true;
+	private boolean specialAlwaysVisible = true;
 	
 	private Map<String, HideSettings> playerSettings = new HashMap<String, HideSettings>();
 	
@@ -46,6 +48,9 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 	public void init(Settings settings) throws Exception {
 		if (settings.isBoolean("platealwaysvisible")) {
 			plateAlwaysVisible = settings.getBoolean("platealwaysvisible");
+		}
+		if (settings.isBoolean("specialalwaysvisible")) {
+			specialAlwaysVisible = settings.getBoolean("specialalwaysvisible");
 		}
 		
 		CommandsAPI.registerCommand(this, this);
@@ -88,7 +93,11 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 					// Only handle armor slots.
 					if (settings != null && packet.slot > 0 && settings.isHiddenForSlot(packet.slot)) {
 						ItemStack stack = referencedPlayer.getEquipmentInSlot(packet.slot);
-						if (stack != null && (!plateAlwaysVisible || !(Item.itemsList[stack.itemID] instanceof FCItemRefinedArmor))) {
+						boolean forceShow =
+								(plateAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemRefinedArmor)
+								|| (specialAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemSpecialArmor);
+						
+						if (stack != null && !forceShow) {
 							event.replaceWithPacket(new Packet5PlayerInventory(packet.entityID, packet.slot, null));
 						}
 					}
