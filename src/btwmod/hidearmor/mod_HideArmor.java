@@ -84,7 +84,6 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 					
 					// Get the referenced player's hide settings.
 					HideSettings settings = playerSettings.get(referencedPlayer.username);
-					System.err.println(playerSettings.size() + " " + referencedPlayer.username + " " + settings + " " + playerSettings.hashCode());
 					
 					// Only handle armor slots.
 					if (settings != null && packet.slot > 0 && settings.isHiddenForSlot(packet.slot)) {
@@ -110,11 +109,10 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 			settings.legs = event.getNBTTagCompound().getBoolean("legs");
 			settings.boots = event.getNBTTagCompound().getBoolean("boots");
 			playerSettings.put(event.getPlayerInstance().username, settings);
-			System.err.println("Loading settings for " + event.getPlayerInstance().username + " into hash " + playerSettings.hashCode() + " (" + playerSettings.size() + " total)");
 		}
 		else if (event.getType() == TYPE.WRITE_NBT) {
 			HideSettings settings = playerSettings.get(event.getPlayerInstance().username);
-			if (settings != null) {
+			if (settings != null && settings.isHidingArmor()) {
 				event.getNBTTagCompound().setBoolean("helm", settings.helm);
 				event.getNBTTagCompound().setBoolean("chest", settings.chest);
 				event.getNBTTagCompound().setBoolean("legs", settings.legs);
@@ -130,12 +128,12 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/" + getCommandName() + " <hide|show> [<helm|chest|legs|boots> ...]";
+		return "/" + getCommandName() + " <status|hide|show> [<helm|chest|legs|boots> ...]";
 	}
 
 	@Override
 	public boolean canCommandSenderUseCommand(ICommandSender sender) {
-		return sender instanceof EntityPlayer;
+		return !server.isPVPEnabled() && sender instanceof EntityPlayer;
 	}
 
 	@Override
@@ -156,7 +154,18 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 	public void processCommand(ICommandSender sender, String[] args) {
 		if (sender instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer)sender;
-			if (args.length >= 1 && args[0].matches("^(hide|show)$")) {
+			if (args.length >= 1 && args[0].equalsIgnoreCase("status")) {
+				HideSettings settings = playerSettings.get(player.username);
+				String list = "";
+				
+				if (settings != null && (list = settings.toString()).length() != 0) {
+					sender.sendChatToPlayer("You are hiding: " + list);
+				}
+				else {
+					sender.sendChatToPlayer("You are not hiding armor.");
+				}
+			}
+			else if (args.length >= 1 && args[0].matches("^(hide|show)$")) {
 				
 				// Get the settings, creating them if necessary.
 				HideSettings settings = playerSettings.get(player.username);
@@ -186,7 +195,9 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 						else
 							throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
 					}
-				}	
+				}
+				
+				WorldAPI.sendEntityEquipmentUpdate(player);
 			}
 			else {
 				throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
@@ -201,12 +212,31 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 		public boolean boots = false;
 		
 		public boolean isHiddenForSlot(int slot) {
-			System.err.println("isHiddenForSlot " + slot);
-			return true;
+			switch (slot) {
+				case 4: return helm;
+				case 3: return chest;
+				case 2: return legs;
+				case 1: return boots;
+				default: return false;
+			}
 		}
 		
 		public void setAll(boolean value) {
 			helm = chest = legs = boots = value;
+		}
+		
+		public boolean isHidingArmor() {
+			return helm || chest || legs || boots;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			if (helm) { if (sb.length() > 0) sb.append(", "); sb.append("helm"); }
+			if (chest) { if (sb.length() > 0) sb.append(", "); sb.append("chest"); }
+			if (legs) { if (sb.length() > 0) sb.append(", "); sb.append("legs"); }
+			if (boots) { if (sb.length() > 0) sb.append(", "); sb.append("boots"); }
+			return sb.toString();
 		}
 	}
 
