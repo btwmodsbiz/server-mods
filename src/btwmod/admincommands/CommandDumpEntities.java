@@ -63,7 +63,7 @@ public class CommandDumpEntities extends CommandBase {
 
 	@Override
 	public String getCommandUsage(ICommandSender par1iCommandSender) {
-		return "/" + getCommandName() + " <dimension> [\"tile\"] [<class> ...]";
+		return "/" + getCommandName() + " <dimension> [tile] [<class> ...]";
 	}
 
 	@Override
