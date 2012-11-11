@@ -18,16 +18,16 @@ import btwmods.PlayerAPI;
 import btwmods.ServerAPI;
 import btwmods.WorldAPI;
 import btwmods.io.Settings;
-import btwmods.player.IActionListener;
-import btwmods.player.IInstanceListener;
-import btwmods.player.InstanceEvent;
-import btwmods.player.InstanceEvent.METADATA;
+import btwmods.player.IPlayerActionListener;
+import btwmods.player.IPlayerInstanceListener;
+import btwmods.player.PlayerInstanceEvent;
+import btwmods.player.PlayerInstanceEvent.METADATA;
 import btwmods.player.PlayerActionEvent;
 import btwmods.server.ITickListener;
 import btwmods.server.TickEvent;
 import btwmods.server.TickEvent.TYPE;
 
-public class mod_PvPCommand extends CommandBase implements IMod, IInstanceListener, IActionListener, ITickListener {
+public class mod_PvPCommand extends CommandBase implements IMod, IPlayerInstanceListener, IPlayerActionListener, ITickListener {
 	
 	private long minPvpMinutes = 5L;
 	private long maxPvpMinutes = 60L;
@@ -198,15 +198,15 @@ public class mod_PvPCommand extends CommandBase implements IMod, IInstanceListen
 	}
 
 	@Override
-	public void instanceAction(InstanceEvent event) {
-		if (event.getType() == InstanceEvent.TYPE.CHECK_METADATA && event.getMetadata() == InstanceEvent.METADATA.IS_PVP) {
+	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
+		if (event.getType() == PlayerInstanceEvent.TYPE.CHECK_METADATA && event.getMetadata() == PlayerInstanceEvent.METADATA.IS_PVP) {
 			// Only handle if we have data about the player's PvP status, and there is remaining PvP time.
 			if (isPlayerPvP(event.getPlayerInstance().username)) {
 				event.setMetadataValue(new Boolean(true));
 			}
 		}
 		
-		else if (event.getType() == InstanceEvent.TYPE.READ_NBT) {
+		else if (event.getType() == PlayerInstanceEvent.TYPE.READ_NBT) {
 			try {
 				if (event.getNBTTagCompound().hasKey("pvpRemainingSeconds")) {
 					// Read in the players remaining PvP time.
@@ -219,7 +219,7 @@ public class mod_PvPCommand extends CommandBase implements IMod, IInstanceListen
 			}
 		}
 		
-		else if (event.getType() == InstanceEvent.TYPE.WRITE_NBT) {
+		else if (event.getType() == PlayerInstanceEvent.TYPE.WRITE_NBT) {
 			if (playerTimers.containsKey(event.getPlayerInstance().username)) {
 				long remainingTime = playerTimers.get(event.getPlayerInstance().username).longValue() - getCurrentTimeSeconds();
 				

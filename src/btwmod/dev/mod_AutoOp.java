@@ -6,10 +6,10 @@ import net.minecraft.src.ServerConfigurationManager;
 import btwmods.IMod;
 import btwmods.PlayerAPI;
 import btwmods.io.Settings;
-import btwmods.player.IInstanceListener;
-import btwmods.player.InstanceEvent;
+import btwmods.player.IPlayerInstanceListener;
+import btwmods.player.PlayerInstanceEvent;
 
-public class mod_AutoOp implements IMod, IInstanceListener {
+public class mod_AutoOp implements IMod, IPlayerInstanceListener {
 
 	@Override
 	public String getName() {
@@ -32,9 +32,9 @@ public class mod_AutoOp implements IMod, IInstanceListener {
 	}
 
 	@Override
-	public void instanceAction(InstanceEvent event) {
+	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
 		ServerConfigurationManager manager = MinecraftServer.getServer().getConfigurationManager();
-		if (event.getType() == InstanceEvent.TYPE.LOGIN && !manager.getOps().contains(event.getPlayerInstance().username)) {
+		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN && !manager.getOps().contains(event.getPlayerInstance().username)) {
 			manager.addOp(event.getPlayerInstance().username);
 			CommandBase.notifyAdmins(event.getPlayerInstance(), "commands.op.success", new Object[] { event.getPlayerInstance().username });
 		}

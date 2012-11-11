@@ -30,7 +30,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 	}
 
 	@Override
-	public void containerAction(ContainerEvent event) {
+	public void onContainerAction(ContainerEvent event) {
 		EntityPlayer player = event.getPlayer();
 		if (event.getType() == ContainerEvent.TYPE.OPENED) {
 			logger.log(Level.INFO, player.username + " at " + (int)player.posX + "/" + (int)player.posY + "/" + (int)player.posZ + " opened " + event.getBlock().getBlockName() + " at " + event.getX() + "/" + event.getY() + "/" + event.getZ(),
@@ -46,12 +46,12 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 	}
 
 	@Override
-	public void dropAction(DropEvent event) {
+	public void onPlayerItemDrop(DropEvent event) {
 		// TODO: record how and where the player died if inventory is fully ejected.
 	}
 
 	@Override
-	public void slotAction(SlotEvent event) {
+	public void onSlotAction(SlotEvent event) {
 		ItemStack withdrawn = null;
 		int withdrawnQuantity = -1;
 		

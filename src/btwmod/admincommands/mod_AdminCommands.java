@@ -69,7 +69,7 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	}
 
 	@Override
-	public void packetAction(PacketEvent event) {
+	public void onPacket(PacketEvent event) {
 		Packet packet = event.getPacket();
 		if (packet instanceof Packet12PlayerLook
 				|| packet instanceof Packet13PlayerLookMove

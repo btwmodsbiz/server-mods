@@ -24,8 +24,8 @@ import btwmods.io.Settings;
 import btwmods.measure.Average;
 import btwmods.network.CustomPacketEvent;
 import btwmods.network.ICustomPacketListener;
-import btwmods.player.IInstanceListener;
-import btwmods.player.InstanceEvent;
+import btwmods.player.IPlayerInstanceListener;
+import btwmods.player.PlayerInstanceEvent;
 import btwmods.stats.IStatsListener;
 import btwmods.stats.StatsEvent;
 import btwmods.stats.data.BasicStats;
@@ -34,7 +34,7 @@ import btwmods.stats.data.BasicStatsMap;
 import btwmods.util.BasicFormatter;
 import btwmods.Util;
 
-public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListener, IInstanceListener {
+public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListener, IPlayerInstanceListener {
 
 	private static int topNumber = 20;
 	private static boolean includeHistory = false;
@@ -143,7 +143,7 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 	 * not access any of the APIs, and be careful how class variables are used outside of statsAction().
 	 */
 	@Override
-	public void statsAction(StatsEvent event) {
+	public void onStats(StatsEvent event) {
 		long currentTime = System.currentTimeMillis();
 		long startNano = System.nanoTime();
 		
@@ -471,14 +471,14 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 	}
 
 	@Override
-	public void customPacketAction(CustomPacketEvent event) {
+	public void onCustomPacket(CustomPacketEvent event) {
 		// TODO: remove debug throw
 		throw new IllegalArgumentException();
 	}
 
 	@Override
-	public void instanceAction(InstanceEvent event) {
-		if (publicLink != null && event.getType() == InstanceEvent.TYPE.LOGIN)
+	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
+		if (publicLink != null && event.getType() == PlayerInstanceEvent.TYPE.LOGIN)
 			event.getPlayerInstance().sendChatToPlayer("Tick stats are available at " + publicLink);
 	}
 }

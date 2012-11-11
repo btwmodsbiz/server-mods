@@ -10,12 +10,12 @@ import net.minecraft.src.EntityPlayer;
 import btwmods.IMod;
 import btwmods.PlayerAPI;
 import btwmods.io.Settings;
-import btwmods.player.BlockEvent;
-import btwmods.player.IBlockListener;
-import btwmods.player.IInstanceListener;
-import btwmods.player.InstanceEvent;
+import btwmods.player.PlayerBlockEvent;
+import btwmods.player.IPlayerBlockListener;
+import btwmods.player.IPlayerInstanceListener;
+import btwmods.player.PlayerInstanceEvent;
 
-public class BTWModSpawnBeds implements IMod, IBlockListener, IInstanceListener {
+public class BTWModSpawnBeds implements IMod, IPlayerBlockListener, IPlayerInstanceListener {
 	
 	@Override
 	public String getName() {
@@ -33,8 +33,8 @@ public class BTWModSpawnBeds implements IMod, IBlockListener, IInstanceListener 
 	}
 
 	@Override
-	public void blockAction(BlockEvent event) {
-		if (event.getType() == BlockEvent.TYPE.ACTIVATED) {
+	public void onPlayerBlockAction(PlayerBlockEvent event) {
+		if (event.getType() == PlayerBlockEvent.TYPE.ACTIVATED) {
 			EntityPlayer player = event.getPlayer();
 			if (event.getBlock() instanceof BlockBed && !player.worldObj.isRemote) {
 				
@@ -115,11 +115,11 @@ public class BTWModSpawnBeds implements IMod, IBlockListener, IInstanceListener 
 	}
 
 	@Override
-	public void instanceAction(InstanceEvent event) {
-		if (event.getType() == InstanceEvent.TYPE.RESPAWN) {
+	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
+		if (event.getType() == PlayerInstanceEvent.TYPE.RESPAWN) {
 			
 		}
-		else if (event.getType() == InstanceEvent.TYPE.WRITE_NBT) {
+		else if (event.getType() == PlayerInstanceEvent.TYPE.WRITE_NBT) {
 			//NBTTagCompound tagCompound = event.getNBTTagCompound();
 			//tagCompound.setString("key", "value");
 		}

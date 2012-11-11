@@ -25,12 +25,12 @@ import btwmods.WorldAPI;
 import btwmods.io.Settings;
 import btwmods.network.IPacketHandlerListener;
 import btwmods.network.PacketHandlerEvent;
-import btwmods.player.IInstanceListener;
-import btwmods.player.InstanceEvent;
-import btwmods.player.InstanceEvent.METADATA;
-import btwmods.player.InstanceEvent.TYPE;
+import btwmods.player.IPlayerInstanceListener;
+import btwmods.player.PlayerInstanceEvent;
+import btwmods.player.PlayerInstanceEvent.METADATA;
+import btwmods.player.PlayerInstanceEvent.TYPE;
 
-public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerListener, IInstanceListener {
+public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerListener, IPlayerInstanceListener {
 	
 	private boolean plateAlwaysVisible = true;
 	private boolean specialAlwaysVisible = true;
@@ -107,7 +107,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 	}
 
 	@Override
-	public void instanceAction(InstanceEvent event) {
+	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
 		if (event.getType() == TYPE.METADATA_CHANGED && event.getMetadata() == METADATA.IS_PVP) {
 			WorldAPI.sendEntityEquipmentUpdate(event.getPlayerInstance());
 		}

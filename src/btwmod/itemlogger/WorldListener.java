@@ -26,7 +26,7 @@ public class WorldListener implements IBlockListener {
 	}
 
 	@Override
-	public void blockAction(BlockEvent event) {
+	public void onBlockAction(BlockEvent event) {
 		if (event.getType() == BlockEvent.TYPE.BROKEN && event.getBlock() instanceof BlockContainer) {
 			ItemStack[] contents = event.getContents();
 			if (contents != null) {

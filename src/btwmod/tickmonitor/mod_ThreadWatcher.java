@@ -50,7 +50,7 @@ public class mod_ThreadWatcher implements IMod, IStatsListener {
 	}
 
 	@Override
-	public void statsAction(StatsEvent event) {
+	public void onStats(StatsEvent event) {
 		lastTickEnd = event.serverStats.lastTickEnd;
 	}
 
