@@ -40,7 +40,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 	private MinecraftServer server;
 	
 	@Override
-	public String getName() throws Exception {
+	public String getName() {
 		return "Hide Armor";
 	}
 

@@ -30,7 +30,7 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	private CommandClearEntities commandClearEntities;
 
 	@Override
-	public String getName() throws Exception {
+	public String getName() {
 		return "Admin Commands";
 	}
 	

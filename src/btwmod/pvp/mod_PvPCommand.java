@@ -44,7 +44,7 @@ public class mod_PvPCommand extends CommandBase implements IMod, IPlayerInstance
 	}
 
 	@Override
-	public String getName() throws Exception {
+	public String getName() {
 		return "PvP";
 	}
 
