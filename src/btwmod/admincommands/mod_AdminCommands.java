@@ -21,7 +21,7 @@ import btwmods.network.PacketEvent;
 public class mod_AdminCommands implements IMod, IPacketListener {
 	
 	private long secondsForAFK = 300;
-	private final Map<EntityPlayerMP, Long> lastPlayerAction = new HashMap<EntityPlayerMP, Long>();
+	private final Map<String, Long> lastPlayerAction = new HashMap<String, Long>();
 	
 	private CommandWho commandWho;
 	//private DumpTrackedCommand dumpTrackedCommand;
@@ -77,8 +77,7 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 				|| packet instanceof Packet14BlockDig
 				|| packet instanceof Packet15Place
 				|| packet instanceof Packet3Chat) {
-			
-			lastPlayerAction.put(event.getPlayer(), new Long(System.currentTimeMillis()));
+			lastPlayerAction.put(event.getPlayer().username, new Long(System.currentTimeMillis()));
 		}
 	}
 	
@@ -87,7 +86,7 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	}
 	
 	public long getTimeSinceLastPlayerAction(EntityPlayerMP player) {
-		Long timeSinceLastAction = lastPlayerAction.get(player);
+		Long timeSinceLastAction = lastPlayerAction.get(player.username);
 		return timeSinceLastAction == null ? 0 : (System.currentTimeMillis() - timeSinceLastAction.longValue()) / 1000L;
 	}
 }
