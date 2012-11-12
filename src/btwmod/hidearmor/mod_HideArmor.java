@@ -85,7 +85,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 				EntityPlayerMP referencedPlayer = (EntityPlayerMP)entity;
 				
 				// Armor is always visible in PvP
-				if (!PlayerAPI.isPvPEnabled(referencedPlayer)) {
+				if (!PlayerAPI.onCheckPvPEnabled(referencedPlayer)) {
 					
 					// Get the referenced player's hide settings.
 					HideSettings settings = playerSettings.get(referencedPlayer.username);
