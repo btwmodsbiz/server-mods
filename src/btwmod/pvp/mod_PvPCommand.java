@@ -232,12 +232,11 @@ public class mod_PvPCommand extends CommandBase implements IMod, IPlayerInstance
 
 	@Override
 	public void onPlayerAction(PlayerActionEvent event) {
-		if (event.getType() == PlayerActionEvent.TYPE.ATTACK) {
-			if (event.getAttackSource().getEntity() instanceof EntityPlayer && event.getAttackTarget() instanceof EntityPlayer) {
-				EntityPlayer source = (EntityPlayer)event.getAttackSource().getEntity();
-				if (playerTimers.containsKey(source.username)) {
+		if (event.getType() == PlayerActionEvent.TYPE.ATTACKED_BY_PLAYER) {
+			if (event.getEntity() instanceof EntityPlayer) {
+				if (playerTimers.containsKey(event.getPlayer().username)) {
 					// Force a minimum amount of remaining time when a PvP player does damage to another player.
-					playerTimers.put(source.username, Math.max(playerTimers.get(source.username).longValue(), getCurrentTimeSeconds() + minPvpMinutes * 60L));
+					playerTimers.put(event.getPlayer().username, Math.max(playerTimers.get(event.getPlayer().username).longValue(), getCurrentTimeSeconds() + minPvpMinutes * 60L));
 				}
 			}
 		}
