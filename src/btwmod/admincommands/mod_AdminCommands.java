@@ -1,9 +1,12 @@
 package btwmod.admincommands;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.src.EntityPlayerMP;
+import net.minecraft.src.ICommand;
 import net.minecraft.src.Packet;
 import net.minecraft.src.Packet102WindowClick;
 import net.minecraft.src.Packet12PlayerLook;
@@ -22,12 +25,7 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	
 	private long secondsForAFK = 300;
 	private final Map<String, Long> lastPlayerAction = new HashMap<String, Long>();
-	
-	private CommandWho commandWho;
-	//private DumpTrackedCommand dumpTrackedCommand;
-	private CommandReliableUpdates commandReliableUpdates;
-	private CommandDumpEntities commandDumpEntities;
-	private CommandClearEntities commandClearEntities;
+	private Set<ICommand> commands = new LinkedHashSet<ICommand>();
 
 	@Override
 	public String getName() {
@@ -46,11 +44,11 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	@Override
 	public void init(Settings settings) throws Exception {
 		NetworkAPI.addListener(this);
-		CommandsAPI.registerCommand(commandWho = new CommandWho(this), this);
-		//CommandsAPI.registerCommand(dumpTrackedCommand = new DumpTrackedCommand(), this);
-		CommandsAPI.registerCommand(commandReliableUpdates = new CommandReliableUpdates(), this);
-		CommandsAPI.registerCommand(commandDumpEntities = new CommandDumpEntities(settings), this);
-		CommandsAPI.registerCommand(commandClearEntities = new CommandClearEntities(), this);
+		registerCommand(new CommandWho(this));
+		//registerCommand(new DumpTrackedCommand());
+		registerCommand(new CommandReliableUpdates());
+		registerCommand(new CommandDumpEntities(settings));
+		registerCommand(new CommandClearEntities());
 
 		// Load settings
 		if (settings.isLong("secondsforafk")) {
@@ -61,11 +59,7 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	@Override
 	public void unload() throws Exception {
 		NetworkAPI.removeListener(this);
-		CommandsAPI.unregisterCommand(commandWho);
-		//CommandsAPI.unregisterCommand(dumpTrackedCommand);
-		CommandsAPI.unregisterCommand(commandReliableUpdates);
-		CommandsAPI.unregisterCommand(commandDumpEntities);
-		CommandsAPI.unregisterCommand(commandClearEntities);
+		unregisterCommands();
 	}
 
 	@Override
@@ -78,6 +72,17 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 				|| packet instanceof Packet15Place
 				|| packet instanceof Packet3Chat) {
 			lastPlayerAction.put(event.getPlayer().username, new Long(System.currentTimeMillis()));
+		}
+	}
+	
+	private void registerCommand(ICommand command) {
+		commands.add(command);
+		CommandsAPI.registerCommand(command, this);
+	}
+	
+	private void unregisterCommands() {
+		for (ICommand command : commands) {
+			CommandsAPI.unregisterCommand(command);
 		}
 	}
 	
