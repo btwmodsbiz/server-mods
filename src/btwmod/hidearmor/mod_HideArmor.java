@@ -91,19 +91,27 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 					HideSettings settings = playerSettings.get(referencedPlayer.username);
 					
 					// Only handle armor slots.
-					if (settings != null && packet.slot > 0 && settings.isHiddenForSlot(packet.slot)) {
-						ItemStack stack = referencedPlayer.getEquipmentInSlot(packet.slot);
-						boolean forceShow =
-								(plateAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemRefinedArmor)
-								|| (specialAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemSpecialArmor);
-						
-						if (stack != null && !forceShow) {
-							event.replaceWithPacket(new Packet5PlayerInventory(packet.entityID, packet.slot, null));
-						}
+					if (settings != null && packet.slot > 0 && settings.isHiddenForSlot(packet.slot) && !isAlwaysVisible(referencedPlayer.getEquipmentInSlot(packet.slot))) {
+						event.replaceWithPacket(new Packet5PlayerInventory(packet.entityID, packet.slot, null));
 					}
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Determine if an item will always be shown as equipment.
+	 * 
+	 * @param stack The item stack to check.
+	 * @return true if it is always shown; false otherwise.
+	 */
+	public boolean isAlwaysVisible(ItemStack stack) {
+		if (stack != null &&
+			(plateAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemRefinedArmor)
+			|| (specialAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemSpecialArmor))
+			return true;
+		
+		return false;
 	}
 
 	@Override
