@@ -107,8 +107,8 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 	 */
 	public boolean isAlwaysVisible(ItemStack stack) {
 		if (stack != null &&
-			(plateAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemRefinedArmor)
-			|| (specialAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemSpecialArmor))
+			((plateAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemRefinedArmor)
+			|| (specialAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemSpecialArmor)))
 			return true;
 		
 		return false;
