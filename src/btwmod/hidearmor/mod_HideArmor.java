@@ -135,24 +135,6 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 			}
 			playerSettings.put(username, settings);
 		}
-		/*
-		else if (event.getType() == TYPE.READ_NBT) {
-			HideSettings settings = new HideSettings();
-			settings.helm = event.getNBTTagCompound().getBoolean("helm");
-			settings.chest = event.getNBTTagCompound().getBoolean("chest");
-			settings.legs = event.getNBTTagCompound().getBoolean("legs");
-			settings.boots = event.getNBTTagCompound().getBoolean("boots");
-			playerSettings.put(event.getPlayerInstance().username, settings);
-		}
-		else if (event.getType() == TYPE.WRITE_NBT) {
-			HideSettings settings = playerSettings.get(event.getPlayerInstance().username);
-			if (settings != null && settings.isHidingArmor()) {
-				event.getNBTTagCompound().setBoolean("helm", settings.helm);
-				event.getNBTTagCompound().setBoolean("chest", settings.chest);
-				event.getNBTTagCompound().setBoolean("legs", settings.legs);
-				event.getNBTTagCompound().setBoolean("boots", settings.boots);
-			}
-		}*/
 	}
 
 	@Override
