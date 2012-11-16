@@ -128,10 +128,10 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 			String username = event.getPlayerInstance().username;
 			HideSettings settings = new HideSettings();
 			if (data.hasSection(username)) {
-				settings.helm = data.isBoolean(username, "helm") && data.getBoolean("helm");
-				settings.chest = data.isBoolean(username, "chest") && data.getBoolean("chest");
-				settings.legs = data.isBoolean(username, "legs") && data.getBoolean("legs");
-				settings.boots = data.isBoolean(username, "boots") && data.getBoolean("boots");
+				settings.helm = data.isBoolean(username, "helm") && data.getBoolean(username, "helm");
+				settings.chest = data.isBoolean(username, "chest") && data.getBoolean(username, "chest");
+				settings.legs = data.isBoolean(username, "legs") && data.getBoolean(username, "legs");
+				settings.boots = data.isBoolean(username, "boots") && data.getBoolean(username, "boots");
 			}
 			playerSettings.put(username, settings);
 		}
