@@ -1,5 +1,6 @@
 package btwmod.hidearmor;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import net.minecraft.src.WorldServer;
 import net.minecraft.src.WrongUsageException;
 import btwmods.CommandsAPI;
 import btwmods.IMod;
+import btwmods.ModLoader;
 import btwmods.NetworkAPI;
 import btwmods.PlayerAPI;
 import btwmods.WorldAPI;
@@ -38,6 +40,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 	private Map<String, HideSettings> playerSettings = new HashMap<String, HideSettings>();
 	
 	private MinecraftServer server;
+	private Settings data;
 	
 	@Override
 	public String getName() {
@@ -52,6 +55,8 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 		if (settings.isBoolean("specialalwaysvisible")) {
 			specialAlwaysVisible = settings.getBoolean("specialalwaysvisible");
 		}
+		
+		this.data = data;
 		
 		CommandsAPI.registerCommand(this, this);
 		NetworkAPI.addListener(this);
@@ -119,6 +124,18 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 		if (event.getType() == TYPE.METADATA_CHANGED && event.getMetadata() == METADATA.IS_PVP) {
 			WorldAPI.sendEntityEquipmentUpdate(event.getPlayerInstance());
 		}
+		else if (event.getType() == TYPE.LOGIN) {
+			String username = event.getPlayerInstance().username;
+			HideSettings settings = new HideSettings();
+			if (data.hasSection(username)) {
+				settings.helm = data.isBoolean(username, "helm") && data.getBoolean("helm");
+				settings.chest = data.isBoolean(username, "chest") && data.getBoolean("chest");
+				settings.legs = data.isBoolean(username, "legs") && data.getBoolean("legs");
+				settings.boots = data.isBoolean(username, "boots") && data.getBoolean("boots");
+			}
+			playerSettings.put(username, settings);
+		}
+		/*
 		else if (event.getType() == TYPE.READ_NBT) {
 			HideSettings settings = new HideSettings();
 			settings.helm = event.getNBTTagCompound().getBoolean("helm");
@@ -135,7 +152,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 				event.getNBTTagCompound().setBoolean("legs", settings.legs);
 				event.getNBTTagCompound().setBoolean("boots", settings.boots);
 			}
-		}
+		}*/
 	}
 
 	@Override
@@ -221,6 +238,23 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 					sender.sendChatToPlayer("You are not hiding any armor.");
 				else
 					sender.sendChatToPlayer("You are no longer hiding any armor.");
+
+				try {
+					if (settings.isHidingArmor()) {
+						data.setBoolean(player.username, "helm", settings.helm);
+						data.setBoolean(player.username, "chest", settings.chest);
+						data.setBoolean(player.username, "legs", settings.legs);
+						data.setBoolean(player.username, "boots", settings.boots);
+						data.saveSettings();
+					}
+					else {
+						if (data.removeSection(player.username))
+							data.saveSettings();
+					}
+					
+				} catch (IOException e) {
+					ModLoader.outputError(e, "Failed (" + e.getClass().getSimpleName() + ") to save data file for " + getClass().getSimpleName() + ": " + e.getMessage());
+				}
 				
 				WorldAPI.sendEntityEquipmentUpdate(player);
 			}
