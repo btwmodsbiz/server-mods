@@ -22,7 +22,7 @@ public class mod_ThreadWatcher implements IMod, IStatsListener {
 	}
 
 	@Override
-	public void init(Settings settings) {
+	public void init(Settings settings, Settings data) {
 		modLoaderThread = ModLoader.getInitThread();
 		
 		if (settings.isLong("secondsuntilwarning")) {

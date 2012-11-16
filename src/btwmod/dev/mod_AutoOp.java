@@ -17,7 +17,7 @@ public class mod_AutoOp implements IMod, IPlayerInstanceListener {
 	}
 
 	@Override
-	public void init(Settings settings) {
+	public void init(Settings settings, Settings data) {
 		PlayerAPI.addListener(this);
 	}
 

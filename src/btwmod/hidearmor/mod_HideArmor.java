@@ -45,7 +45,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 	}
 
 	@Override
-	public void init(Settings settings) throws Exception {
+	public void init(Settings settings, Settings data) throws Exception {
 		if (settings.isBoolean("platealwaysvisible")) {
 			plateAlwaysVisible = settings.getBoolean("platealwaysvisible");
 		}

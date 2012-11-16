@@ -23,7 +23,7 @@ public class BTWModSpawnBeds implements IMod, IPlayerBlockListener, IPlayerInsta
 	}
 
 	@Override
-	public void init(Settings settings) {
+	public void init(Settings settings, Settings data) {
 		PlayerAPI.addListener(this);
 	}
 

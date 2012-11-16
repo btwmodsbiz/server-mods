@@ -49,7 +49,7 @@ public class mod_PvPCommand extends CommandBase implements IMod, IPlayerInstance
 	}
 
 	@Override
-	public void init(Settings settings) throws Exception {
+	public void init(Settings settings, Settings data) throws Exception {
 		if (settings.isLong("minpvpminutes")) {
 			minPvpMinutes = settings.getLong("minpvpminutes");
 		}

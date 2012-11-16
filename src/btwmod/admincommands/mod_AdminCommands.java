@@ -42,7 +42,7 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 	}
 
 	@Override
-	public void init(Settings settings) throws Exception {
+	public void init(Settings settings, Settings data) throws Exception {
 		NetworkAPI.addListener(this);
 		registerCommand(new CommandWho(this));
 		//registerCommand(new DumpTrackedCommand());

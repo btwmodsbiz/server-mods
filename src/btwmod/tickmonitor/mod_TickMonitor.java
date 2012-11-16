@@ -69,7 +69,7 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 	}
 
 	@Override
-	public void init(Settings settings) {
+	public void init(Settings settings, Settings data) {
 		lastStatsTime = System.currentTimeMillis();
 		
 		gson = new GsonBuilder()

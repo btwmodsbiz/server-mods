@@ -24,7 +24,7 @@ public class mod_ItemLogger implements IMod {
 	}
 
 	@Override
-	public void init(Settings settings) {
+	public void init(Settings settings, Settings data) {
 		// TODO: remove debug
 		if (logger == null) {
 			logger = net.minecraft.server.MinecraftServer.logger;
