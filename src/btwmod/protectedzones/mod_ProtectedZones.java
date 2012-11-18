@@ -51,6 +51,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		WorldAPI.addListener(this);
 		registerCommand(new CommandZoneAdd(this));
 		registerCommand(new CommandZoneDelete(this));
+		registerCommand(new CommandZoneList(this));
 		
 		this.data = data;
 		
