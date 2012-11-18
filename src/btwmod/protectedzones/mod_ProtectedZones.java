@@ -11,6 +11,7 @@ import java.util.TreeMap;
 
 import net.minecraft.src.Block;
 import net.minecraft.src.Entity;
+import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ICommand;
 import net.minecraft.src.MathHelper;
@@ -120,13 +121,15 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	}
 	
 	protected boolean isProtectedEntity(ACTION action, EntityPlayer player, Entity entity, int x, int y, int z) {
-		List<Area<ZoneSettings>> areas = zones.get(x, y, z);
-		
-		for (Area<ZoneSettings> area : areas) {
-			if (area.data != null) {
-				// TODO: additional checks.
+		if (!(entity instanceof EntityLiving)) {
+			List<Area<ZoneSettings>> areas = zones.get(x, y, z);
+			
+			for (Area<ZoneSettings> area : areas) {
+				if (area.data != null) {
+					// TODO: additional checks.
+				}
+				return true;
 			}
-			return true;
 		}
 		
 		return false;
