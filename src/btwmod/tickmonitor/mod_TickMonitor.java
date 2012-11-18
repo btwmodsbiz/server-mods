@@ -13,12 +13,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.ChunkCoordIntPair;
-import net.minecraft.src.CommandHandler;
+import net.minecraft.src.ICommand;
 
+import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
+import btwmods.PlayerAPI;
 import btwmods.StatsAPI;
 import btwmods.io.Settings;
 import btwmods.measure.Average;
@@ -60,6 +61,8 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 	private Average ticksPerSecond = new Average(10);
 	
 	private Gson gson;
+	
+	private ICommand monitorCommand;
 	
 	public volatile boolean hideChunkCoords = true;
     
@@ -107,16 +110,19 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 			includeHistory = settings.getBoolean("includehistory");
 		}
 		
-		// Add the listener only if isRunning is true by default.
+		PlayerAPI.addListener(this);
+		CommandsAPI.registerCommand(monitorCommand = new MonitorCommand(this), this);
+		
+		// Add the stats listener only if isRunning is true by default.
 		if (isRunning)
 			StatsAPI.addListener(this);
-		
-		((CommandHandler)MinecraftServer.getServer().getCommandManager()).registerCommand(new MonitorCommand(this));
 	}
 
 	@Override
 	public void unload() {
 		StatsAPI.removeListener(this);
+		PlayerAPI.removeListener(this);
+		CommandsAPI.unregisterCommand(monitorCommand);
 	}
 	
 	public void setIsRunning(boolean value) {
