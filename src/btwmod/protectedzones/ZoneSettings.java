@@ -56,7 +56,7 @@ public class ZoneSettings {
 	}
 	
 	public static boolean isValidName(String name) {
-		return name != null && name.matches("^[A-Za-z0-9_\\-]+$");
+		return name != null && name.matches("^[A-Za-z0-9_\\-]{1,25}$");
 	}
 	
 	public Area<ZoneSettings> toArea() {
