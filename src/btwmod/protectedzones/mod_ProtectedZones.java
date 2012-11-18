@@ -53,12 +53,10 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		this.data = data;
 		
-		if (data.isInt("count")) {
-			int zoneCount = data.getInt("count");
-			for (int i = 1; i <= zoneCount; i++) {
-				if (data.hasSection("zone" + i) && !add(new ZoneSettings(data.getSectionAsSettings("zone" + i)))) {
-					ModLoader.outputError(getName() + " failed to load zone " + i + " as it has a duplicate name or has invalid dimensions.");
-				}
+		int zoneCount = data.getInt("count", 0);
+		for (int i = 1; i <= zoneCount; i++) {
+			if (data.hasSection("zone" + i) && !add(new ZoneSettings(data.getSectionAsSettings("zone" + i)), false)) {
+				ModLoader.outputError(getName() + " failed to load zone " + i + " as it has a duplicate name or has invalid dimensions.");
 			}
 		}
 	}

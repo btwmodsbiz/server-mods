@@ -40,15 +40,15 @@ public class ZoneSettings {
 	
 	public ZoneSettings(Settings settings) {
 		name = settings.get("name");
-		isCube = settings.isBoolean("isCube") ? settings.getBoolean("isCube") : false;
+		isCube = settings.getBoolean("isCube", false);
 		
-		x1 = settings.isInt("x1") ? settings.getInt("x1") : 0;
-		z1 = settings.isInt("z1") ? settings.getInt("z1") : 0;
-		x2 = settings.isInt("x2") ? settings.getInt("x2") : x1 - 1; // Hint: -1 marks this value as invalid.
-		z2 = settings.isInt("z2") ? settings.getInt("z2") : z1 - 1;
+		x1 = settings.getInt("x1", 0);
+		z1 = settings.getInt("z1", 0);
+		x2 = settings.getInt("x2", x1 - 1); // Hint: -1 marks this value as invalid.
+		z2 = settings.getInt("z2", z1 - 1);
 		
-		y1 = isCube && settings.isInt("y1") ? settings.getInt("y1") : 0;
-		y2 = isCube && settings.isInt("y2") ? settings.getInt("y2") : y1 - 1;
+		y1 = isCube ? settings.getInt("y1", 0) : 0;
+		y2 = isCube ? settings.getInt("y2", y1 - 1) : y1 - 1;
 	}
 	
 	public boolean isValid() {

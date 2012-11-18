@@ -42,8 +42,10 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 	private static String publicLink = null;
 	private static File htmlFile = null; //new File(new File("."), "stats.html");
 	private static File jsonFile = null; //new File(new File("."), "stats.txt");
-    private static long tooLongWarningTime = 1000;
-    private static long reportingDelay = 1000;
+    private static long tooLongWarningTime = 1000L;
+    private static final long tooLongWarningTimeMin = 250L;
+    private static long reportingDelay = 1000L;
+    private static long reportingDelayMin = 50L;
 	
 	public static boolean includeHistory() {
 		return includeHistory;
@@ -94,21 +96,11 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 		if (settings.hasKey("jsonFile") && !(new File(settings.get("jsonFile")).isDirectory())) {
 			jsonFile = new File(settings.get("jsonFile"));
 		}
-		if (settings.isBoolean("runOnStartup")) {
-			isRunning = settings.getBoolean("runOnStartup");
-		}
-		if (settings.isInt("reportingDelay")) {
-			reportingDelay = Math.max(50, settings.getInt("reportingDelay"));
-		}
-		if (settings.isLong("tooLongWarningTime")) {
-			tooLongWarningTime = Math.min(500L, settings.getLong("tooLongWarningTime"));
-		}
-		if (settings.isBoolean("hideChunkCoords")) {
-			hideChunkCoords = settings.getBoolean("hideChunkCoords");
-		}
-		if (settings.isBoolean("includeHistory")) {
-			includeHistory = settings.getBoolean("includeHistory");
-		}
+		isRunning = settings.getBoolean("runOnStartup", isRunning);
+		reportingDelay = Math.max(reportingDelayMin, settings.getLong("reportingDelay", reportingDelay));
+		tooLongWarningTime = Math.max(tooLongWarningTimeMin, settings.getLong("tooLongWarningTime", tooLongWarningTime));
+		hideChunkCoords = settings.getBoolean("hideChunkCoords", hideChunkCoords);
+		includeHistory = settings.getBoolean("includeHistory", includeHistory);
 		
 		PlayerAPI.addListener(this);
 		CommandsAPI.registerCommand(monitorCommand = new MonitorCommand(this), this);

@@ -49,12 +49,8 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
-		if (settings.isBoolean("plateAlwaysVisible")) {
-			plateAlwaysVisible = settings.getBoolean("plateAlwaysVisible");
-		}
-		if (settings.isBoolean("specialAlwaysVisible")) {
-			specialAlwaysVisible = settings.getBoolean("specialAlwaysVisible");
-		}
+		plateAlwaysVisible = settings.getBoolean("plateAlwaysVisible", plateAlwaysVisible);
+		specialAlwaysVisible = settings.getBoolean("specialAlwaysVisible", specialAlwaysVisible);
 		
 		this.data = data;
 		
@@ -128,10 +124,10 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 			String username = event.getPlayerInstance().username;
 			HideSettings settings = new HideSettings();
 			if (data.hasSection(username)) {
-				settings.helm = data.isBoolean(username, "helm") && data.getBoolean(username, "helm");
-				settings.chest = data.isBoolean(username, "chest") && data.getBoolean(username, "chest");
-				settings.legs = data.isBoolean(username, "legs") && data.getBoolean(username, "legs");
-				settings.boots = data.isBoolean(username, "boots") && data.getBoolean(username, "boots");
+				settings.helm = data.getBoolean(username, "helm", settings.helm);
+				settings.chest = data.getBoolean(username, "chest", settings.chest);
+				settings.legs = data.getBoolean(username, "legs", settings.legs);
+				settings.boots = data.getBoolean(username, "boots", settings.boots);
 			}
 			playerSettings.put(username, settings);
 		}
