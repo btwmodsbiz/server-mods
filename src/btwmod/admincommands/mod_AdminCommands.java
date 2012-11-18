@@ -52,8 +52,8 @@ public class mod_AdminCommands implements IMod, IPacketListener {
 		registerCommand(new CommandMOTD());
 
 		// Load settings
-		if (settings.isLong("secondsforafk")) {
-			secondsForAFK = settings.getLong("secondsforaFK");
+		if (settings.isLong("secondsForAFK")) {
+			secondsForAFK = settings.getLong("secondsForAFK");
 		}
 	}
 

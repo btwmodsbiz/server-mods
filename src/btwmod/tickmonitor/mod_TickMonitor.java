@@ -85,29 +85,29 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 			.create();
 		
 		// Load settings
-		if (settings.hasKey("publiclink") && !(new File(settings.get("publiclink")).isDirectory())) {
-			publicLink = settings.get("publiclink");
+		if (settings.hasKey("publicLink") && !(new File(settings.get("publicLink")).isDirectory())) {
+			publicLink = settings.get("publicLink");
 		}
-		if (settings.hasKey("htmlfile") && !(new File(settings.get("htmlfile")).isDirectory())) {
-			htmlFile = new File(settings.get("htmlfile"));
+		if (settings.hasKey("htmlFile") && !(new File(settings.get("htmlFile")).isDirectory())) {
+			htmlFile = new File(settings.get("htmlFile"));
 		}
-		if (settings.hasKey("jsonfile") && !(new File(settings.get("jsonfile")).isDirectory())) {
-			jsonFile = new File(settings.get("jsonfile"));
+		if (settings.hasKey("jsonFile") && !(new File(settings.get("jsonFile")).isDirectory())) {
+			jsonFile = new File(settings.get("jsonFile"));
 		}
-		if (settings.isBoolean("runonstartup")) {
-			isRunning = settings.getBoolean("runonstartup");
+		if (settings.isBoolean("runOnStartup")) {
+			isRunning = settings.getBoolean("runOnStartup");
 		}
-		if (settings.isInt("reportingdelay")) {
-			reportingDelay = Math.max(50, settings.getInt("reportingdelay"));
+		if (settings.isInt("reportingDelay")) {
+			reportingDelay = Math.max(50, settings.getInt("reportingDelay"));
 		}
-		if (settings.isLong("toolongwarningtime")) {
-			tooLongWarningTime = Math.min(500L, settings.getLong("toolongwarningtime"));
+		if (settings.isLong("tooLongWarningTime")) {
+			tooLongWarningTime = Math.min(500L, settings.getLong("tooLongWarningTime"));
 		}
-		if (settings.isBoolean("hidechunkcoords")) {
-			hideChunkCoords = settings.getBoolean("hidechunkcoords");
+		if (settings.isBoolean("hideChunkCoords")) {
+			hideChunkCoords = settings.getBoolean("hideChunkCoords");
 		}
-		if (settings.isBoolean("includehistory")) {
-			includeHistory = settings.getBoolean("includehistory");
+		if (settings.isBoolean("includeHistory")) {
+			includeHistory = settings.getBoolean("includeHistory");
 		}
 		
 		PlayerAPI.addListener(this);

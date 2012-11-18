@@ -50,11 +50,11 @@ public class mod_PvPCommand extends CommandBase implements IMod, IPlayerInstance
 
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
-		if (settings.isLong("minpvpminutes")) {
-			minPvpMinutes = settings.getLong("minpvpminutes");
+		if (settings.isLong("minPvpMinutes")) {
+			minPvpMinutes = settings.getLong("minPvpMinutes");
 		}
-		if (settings.isLong("maxpvpminutes")) {
-			maxPvpMinutes = settings.getLong("maxpvpminutes");
+		if (settings.isLong("maxPvpMinutes")) {
+			maxPvpMinutes = settings.getLong("maxPvpMinutes");
 		}
 		
 		server = MinecraftServer.getServer();

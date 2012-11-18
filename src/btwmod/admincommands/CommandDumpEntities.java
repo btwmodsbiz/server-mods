@@ -51,8 +51,8 @@ public class CommandDumpEntities extends CommandBase {
 	
 	public CommandDumpEntities(Settings settings) {
 		// Load settings
-		if (settings.hasKey("entitydumpfile")) {
-			dumpFile = new File(settings.get("entitydumpfile"));
+		if (settings.hasKey("entityDumpFile")) {
+			dumpFile = new File(settings.get("entityDumpFile"));
 		}
 	}
 

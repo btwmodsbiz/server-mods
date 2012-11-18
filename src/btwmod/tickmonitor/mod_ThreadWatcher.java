@@ -25,8 +25,8 @@ public class mod_ThreadWatcher implements IMod, IStatsListener {
 	public void init(Settings settings, Settings data) {
 		modLoaderThread = ModLoader.getInitThread();
 		
-		if (settings.isLong("secondsuntilwarning")) {
-			secondsUntilWarning = Math.max(1L, settings.getLong("secondsuntilwarning"));
+		if (settings.isLong("secondsUntilWarning")) {
+			secondsUntilWarning = Math.max(1L, settings.getLong("secondsUntilWarning"));
 		}
 		
 		StatsAPI.addListener(this);
