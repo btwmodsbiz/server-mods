@@ -87,11 +87,18 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	}
 	
 	public boolean add(ZoneSettings zoneSettings) {
+		return add(zoneSettings, true);
+	}
+	
+	private boolean add(ZoneSettings zoneSettings, boolean doSave) {
 		if (zoneSettings != null && zoneSettings.isValid() && !areasByName.containsKey(zoneSettings.name.toLowerCase())) {
 			Area<ZoneSettings> area = zoneSettings.toArea();
 			areasByName.put(zoneSettings.name.toLowerCase(), area);
 			zones.add(area);
-			saveAreas();
+			
+			if (doSave)
+				saveAreas();
+			
 			return true;
 		}
 		return false;
