@@ -22,7 +22,7 @@ public class MonitorCommand extends CommandBase {
 	
 	public String getCommandUsage(ICommandSender sender)
     {
-        return "/" + getCommandName() + " [<on|off|status|hidecoords|showcoords>]";
+        return "/" + getCommandName() + " [(on | off | status | hidecoords | showcoords)]";
     }
 
 	@Override

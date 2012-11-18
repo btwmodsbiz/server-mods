@@ -140,7 +140,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/" + getCommandName() + " <status|hide|show> [<helm|chest|legs|boots> ...]";
+		return "/" + getCommandName() + " (status | hide | show) [(helm | chest | legs | boots) ...]";
 	}
 
 	@Override

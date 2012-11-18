@@ -14,7 +14,7 @@ public class CommandReliableUpdates extends CommandBase {
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/" + getCommandName() + " [<on|off>]";
+		return "/" + getCommandName() + " (on | off)";
 	}
 
 	@Override
