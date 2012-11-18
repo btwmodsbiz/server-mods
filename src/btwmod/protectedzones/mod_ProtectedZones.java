@@ -9,10 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.Block;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.EntityVillager;
 import net.minecraft.src.ICommand;
 import net.minecraft.src.MathHelper;
 import btwmods.CommandsAPI;
@@ -28,17 +30,23 @@ import btwmods.player.IPlayerBlockListener;
 import btwmods.util.Area;
 import btwmods.util.Zones;
 import btwmods.world.BlockEvent;
+import btwmods.world.EntityEvent;
 import btwmods.world.IBlockListener;
+import btwmods.world.IEntityListener;
 
-public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener {
+public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener, IEntityListener {
 	
-	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, USE_ENTITY };
+	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY };
 	private Map<String, Area<ZoneSettings>> areasByName = new TreeMap<String, Area<ZoneSettings>>();
 	private Zones<ZoneSettings> zones = new Zones<ZoneSettings>();
 	
 	private Set<ICommand> commands = new LinkedHashSet<ICommand>();
 	
 	private Settings data;
+	
+	private Set ops;
+	
+	private boolean alwaysAllowOps = true;
 
 	@Override
 	public String getName() {
@@ -52,6 +60,13 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		registerCommand(new CommandZoneAdd(this));
 		registerCommand(new CommandZoneDelete(this));
 		registerCommand(new CommandZoneList(this));
+		registerCommand(new CommandZoneSet(this));
+		registerCommand(new CommandZonePlayer(this));
+		registerCommand(new CommandZoneInfo(this));
+		
+		alwaysAllowOps = settings.getBoolean("alwaysAllowOps", alwaysAllowOps);
+		
+		ops = MinecraftServer.getServer().getConfigurationManager().getOps();
 		
 		this.data = data;
 		
@@ -128,13 +143,40 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return names;
 	}
 	
-	protected boolean isProtectedEntity(ACTION action, EntityPlayer player, Entity entity, int x, int y, int z) {
-		if (!(entity instanceof EntityLiving)) {
+	public static boolean isProtectedEntityType(ACTION action, Entity entity) {
+		if (entity instanceof EntityLiving) {
+			
+			if (entity instanceof EntityVillager && action != ACTION.USE_ENTITY)
+				return true;
+			
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public boolean isPlayerGloballyAllowed(String username) {
+		return alwaysAllowOps && ops.contains(username.trim().toLowerCase());
+	}
+	
+	protected boolean isPlayerZoneAllowed(String username, ZoneSettings settings) {
+		if (settings.allowOps && ops.contains(username.trim().toLowerCase()))
+			return true;
+		
+		if (settings.isPlayerAllowed(username))
+			return true;
+		
+		return false;
+	}
+	
+	public boolean isProtectedEntity(ACTION action, EntityPlayer player, Entity entity, int x, int y, int z) {
+		if (isProtectedEntityType(action, entity) && (player == null || !isPlayerGloballyAllowed(player.username))) {
 			List<Area<ZoneSettings>> areas = zones.get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
 				if (area.data != null) {
-					// TODO: additional checks.
+					if (player != null && isPlayerZoneAllowed(player.username, area.data))
+						return false;
 				}
 				return true;
 			}
@@ -143,20 +185,26 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return false;
 	}
 	
-	protected boolean isProtectedBlock(ACTION action, EntityPlayer player, Block block, int x, int y, int z) {
-		List<Area<ZoneSettings>> areas = zones.get(x, y, z);
-		
-		for (Area<ZoneSettings> area : areas) {
-			if (area.data != null) {
-				// TODO: additional checks.
+	public boolean isProtectedBlock(ACTION action, EntityPlayer player, Block block, int x, int y, int z) {
+		if (player == null || !isPlayerGloballyAllowed(player.username)) {
+			List<Area<ZoneSettings>> areas = zones.get(x, y, z);
+			
+			for (Area<ZoneSettings> area : areas) {
+				if (area.data != null) {
+					if (player != null && isPlayerZoneAllowed(player.username, area.data))
+						return false;
+					
+					if (action == ACTION.ACTIVATE && area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor))
+						return false;
+				}
+				return true;
 			}
-			return true;
 		}
 		
 		return false;
 	}
 	
-	protected boolean isProtectedBlock(ACTION action, EntityPlayer player, Block block, int x, int y, int z, int direction) {
+	public boolean isProtectedBlock(ACTION action, EntityPlayer player, Block block, int x, int y, int z, int direction) {
 		
 		switch (direction) {
 			case 0:
@@ -225,13 +273,22 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	@Override
 	public void onPlayerAction(PlayerActionEvent event) {
 		if (event.getType() == PlayerActionEvent.TYPE.PLAYER_USE_ENTITY_ATTEMPT) {
-			if (isProtectedEntity(ACTION.USE_ENTITY, event.getPlayer(), event.getEntity(), MathHelper.floor_double(event.getEntity().posX), MathHelper.floor_double(event.getEntity().posY), MathHelper.floor_double(event.getEntity().posZ))) {
+			if (isProtectedEntity(event.isLeftClick() ? ACTION.ATTACK_ENTITY : ACTION.USE_ENTITY, event.getPlayer(), event.getEntity(), MathHelper.floor_double(event.getEntity().posX), MathHelper.floor_double(event.getEntity().posY), MathHelper.floor_double(event.getEntity().posZ))) {
+				event.markNotAllowed();
+			}
+		}
+	}
+
+	@Override
+	public void onEntityAction(EntityEvent event) {
+		if (event.getType() == EntityEvent.TYPE.EXPLODE_ATTEMPT) {
+			if (isProtectedEntity(ACTION.EXPLODE, null, event.getEntity(), MathHelper.floor_double(event.getEntity().posX), MathHelper.floor_double(event.getEntity().posY), MathHelper.floor_double(event.getEntity().posZ))) {
 				event.markNotAllowed();
 			}
 		}
 	}
 	
-	private void saveAreas() {
+	public void saveAreas() {
 		data.clear();
 		
 		int size = areasByName.size(), i = 1;

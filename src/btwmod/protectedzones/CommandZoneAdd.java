@@ -52,6 +52,6 @@ public class CommandZoneAdd extends CommandBase {
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/" + getCommandName() + " <name> <x1> [<y1>] <z1> <x2> [<y2>] <z2>";
+		return "/" + getCommandName() + " <zonename> <x1> [<y1>] <z1> <x2> [<y2>] <z2>";
 	}
 }

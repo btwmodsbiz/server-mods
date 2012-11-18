@@ -1,7 +1,8 @@
 package btwmod.protectedzones;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import btwmods.Util;
 
 import net.minecraft.src.CommandBase;
 import net.minecraft.src.ICommandSender;
@@ -18,7 +19,7 @@ public class CommandZoneList extends CommandBase {
 
 	@Override
 	public String getCommandUsage(ICommandSender par1iCommandSender) {
-		return "/" + getCommandName() + " [page]";
+		return "/" + getCommandName() + " [<page>]";
 	}
 
 	@Override
@@ -36,23 +37,7 @@ public class CommandZoneList extends CommandBase {
 		int page = args.length == 1 ? parseIntWithMin(sender, args[0], 1) : 1;
 		int maxListSize = Packet3Chat.maxChatLength - Math.max(headerShort.length(), headerLong.length());
 		
-		List<String> names = mod.getZoneNames();
-		ArrayList<String> pages = new ArrayList<String>();
-		StringBuilder sb = new StringBuilder();
-		
-		for (String name : names) {
-			
-			if (sb.length() + name.length() + (sb.length() > 0 ? 2 : 0) > maxListSize) {
-				pages.add(sb.toString());
-				sb.setLength(0);
-			}
-			
-			if (sb.length() > 0) sb.append(", ");
-			sb.append(name);
-		}
-		
-		if (sb.length() > 0)
-			pages.add(sb.toString());
+		List<String> pages = Util.combineIntoMaxLengthMessages(mod.getZoneNames(), maxListSize, ", ", false);
 		
 		page = Math.min(page, pages.size());
 		
