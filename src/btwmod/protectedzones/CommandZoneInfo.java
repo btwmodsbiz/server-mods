@@ -37,9 +37,9 @@ public class CommandZoneInfo extends CommandBase {
 				sender.sendChatToPlayer("§c=== Zone " + area.data.name + " ===");
 				
 				if (area.data.isCube)
-					sender.sendChatToPlayer("§b<Cube>§f " + area.data.x1 + "/" + area.data.y1 + "/" + area.data.z1 + " to " + area.data.x2 + "/" + area.data.y2 + "/" + area.data.z2);
+					sender.sendChatToPlayer("§b<Cube>§f " + area.data.x1 + "," + area.data.y1 + "," + area.data.z1 + " to " + area.data.x2 + "," + area.data.y2 + "," + area.data.z2 + " in " + Util.getWorldNameFromDimension(area.data.dimension));
 				else
-					sender.sendChatToPlayer("§b<Area>§f " + area.data.x1 + "/" + area.data.z1 + " to " + area.data.x2 + "/" + area.data.z2);
+					sender.sendChatToPlayer("§b<Area>§f " + area.data.x1 + "," + area.data.z1 + " to " + area.data.x2 + "," + area.data.z2 + " in " + Util.getWorldNameFromDimension(area.data.dimension));
 				
 				String settingsHeader = "§b<Settings>§f ";
 				String playersHeader = "§b<Players>§f ";
@@ -59,7 +59,7 @@ public class CommandZoneInfo extends CommandBase {
 				if (playerMessages.size() == 1 && (playersHeader.length() + playerMessages.get(0).length()) <= Packet3Chat.maxChatLength) {
 					sender.sendChatToPlayer(playersHeader + playerMessages.get(0));
 				}
-				else {
+				else if (playerMessages.size() > 1) {
 					sender.sendChatToPlayer(playersHeader);
 					for (String message : playerMessages) {
 						sender.sendChatToPlayer(message);

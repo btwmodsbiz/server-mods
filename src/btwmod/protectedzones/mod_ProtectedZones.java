@@ -17,10 +17,12 @@ import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityVillager;
 import net.minecraft.src.ICommand;
 import net.minecraft.src.MathHelper;
+import net.minecraft.src.World;
 import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.PlayerAPI;
+import btwmods.Util;
 import btwmods.WorldAPI;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerActionListener;
@@ -28,7 +30,6 @@ import btwmods.player.PlayerActionEvent;
 import btwmods.player.PlayerBlockEvent;
 import btwmods.player.IPlayerBlockListener;
 import btwmods.util.Area;
-import btwmods.util.Zones;
 import btwmods.world.BlockEvent;
 import btwmods.world.EntityEvent;
 import btwmods.world.IBlockListener;
@@ -38,7 +39,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	
 	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY };
 	private Map<String, Area<ZoneSettings>> areasByName = new TreeMap<String, Area<ZoneSettings>>();
-	private Zones<ZoneSettings> zones = new Zones<ZoneSettings>();
+	private ProtectedZones[] zones;
 	
 	private Set<ICommand> commands = new LinkedHashSet<ICommand>();
 	
@@ -55,6 +56,8 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
+		MinecraftServer server = MinecraftServer.getServer();
+		
 		PlayerAPI.addListener(this);
 		WorldAPI.addListener(this);
 		registerCommand(new CommandZoneAdd(this));
@@ -66,9 +69,14 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		alwaysAllowOps = settings.getBoolean("alwaysAllowOps", alwaysAllowOps);
 		
-		ops = MinecraftServer.getServer().getConfigurationManager().getOps();
+		ops = server.getConfigurationManager().getOps();
 		
 		this.data = data;
+		
+		zones = new ProtectedZones[server.worldServers.length];
+		for (int i = 0; i < server.worldServers.length; i++) {
+			zones[i] = new ProtectedZones();
+		}
 		
 		int zoneCount = data.getInt("count", 0);
 		for (int i = 1; i <= zoneCount; i++) {
@@ -109,7 +117,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		if (zoneSettings != null && zoneSettings.isValid() && !areasByName.containsKey(zoneSettings.name.toLowerCase())) {
 			Area<ZoneSettings> area = zoneSettings.toArea();
 			areasByName.put(zoneSettings.name.toLowerCase(), area);
-			zones.add(area);
+			zones[Util.getWorldIndexFromDimension(zoneSettings.dimension)].add(area);
 			
 			if (doSave)
 				saveAreas();
@@ -124,7 +132,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			Area<ZoneSettings> area = areasByName.get(name.toLowerCase());
 			if (area != null) {
 				areasByName.remove(name.toLowerCase());
-				zones.remove(area);
+				zones[Util.getWorldIndexFromDimension(area.data.dimension)].remove(area);
 				saveAreas();
 				return true;
 			}
@@ -171,7 +179,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	
 	public boolean isProtectedEntity(ACTION action, EntityPlayer player, Entity entity, int x, int y, int z) {
 		if (isProtectedEntityType(action, entity) && (player == null || !isPlayerGloballyAllowed(player.username))) {
-			List<Area<ZoneSettings>> areas = zones.get(x, y, z);
+			List<Area<ZoneSettings>> areas = zones[Util.getWorldIndexFromDimension(entity.worldObj.provider.dimensionId)].get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
 				if (area.data != null) {
@@ -185,11 +193,12 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return false;
 	}
 	
-	public boolean isProtectedBlock(ACTION action, EntityPlayer player, Block block, int x, int y, int z) {
+	public boolean isProtectedBlock(ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z) {
 		if (player == null || !isPlayerGloballyAllowed(player.username)) {
-			List<Area<ZoneSettings>> areas = zones.get(x, y, z);
+			List<Area<ZoneSettings>> areas = zones[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
+				//player.sendChatToPlayer("Checking against area: " + area.data.name);
 				if (area.data != null) {
 					if (player != null && isPlayerZoneAllowed(player.username, area.data))
 						return false;
@@ -204,7 +213,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return false;
 	}
 	
-	public boolean isProtectedBlock(ACTION action, EntityPlayer player, Block block, int x, int y, int z, int direction) {
+	public boolean isProtectedBlock(ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z, int direction) {
 		
 		switch (direction) {
 			case 0:
@@ -226,7 +235,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				break;
 		}
 		
-		return isProtectedBlock(action, player, block, x, y, z);
+		return isProtectedBlock(action, player, block, world, x, y, z);
 	}
 
 	@Override
@@ -239,20 +248,25 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				break;
 			case ACTIVATION_ATTEMPT:
 				action = ACTION.ACTIVATE;
+				//event.getPlayer().sendChatToPlayer("Activate attempt " + event.getBlock().getBlockName() + " on D" + event.getDirection() + " of " + event.getX() + "/" + event.getY() + "/" + event.getZ());
 				break;
 			case REMOVE_ATTEMPT:
 				action = ACTION.DIG;
+				//event.getPlayer().sendChatToPlayer("Remove attempt " + (event.getBlock() == null ? null : event.getBlock().getBlockName()) + " at " + event.getX() + "/" + event.getY() + "/" + event.getZ());
 				break;
 			case PLACE_ATTEMPT:
 				action = ACTION.PLACE;
 				checkDirectionAdjusted = true;
+				//event.getPlayer().sendChatToPlayer("Place attempt " + event.getItemStack().getItemName() + " on D" + event.getDirection() + " of " + event.getX() + "/" + event.getY() + "/" + event.getZ());
 				break;
 		}
 		
 		if (action != null && (
-				isProtectedBlock(action, event.getPlayer(), event.getBlock(), event.getX(), event.getY(), event.getZ())
-				|| (checkDirectionAdjusted && isProtectedBlock(action, event.getPlayer(), event.getBlock(), event.getX(), event.getY(), event.getZ(), event.getDirection()))
+				isProtectedBlock(action, event.getPlayer(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())
+				|| (checkDirectionAdjusted && isProtectedBlock(action, event.getPlayer(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getDirection()))
 			)) {
+			
+			//event.getPlayer().sendChatToPlayer("Not allowed!");
 			
 			if (event.getType() == PlayerBlockEvent.TYPE.ACTIVATION_ATTEMPT)
 				event.markHandled();
@@ -264,7 +278,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	@Override
 	public void onBlockAction(BlockEvent event) {
 		if (event.getType() == BlockEvent.TYPE.EXPLODE_ATTEMPT) {
-			if (isProtectedBlock(ACTION.EXPLODE, null, event.getBlock(), event.getX(), event.getY(), event.getZ())) {
+			if (isProtectedBlock(ACTION.EXPLODE, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
 				event.markNotAllowed();
 			}
 		}

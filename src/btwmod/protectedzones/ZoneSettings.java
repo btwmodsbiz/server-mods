@@ -25,6 +25,7 @@ public class ZoneSettings {
 	
 	public final boolean isCube;
 	
+	public final int dimension;
 	public final int x1;
 	public final int y1;
 	public final int z1;
@@ -32,7 +33,7 @@ public class ZoneSettings {
 	public final int y2;
 	public final int z2;
 	
-	public ZoneSettings(String name, int x1, int z1, int x2, int z2) {
+	public ZoneSettings(String name, int dimension, int x1, int z1, int x2, int z2) {
 		this.name = name;
 		isCube = false;
 		this.x1 = x1;
@@ -41,9 +42,10 @@ public class ZoneSettings {
 		this.x2 = x2;
 		this.y2 = 0;
 		this.z2 = z2;
+		this.dimension = dimension;
 	}
 	
-	public ZoneSettings(String name, int x1, int y1, int z1, int x2, int y2, int z2) {
+	public ZoneSettings(String name, int dimension, int x1, int y1, int z1, int x2, int y2, int z2) {
 		this.name = name;
 		isCube = true;
 		this.x1 = x1;
@@ -52,11 +54,14 @@ public class ZoneSettings {
 		this.x2 = x2;
 		this.y2 = y2;
 		this.z2 = z2;
+		this.dimension = dimension;
 	}
 	
 	public ZoneSettings(Settings settings) {
 		name = settings.get("name");
 		isCube = settings.getBoolean("isCube", false);
+		
+		dimension = settings.getInt("dimension", 0);
 		
 		x1 = settings.getInt("x1", 0);
 		z1 = settings.getInt("z1", 0);
@@ -158,6 +163,8 @@ public class ZoneSettings {
 	
 	public void saveToSettings(Settings settings, String section) {
 		settings.set(section, "name", name);
+		
+		settings.setInt("dimension", dimension);
 		
 		settings.setInt(section, "x1", x1);
 		settings.setInt(section, "z1", z1);
