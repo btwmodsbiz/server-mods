@@ -1,0 +1,14 @@
+Version 4.37b.0 (vMC 1.4.5 BTW 4.37b)
+
+  - Added Protected Zones command to list zones.
+
+  - Changed mods to use Settings' new getXXX methods.
+  
+  - Changed ZoneSettings' isValidName to fail if the name is over 25 chars.
+  
+  - Changed Protected Zones to allow living entities to be interacted with.
+  
+  - Changed command usage syntax to be the same between mods.
+  
+  - Fixed bug in Protected Zones where the data file was always being
+    cropped to a single zone when loaded.
