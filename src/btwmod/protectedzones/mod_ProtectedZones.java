@@ -21,6 +21,7 @@ import net.minecraft.src.ICommand;
 import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.MathHelper;
+import net.minecraft.src.ServerCommandManager;
 import net.minecraft.src.World;
 import btwmods.CommandsAPI;
 import btwmods.IMod;
@@ -46,6 +47,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	private ProtectedZones[] zones;
 	
 	private MinecraftServer server;
+	private ServerCommandManager commandManager;
 	
 	private Set<ICommand> commands = new LinkedHashSet<ICommand>();
 	
@@ -63,6 +65,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
 		server = MinecraftServer.getServer();
+		commandManager = (ServerCommandManager)server.getCommandManager();
 		
 		PlayerAPI.addListener(this);
 		WorldAPI.addListener(this);
@@ -204,6 +207,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 							return true;
 					}
 					
+					if (area.data.sendDebugMessages)
+						commandManager.notifyAdmins(server, 0, "Protect " + entity.getEntityName() + " " + action + " " + x + "," + y + "," + z + (player == null ? "" : " by " + player.username), new Object[0]);
+					
 					return true;
 				}
 			}
@@ -225,6 +231,19 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 					if (action == ACTION.ACTIVATE) {
 						if (area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor))
 							return false;
+					}
+					
+					if (area.data.sendDebugMessages) {
+						String message = "Protect" 
+								+ " " + action
+								+ (block == null ? "" : " " + block.getBlockName())
+								+ (itemStack == null ? "" : " " + itemStack.getItemName())
+								+ " " + x + "," + y + "," + z;
+						
+						if (player == null)
+							commandManager.notifyAdmins(server, 0, message + (player == null ? "" : " by " + player.username), new Object[0]);
+						else
+							player.sendChatToPlayer(message);
 					}
 					
 					return true;
@@ -270,16 +289,13 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				break;
 			case ACTIVATION_ATTEMPT:
 				action = ACTION.ACTIVATE;
-				//event.getPlayer().sendChatToPlayer("Activate attempt " + event.getBlock().getBlockName() + " on D" + event.getDirection() + " of " + event.getX() + "/" + event.getY() + "/" + event.getZ());
 				break;
 			case REMOVE_ATTEMPT:
 				action = ACTION.DIG;
-				//event.getPlayer().sendChatToPlayer("Remove attempt " + (event.getBlock() == null ? null : event.getBlock().getBlockName()) + " at " + event.getX() + "/" + event.getY() + "/" + event.getZ());
 				break;
 			case PLACE_ATTEMPT:
 				action = ACTION.PLACE;
 				checkDirectionAdjusted = true;
-				//event.getPlayer().sendChatToPlayer("Place attempt " + event.getItemStack().getItemName() + " on D" + event.getDirection() + " of " + event.getX() + "/" + event.getY() + "/" + event.getZ());
 				break;
 			case CHECK_PLAYEREDIT:
 				action = ACTION.CHECK_PLAYER_EDIT;
@@ -291,8 +307,6 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				isProtectedBlock(action, event.getPlayer(), event.getItemStack(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())
 				|| (checkDirectionAdjusted && isProtectedBlock(action, event.getPlayer(), event.getItemStack(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getDirection()))
 			)) {
-			
-			//event.getPlayer().sendChatToPlayer("Not allowed!");
 			
 			if (event.getType() == PlayerBlockEvent.TYPE.ACTIVATION_ATTEMPT)
 				event.markHandled();

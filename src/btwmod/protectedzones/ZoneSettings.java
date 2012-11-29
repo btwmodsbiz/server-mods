@@ -20,6 +20,8 @@ public class ZoneSettings {
 	public boolean allowDevices = false;
 	public boolean allowContainers = false;
 	public boolean allowMooshroom = false;
+	public boolean sendDebugMessages = false;
+	
 	private Set<String> allowedPlayers = new HashSet<String>();
 	
 	public static final String[] settings = { "protectBlocks", "protectEntities", "allowOps", "allowDoors", "allowDevices", "allowContainers", "allowMooshroom" };
@@ -107,6 +109,9 @@ public class ZoneSettings {
 		}
 		else if (name.equalsIgnoreCase("allowMooshroom") && Settings.isBooleanValue(value)) {
 			allowMooshroom = Settings.getBooleanValue(value, allowMooshroom);
+		}
+		else if (name.equalsIgnoreCase("debug") && Settings.isBooleanValue(value)) {
+			sendDebugMessages = Settings.getBooleanValue(value, sendDebugMessages);
 		}
 		else {
 			return false;
