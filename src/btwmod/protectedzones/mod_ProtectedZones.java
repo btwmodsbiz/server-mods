@@ -11,12 +11,15 @@ import java.util.TreeMap;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.Block;
+import net.minecraft.src.BlockWorkbench;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityHanging;
 import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityMooshroom;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityVillager;
+import net.minecraft.src.FCBlockAnvil;
+import net.minecraft.src.FCEntityCanvas;
 import net.minecraft.src.ICommand;
 import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
@@ -160,6 +163,16 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return names;
 	}
 	
+	public static boolean isProtectedBlockType(@SuppressWarnings("unused") ACTION action, Block block) {
+		if (block instanceof BlockWorkbench)
+			return false;
+		
+		if (block instanceof FCBlockAnvil)
+			return false;
+		
+		return true;
+	}
+	
 	public static boolean isProtectedEntityType(ACTION action, Entity entity) {
 		if (entity instanceof EntityLiving) {
 			
@@ -229,7 +242,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	}
 	
 	public boolean isProtectedBlock(ACTION action, EntityPlayer player, ItemStack itemStack, Block block, World world, int x, int y, int z) {
-		if (player == null || !isPlayerGloballyAllowed(player.username)) {
+		if (isProtectedBlockType(action, block) && (player == null || !isPlayerGloballyAllowed(player.username))) {
 			List<Area<ZoneSettings>> areas = zones[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
