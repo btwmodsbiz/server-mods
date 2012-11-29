@@ -58,6 +58,9 @@ public class CommandZoneSet extends CommandBase {
 		else if (args.length == 2) {
 			return getListOfStringsMatchingLastWord(args, ZoneSettings.settings);
 		}
+		else if (args.length == 3) {
+			return getListOfStringsMatchingLastWord(args, new String[] { "on", "off" });
+		}
 		
 		return super.addTabCompletionOptions(sender, args);
 	}
