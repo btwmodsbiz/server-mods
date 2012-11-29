@@ -1,3 +1,26 @@
+Version 4.37b.1 (vMC 1.4.5 BTW 4.37b)
+
+  - Added Protected Zone setting for shearing Mooshrooms.
+  
+  - Added handling for onPlayerBlockAction's CHECK_PLAYER_EDIT
+    and onEntityAction's IS_ENTITY_INVULNERABLE.
+    
+  - Added debug messages setting to Protected Zones.
+  
+  - Added command completion to CommandZoneSet's 4th argument.
+ 
+  - Changed various allowXXX ZoneSettings to false by default.
+
+  - Changed Protected Zones to no longer protect EntityItem.
+  
+  - Removed the now unnecessary onEntityAction EXPLODE_ATTEMPT handling.
+
+  - Fixed missing dimension settings from Protected Zones.
+  
+  - Fixed NullPointerException in CommandClearEntities.
+  
+  - Fixed logic issues and missing config checks in Protected Zones.
+
 Version 4.37b.0 (vMC 1.4.5 BTW 4.37b)
 
   - Added Protected Zones command to list zones.
