@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.Block;
 import net.minecraft.src.Entity;
-import net.minecraft.src.EntityItem;
+import net.minecraft.src.EntityHanging;
 import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityMooshroom;
 import net.minecraft.src.EntityPlayer;
@@ -166,16 +166,17 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			if (entity instanceof EntityVillager && action != ACTION.USE_ENTITY)
 				return true;
 			
-			if (entity instanceof EntityMooshroom && action != ACTION.USE_ENTITY)
+			if (entity instanceof EntityMooshroom)
 				return true;
-			
-			return false;
 		}
-		else if (entity instanceof EntityItem) {
-			return false;
+		else if (entity instanceof EntityHanging) {
+			return true;
+		}
+		else if (entity instanceof FCEntityCanvas) {
+			return true;
 		}
 		
-		return true;
+		return false;
 	}
 	
 	public boolean isPlayerGloballyAllowed(String username) {
@@ -198,13 +199,19 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			
 			for (Area<ZoneSettings> area : areas) {
 				if (area.data != null && area.data.protectEntities) {
-					if (player != null) {
-						if (isPlayerZoneAllowed(player.username, area.data))
+					if (player != null && isPlayerZoneAllowed(player.username, area.data))
+						return false;
+					
+					if (entity instanceof EntityMooshroom) {
+						if (area.data.allowMooshroom)
 							return false;
 						
-						Item heldItem = null;
-						if (action == ACTION.USE_ENTITY && entity instanceof EntityMooshroom && area.data.allowMooshroom && (heldItem = player.getHeldItem().getItem()) != null && heldItem == Item.shears)
-							return true;
+						if (player != null && action == ACTION.USE_ENTITY) {
+							ItemStack heldItem = player.getHeldItem();
+							if (heldItem != null && heldItem.getItem() == Item.bowlEmpty) {
+								return false;
+							}
+						}
 					}
 					
 					if (area.data.sendDebugMessages)
