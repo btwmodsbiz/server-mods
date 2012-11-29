@@ -14,9 +14,12 @@ import net.minecraft.src.Block;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityItem;
 import net.minecraft.src.EntityLiving;
+import net.minecraft.src.EntityMooshroom;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityVillager;
 import net.minecraft.src.ICommand;
+import net.minecraft.src.Item;
+import net.minecraft.src.ItemStack;
 import net.minecraft.src.MathHelper;
 import net.minecraft.src.World;
 import btwmods.CommandsAPI;
@@ -158,6 +161,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			if (entity instanceof EntityVillager && action != ACTION.USE_ENTITY)
 				return true;
 			
+			if (entity instanceof EntityMooshroom && action != ACTION.USE_ENTITY)
+				return true;
+			
 			return false;
 		}
 		else if (entity instanceof EntityItem) {
@@ -187,8 +193,14 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			
 			for (Area<ZoneSettings> area : areas) {
 				if (area.data != null && area.data.protectEntities) {
-					if (player != null && isPlayerZoneAllowed(player.username, area.data))
-						return false;
+					if (player != null) {
+						if (isPlayerZoneAllowed(player.username, area.data))
+							return false;
+						
+						Item heldItem = null;
+						if (action == ACTION.USE_ENTITY && entity instanceof EntityMooshroom && area.data.allowMooshroom && (heldItem = player.getHeldItem().getItem()) != null && heldItem == Item.shears)
+							return true;
+					}
 					
 					return true;
 				}
