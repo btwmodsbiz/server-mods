@@ -11,6 +11,7 @@ import java.util.TreeMap;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.Block;
+import net.minecraft.src.BlockContainer;
 import net.minecraft.src.BlockWorkbench;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityHanging;
@@ -253,6 +254,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 					
 					if (action == ACTION.ACTIVATE) {
 						if (area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor))
+							return false;
+						
+						if (area.data.allowContainers && block instanceof BlockContainer)
 							return false;
 					}
 					
