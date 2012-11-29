@@ -220,6 +220,9 @@ public class ZoneSettings {
 		list.add("allowContainers(" + (allowContainers ? "on" : "off") + ")");
 		list.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
 		
+		if (sendDebugMessages)
+			list.add("debug(on)");
+		
 		return list;
 	}
 
