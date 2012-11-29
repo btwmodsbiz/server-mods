@@ -17,9 +17,9 @@ public class ZoneSettings {
 	public boolean protectEntities = false;
 	public boolean allowOps = false;
 	public boolean allowDoors = true;
-	public boolean allowDevices = true;
-	public boolean allowContainers = true;
-	public boolean allowMooshroom = true;
+	public boolean allowDevices = false;
+	public boolean allowContainers = false;
+	public boolean allowMooshroom = false;
 	private Set<String> allowedPlayers = new HashSet<String>();
 	
 	public static final String[] settings = { "protectBlocks", "protectEntities", "allowOps", "allowDoors", "allowDevices", "allowContainers", "allowMooshroom" };
