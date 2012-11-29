@@ -20,11 +20,21 @@ public class ZoneSettings {
 	public boolean allowDevices = false;
 	public boolean allowContainers = false;
 	public boolean allowMooshroom = false;
+	public boolean allowVillagers = false;
 	public boolean sendDebugMessages = false;
 	
 	private Set<String> allowedPlayers = new HashSet<String>();
 	
-	public static final String[] settings = { "protectBlocks", "protectEntities", "allowOps", "allowDoors", "allowDevices", "allowContainers", "allowMooshroom" };
+	public static final String[] settings = {
+		"protectBlocks",
+		"protectEntities",
+		"allowContainers",
+		"allowDevices",
+		"allowDoors",
+		"allowMooshroom",
+		"allowOps",
+		"allowVillagers"
+	};
 	
 	public final boolean isCube;
 	
@@ -81,6 +91,7 @@ public class ZoneSettings {
 		allowDevices = settings.getBoolean("allowDevices", allowDevices);
 		allowContainers = settings.getBoolean("allowContainers", allowContainers);
 		allowMooshroom = settings.getBoolean("allowMooshroom", allowMooshroom);
+		allowVillagers = settings.getBoolean("allowVillagers", allowVillagers);
 		
 		String players = settings.get("allowedPlayers");
 		if (players != null) {
@@ -110,6 +121,9 @@ public class ZoneSettings {
 		else if (name.equalsIgnoreCase("allowMooshroom") && Settings.isBooleanValue(value)) {
 			allowMooshroom = Settings.getBooleanValue(value, allowMooshroom);
 		}
+		else if (name.equalsIgnoreCase("allowVillagers") && Settings.isBooleanValue(value)) {
+			allowVillagers = Settings.getBooleanValue(value, allowVillagers);
+		}
 		else if (name.equalsIgnoreCase("debug") && Settings.isBooleanValue(value)) {
 			sendDebugMessages = Settings.getBooleanValue(value, sendDebugMessages);
 		}
@@ -132,6 +146,7 @@ public class ZoneSettings {
 		strings.add("allowDevices(" + (allowDevices ? "on" : "off") + ")");
 		strings.add("allowContainers(" + (allowContainers ? "on" : "off") + ")");
 		strings.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
+		strings.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
 		strings.add("allowedPlayers(" + allowedPlayers.toString() + ")");
 		
 		for (int i = 0; i < strings.size(); i++) {
@@ -191,6 +206,7 @@ public class ZoneSettings {
 		settings.setBoolean(section, "allowDevices", allowDevices);
 		settings.setBoolean(section, "allowContainers", allowContainers);
 		settings.setBoolean(section, "allowMooshroom", allowMooshroom);
+		settings.setBoolean(section, "allowVillagers", allowVillagers);
 		
 		StringBuilder sb = new StringBuilder();
 		for (String player : allowedPlayers) {
@@ -219,6 +235,7 @@ public class ZoneSettings {
 		list.add("allowDevices(" + (allowDevices ? "on" : "off") + ")");
 		list.add("allowContainers(" + (allowContainers ? "on" : "off") + ")");
 		list.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
+		list.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
 		
 		if (sendDebugMessages)
 			list.add("debug(on)");

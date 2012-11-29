@@ -213,6 +213,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 							}
 						}
 					}
+					else if (entity instanceof EntityVillager && area.data.allowVillagers) {
+						return false;
+					}
 					
 					if (area.data.sendDebugMessages)
 						commandManager.notifyAdmins(server, 0, "Protect " + entity.getEntityName() + " " + action + " " + x + "," + y + "," + z + (player == null ? "" : " by " + player.username), new Object[0]);
