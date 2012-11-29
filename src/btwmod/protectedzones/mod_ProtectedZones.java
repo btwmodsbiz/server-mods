@@ -340,11 +340,11 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				event.markIsInvulnerable();
 			}
 		}
-		else if (event.getType() == EntityEvent.TYPE.EXPLODE_ATTEMPT) {
+		/*else if (event.getType() == EntityEvent.TYPE.EXPLODE_ATTEMPT) {
 			if (isProtectedEntity(ACTION.EXPLODE, null, event.getEntity(), MathHelper.floor_double(event.getEntity().posX), MathHelper.floor_double(event.getEntity().posY), MathHelper.floor_double(event.getEntity().posZ))) {
 				event.markNotAllowed();
 			}
-		}
+		}*/
 	}
 	
 	public void saveAreas() {
