@@ -17,7 +17,6 @@ public class ZoneSettings {
 	public boolean protectEntities = false;
 	public boolean allowOps = false;
 	public boolean allowDoors = true;
-	public boolean allowDevices = false;
 	public boolean allowContainers = false;
 	public boolean allowMooshroom = false;
 	public boolean allowVillagers = false;
@@ -29,7 +28,6 @@ public class ZoneSettings {
 		"protectBlocks",
 		"protectEntities",
 		"allowContainers",
-		"allowDevices",
 		"allowDoors",
 		"allowMooshroom",
 		"allowOps",
@@ -88,7 +86,6 @@ public class ZoneSettings {
 		protectEntities = settings.getBoolean("protectEntities", protectEntities);
 		allowOps = settings.getBoolean("allowOps", allowOps);
 		allowDoors = settings.getBoolean("allowDoors", allowDoors);
-		allowDevices = settings.getBoolean("allowDevices", allowDevices);
 		allowContainers = settings.getBoolean("allowContainers", allowContainers);
 		allowMooshroom = settings.getBoolean("allowMooshroom", allowMooshroom);
 		allowVillagers = settings.getBoolean("allowVillagers", allowVillagers);
@@ -111,9 +108,6 @@ public class ZoneSettings {
 		}
 		else if (name.equalsIgnoreCase("allowOps") && Settings.isBooleanValue(value)) {
 			allowOps = Settings.getBooleanValue(value, allowOps);
-		}
-		else if (name.equalsIgnoreCase("allowDevices") && Settings.isBooleanValue(value)) {
-			allowDevices = Settings.getBooleanValue(value, allowDevices);
 		}
 		else if (name.equalsIgnoreCase("allowContainers") && Settings.isBooleanValue(value)) {
 			allowContainers = Settings.getBooleanValue(value, allowContainers);
@@ -143,7 +137,6 @@ public class ZoneSettings {
 		strings.add("protectEntities(" + (protectEntities ? "on" : "off") + ")");
 		strings.add("allowOps(" + (allowOps ? "on" : "off") + ")");
 		strings.add("allowDoors(" + (allowDoors ? "on" : "off") + ")");
-		strings.add("allowDevices(" + (allowDevices ? "on" : "off") + ")");
 		strings.add("allowContainers(" + (allowContainers ? "on" : "off") + ")");
 		strings.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
 		strings.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
@@ -203,7 +196,6 @@ public class ZoneSettings {
 		settings.setBoolean(section, "protectEntities", protectEntities);
 		settings.setBoolean(section, "allowOps", allowOps);
 		settings.setBoolean(section, "allowDoors", allowDoors);
-		settings.setBoolean(section, "allowDevices", allowDevices);
 		settings.setBoolean(section, "allowContainers", allowContainers);
 		settings.setBoolean(section, "allowMooshroom", allowMooshroom);
 		settings.setBoolean(section, "allowVillagers", allowVillagers);
@@ -232,7 +224,6 @@ public class ZoneSettings {
 		list.add("protectEntities(" + (protectEntities ? "on" : "off") + ")");
 		list.add("allowOps(" + (allowOps ? "on" : "off") + ")");
 		list.add("allowDoors(" + (allowDoors ? "on" : "off") + ")");
-		list.add("allowDevices(" + (allowDevices ? "on" : "off") + ")");
 		list.add("allowContainers(" + (allowContainers ? "on" : "off") + ")");
 		list.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
 		list.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
