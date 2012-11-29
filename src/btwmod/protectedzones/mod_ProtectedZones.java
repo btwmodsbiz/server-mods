@@ -182,11 +182,12 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			List<Area<ZoneSettings>> areas = zones[Util.getWorldIndexFromDimension(entity.worldObj.provider.dimensionId)].get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
-				if (area.data != null) {
+				if (area.data != null && area.data.protectEntities) {
 					if (player != null && isPlayerZoneAllowed(player.username, area.data))
 						return false;
+					
+					return true;
 				}
-				return true;
 			}
 		}
 		
@@ -199,14 +200,16 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			
 			for (Area<ZoneSettings> area : areas) {
 				//player.sendChatToPlayer("Checking against area: " + area.data.name);
-				if (area.data != null) {
+				if (area.data != null && area.data.protectBlocks) {
+					
 					if (player != null && isPlayerZoneAllowed(player.username, area.data))
 						return false;
 					
 					if (action == ACTION.ACTIVATE && area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor))
 						return false;
+					
+					return true;
 				}
-				return true;
 			}
 		}
 		
