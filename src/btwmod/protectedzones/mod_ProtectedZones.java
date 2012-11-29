@@ -11,7 +11,9 @@ import java.util.TreeMap;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.Block;
+import net.minecraft.src.BlockButton;
 import net.minecraft.src.BlockContainer;
+import net.minecraft.src.BlockLever;
 import net.minecraft.src.BlockWorkbench;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityHanging;
@@ -164,19 +166,26 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return names;
 	}
 	
-	public static boolean isProtectedBlockType(@SuppressWarnings("unused") ACTION action, Block block) {
-		if (block instanceof BlockWorkbench)
-			return false;
-		
-		if (block instanceof FCBlockAnvil)
-			return false;
+	public static boolean isProtectedBlockType(ACTION action, Block block) {
+		if (action == ACTION.ACTIVATE) {
+			if (block instanceof BlockWorkbench)
+				return false;
+			
+			if (block instanceof FCBlockAnvil)
+				return false;
+			
+			if (block instanceof BlockLever)
+				return false;
+			
+			if (block instanceof BlockButton)
+				return false;
+		}
 		
 		return true;
 	}
 	
 	public static boolean isProtectedEntityType(ACTION action, Entity entity) {
 		if (entity instanceof EntityLiving) {
-			
 			if (entity instanceof EntityVillager && action != ACTION.USE_ENTITY)
 				return true;
 			
