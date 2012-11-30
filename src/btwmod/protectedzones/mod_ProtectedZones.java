@@ -48,7 +48,7 @@ import btwmods.world.IEntityListener;
 
 public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener, IEntityListener {
 	
-	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY, CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE };
+	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY, CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN };
 	private Map<String, Area<ZoneSettings>> areasByName = new TreeMap<String, Area<ZoneSettings>>();
 	private ProtectedZones[] zones;
 	
@@ -269,6 +269,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 							return false;
 					}
 					
+					if (action == ACTION.BURN && area.data.allowBurning)
+						return false;
+					
 					if (area.data.sendDebugMessages) {
 						String message = "Protect" 
 								+ " " + action
@@ -355,6 +358,11 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	public void onBlockAction(BlockEvent event) {
 		if (event.getType() == BlockEvent.TYPE.EXPLODE_ATTEMPT) {
 			if (isProtectedBlock(ACTION.EXPLODE, null, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
+				event.markNotAllowed();
+			}
+		}
+		else if (event.getType() == BlockEvent.TYPE.BURN_ATTEMPT) {
+			if (isProtectedBlock(ACTION.BURN, null, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
 				event.markNotAllowed();
 			}
 		}

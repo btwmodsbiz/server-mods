@@ -20,6 +20,7 @@ public class ZoneSettings {
 	public boolean allowContainers = false;
 	public boolean allowMooshroom = false;
 	public boolean allowVillagers = false;
+	public boolean allowBurning = false;
 	public boolean sendDebugMessages = false;
 	
 	private Set<String> allowedPlayers = new HashSet<String>();
@@ -27,6 +28,7 @@ public class ZoneSettings {
 	public static final String[] settings = {
 		"protectBlocks",
 		"protectEntities",
+		"allowBurning",
 		"allowContainers",
 		"allowDoors",
 		"allowMooshroom",
@@ -89,6 +91,7 @@ public class ZoneSettings {
 		allowContainers = settings.getBoolean("allowContainers", allowContainers);
 		allowMooshroom = settings.getBoolean("allowMooshroom", allowMooshroom);
 		allowVillagers = settings.getBoolean("allowVillagers", allowVillagers);
+		allowBurning = settings.getBoolean("allowBurning", allowBurning);
 		
 		String players = settings.get("allowedPlayers");
 		if (players != null) {
@@ -118,6 +121,9 @@ public class ZoneSettings {
 		else if (name.equalsIgnoreCase("allowVillagers") && Settings.isBooleanValue(value)) {
 			allowVillagers = Settings.getBooleanValue(value, allowVillagers);
 		}
+		else if (name.equalsIgnoreCase("allowBurning") && Settings.isBooleanValue(value)) {
+			allowBurning = Settings.getBooleanValue(value, allowBurning);
+		}
 		else if (name.equalsIgnoreCase("debug") && Settings.isBooleanValue(value)) {
 			sendDebugMessages = Settings.getBooleanValue(value, sendDebugMessages);
 		}
@@ -140,6 +146,7 @@ public class ZoneSettings {
 		strings.add("allowContainers(" + (allowContainers ? "on" : "off") + ")");
 		strings.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
 		strings.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
+		strings.add("allowBurning(" + (allowBurning ? "on" : "off") + ")");
 		strings.add("allowedPlayers(" + allowedPlayers.toString() + ")");
 		
 		for (int i = 0; i < strings.size(); i++) {
@@ -199,6 +206,7 @@ public class ZoneSettings {
 		settings.setBoolean(section, "allowContainers", allowContainers);
 		settings.setBoolean(section, "allowMooshroom", allowMooshroom);
 		settings.setBoolean(section, "allowVillagers", allowVillagers);
+		settings.setBoolean(section, "allowBurning", allowBurning);
 		
 		StringBuilder sb = new StringBuilder();
 		for (String player : allowedPlayers) {
@@ -227,6 +235,7 @@ public class ZoneSettings {
 		list.add("allowContainers(" + (allowContainers ? "on" : "off") + ")");
 		list.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
 		list.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
+		list.add("allowBurning(" + (allowBurning ? "on" : "off") + ")");
 		
 		if (sendDebugMessages)
 			list.add("debug(on)");
