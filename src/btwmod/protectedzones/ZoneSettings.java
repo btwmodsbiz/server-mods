@@ -138,7 +138,8 @@ public class ZoneSettings {
 	public String toString() {
 		ArrayList<String> strings = new ArrayList<String>();
 		StringBuilder sb = new StringBuilder();
-		
+
+		strings.add(name);
 		strings.add("protectBlocks(" + (protectBlocks ? "on" : "off") + ")");
 		strings.add("protectEntities(" + (protectEntities ? "on" : "off") + ")");
 		strings.add("allowOps(" + (allowOps ? "on" : "off") + ")");
