@@ -48,7 +48,7 @@ import btwmods.world.IEntityListener;
 
 public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener, IEntityListener {
 	
-	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY, CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN };
+	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY, CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT };
 	private Map<String, Area<ZoneSettings>> areasByName = new TreeMap<String, Area<ZoneSettings>>();
 	private ProtectedZones[] zones;
 	
@@ -269,7 +269,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 							return false;
 					}
 					
-					if (action == ACTION.BURN && area.data.allowBurning)
+					if ((action == ACTION.BURN || action == ACTION.IS_FLAMMABLE || action == ACTION.FIRE_SPREAD_ATTEMPT) && area.data.allowBurning)
 						return false;
 					
 					if (area.data.sendDebugMessages) {
@@ -338,7 +338,6 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				break;
 			case CHECK_PLAYEREDIT:
 				action = ACTION.CHECK_PLAYER_EDIT;
-				checkDirectionAdjusted = true;
 				break;
 		}
 		
@@ -363,6 +362,16 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		}
 		else if (event.getType() == BlockEvent.TYPE.BURN_ATTEMPT) {
 			if (isProtectedBlock(ACTION.BURN, null, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
+				event.markNotAllowed();
+			}
+		}
+		else if (event.getType() == BlockEvent.TYPE.IS_FLAMMABLE_BLOCK) {
+			if (isProtectedBlock(ACTION.IS_FLAMMABLE, null, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
+				event.markNotFlammable();
+			}
+		}
+		else if (event.getType() == BlockEvent.TYPE.FIRE_SPREAD_ATTEMPT) {
+			if (isProtectedBlock(ACTION.FIRE_SPREAD_ATTEMPT, null, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
 				event.markNotAllowed();
 			}
 		}
