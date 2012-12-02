@@ -32,17 +32,24 @@ public class CommandZoneList extends CommandBase {
 		if (args.length > 1)
 			throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
 		
-		String headerShort = "Zones: ";
-		String headerLong = "Zones (Page XX/YY): ";
-		int page = args.length == 1 ? parseIntWithMin(sender, args[0], 1) : 1;
-		int maxListSize = Packet3Chat.maxChatLength - Math.max(headerShort.length(), headerLong.length());
+		List<String> zoneNames = mod.getZoneNames();
 		
-		List<String> pages = Util.combineIntoMaxLengthMessages(mod.getZoneNames(), maxListSize, ", ", false);
-		
-		page = Math.min(page, pages.size());
-		
-		sender.sendChatToPlayer((pages.size() == 1 ? headerShort : headerLong.replaceAll("XX/YY", page + "/" + pages.size()))
-				+ pages.get(Math.min(page, pages.size()) - 1));
+		if (zoneNames.size() == 0) {
+			sender.sendChatToPlayer("There are no zones.");
+		}
+		else {
+			String headerShort = "Zones: ";
+			String headerLong = "Zones (Page XX/YY): ";
+			int page = args.length == 1 ? parseIntWithMin(sender, args[0], 1) : 1;
+			int maxListSize = Packet3Chat.maxChatLength - Math.max(headerShort.length(), headerLong.length());
+			
+			List<String> pages = Util.combineIntoMaxLengthMessages(mod.getZoneNames(), maxListSize, ", ", false);
+			
+			page = Math.min(page, pages.size());
+			
+			sender.sendChatToPlayer((pages.size() == 1 ? headerShort : headerLong.replaceAll("XX/YY", page + "/" + pages.size()))
+					+ pages.get(Math.min(page, pages.size()) - 1));
+		}
 	}
 
 }
