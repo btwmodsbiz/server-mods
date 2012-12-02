@@ -1,3 +1,9 @@
+Version 4.38.2 (vMC 1.4.5 BTW 4.38)
+
+  - Added support for Protected Zones intercepting fire's ability
+    to destroy blocks, spread to other blocks and to determine if a
+    block is flammable.
+
 Version 4.37b.1 (vMC 1.4.5 BTW 4.37b)
 
   - Added Protected Zone setting for shearing Mooshrooms.
