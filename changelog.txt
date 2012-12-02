@@ -1,3 +1,7 @@
+Version 4.38.2-b (vMC 1.4.5 BTW 4.38)
+
+  - Fixed bug with /zonelist when there are no zones.
+
 Version 4.38.2 (vMC 1.4.5 BTW 4.38)
 
   - Added support for Protected Zones intercepting fire's ability
