@@ -13,6 +13,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.Block;
 import net.minecraft.src.BlockButton;
 import net.minecraft.src.BlockContainer;
+import net.minecraft.src.BlockEnchantmentTable;
+import net.minecraft.src.BlockEnderChest;
 import net.minecraft.src.BlockLever;
 import net.minecraft.src.BlockWorkbench;
 import net.minecraft.src.Entity;
@@ -179,6 +181,12 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			
 			if (block instanceof BlockButton)
 				return false;
+			
+			if (block instanceof BlockEnderChest)
+				return false;
+			
+			if (block instanceof BlockEnchantmentTable)
+				return false;
 		}
 		
 		return true;
@@ -262,7 +270,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						return false;
 					
 					if (action == ACTION.ACTIVATE) {
-						if (area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor))
+						if (area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate))
 							return false;
 						
 						if (area.data.allowContainers && block instanceof BlockContainer)
