@@ -11,6 +11,7 @@ import java.util.TreeMap;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.Block;
+import net.minecraft.src.BlockBed;
 import net.minecraft.src.BlockButton;
 import net.minecraft.src.BlockContainer;
 import net.minecraft.src.BlockEnchantmentTable;
@@ -186,6 +187,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				return false;
 			
 			if (block instanceof BlockEnchantmentTable)
+				return false;
+			
+			if (block instanceof BlockBed)
 				return false;
 		}
 		
