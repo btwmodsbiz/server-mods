@@ -39,6 +39,7 @@ import btwmods.ModLoader;
 import btwmods.PlayerAPI;
 import btwmods.Util;
 import btwmods.WorldAPI;
+import btwmods.events.APIEvent;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerActionListener;
 import btwmods.player.PlayerActionEvent;
@@ -267,7 +268,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return false;
 	}
 	
-	public boolean isProtectedBlock(ACTION action, EntityPlayer player, ItemStack itemStack, Block block, World world, int x, int y, int z) {
+	public boolean isProtectedBlock(APIEvent event, ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z) {
 		if (isProtectedBlockType(action, block) && (player == null || !isPlayerGloballyAllowed(player.username))) {
 			List<Area<ZoneSettings>> areas = zones[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
 			
@@ -289,6 +290,11 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						return false;
 					
 					if (area.data.sendDebugMessages) {
+						ItemStack itemStack = null;
+						if (event instanceof PlayerBlockEvent) {
+							itemStack = ((PlayerBlockEvent)event).getItemStack();
+						}
+						
 						String message = "Protect" 
 								+ " " + action
 								+ (block == null ? "" : " " + block.getBlockName())
@@ -309,7 +315,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return false;
 	}
 	
-	public boolean isProtectedBlock(ACTION action, EntityPlayer player, ItemStack itemStack, Block block, World world, int x, int y, int z, int direction) {
+	public boolean isProtectedBlock(APIEvent event, ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z, int direction) {
 		
 		switch (direction) {
 			case 0:
@@ -331,7 +337,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				break;
 		}
 		
-		return isProtectedBlock(action, player, itemStack, block, world, x, y, z);
+		return isProtectedBlock(event, action, player, block, world, x, y, z);
 	}
 
 	@Override
@@ -358,8 +364,8 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		}
 		
 		if (action != null && (
-				isProtectedBlock(action, event.getPlayer(), event.getItemStack(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())
-				|| (checkDirectionAdjusted && isProtectedBlock(action, event.getPlayer(), event.getItemStack(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getDirection()))
+				isProtectedBlock(event, action, event.getPlayer(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())
+				|| (checkDirectionAdjusted && isProtectedBlock(event, action, event.getPlayer(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getDirection()))
 			)) {
 			
 			if (event.getType() == PlayerBlockEvent.TYPE.ACTIVATION_ATTEMPT)
@@ -372,22 +378,22 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	@Override
 	public void onBlockAction(BlockEvent event) {
 		if (event.getType() == BlockEvent.TYPE.EXPLODE_ATTEMPT) {
-			if (isProtectedBlock(ACTION.EXPLODE, null, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
+			if (isProtectedBlock(event, ACTION.EXPLODE, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
 				event.markNotAllowed();
 			}
 		}
 		else if (event.getType() == BlockEvent.TYPE.BURN_ATTEMPT) {
-			if (isProtectedBlock(ACTION.BURN, null, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
+			if (isProtectedBlock(event, ACTION.BURN, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
 				event.markNotAllowed();
 			}
 		}
 		else if (event.getType() == BlockEvent.TYPE.IS_FLAMMABLE_BLOCK) {
-			if (isProtectedBlock(ACTION.IS_FLAMMABLE, null, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
+			if (isProtectedBlock(event, ACTION.IS_FLAMMABLE, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
 				event.markNotFlammable();
 			}
 		}
 		else if (event.getType() == BlockEvent.TYPE.FIRE_SPREAD_ATTEMPT) {
-			if (isProtectedBlock(ACTION.FIRE_SPREAD_ATTEMPT, null, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
+			if (isProtectedBlock(event, ACTION.FIRE_SPREAD_ATTEMPT, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
 				event.markNotAllowed();
 			}
 		}
