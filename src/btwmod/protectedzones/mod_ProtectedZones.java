@@ -25,6 +25,7 @@ import net.minecraft.src.EntityMooshroom;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityVillager;
 import net.minecraft.src.FCBlockAnvil;
+import net.minecraft.src.FCBlockInfernalEnchanter;
 import net.minecraft.src.FCEntityCanvas;
 import net.minecraft.src.ICommand;
 import net.minecraft.src.Item;
@@ -190,6 +191,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				return false;
 			
 			if (block instanceof BlockBed)
+				return false;
+			
+			if (block instanceof FCBlockInfernalEnchanter)
 				return false;
 		}
 		
