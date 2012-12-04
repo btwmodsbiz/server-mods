@@ -27,6 +27,7 @@ import net.minecraft.src.EntityVillager;
 import net.minecraft.src.FCBlockAnvil;
 import net.minecraft.src.FCBlockInfernalEnchanter;
 import net.minecraft.src.FCEntityCanvas;
+import net.minecraft.src.Facing;
 import net.minecraft.src.ICommand;
 import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
@@ -53,7 +54,7 @@ import btwmods.world.IEntityListener;
 
 public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener, IEntityListener {
 	
-	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY, CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT };
+	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY, CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT, CAN_PUSH };
 	private Map<String, Area<ZoneSettings>> areasByName = new TreeMap<String, Area<ZoneSettings>>();
 	private ProtectedZones[] zones;
 	
@@ -286,6 +287,13 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 							return false;
 					}
 					
+					if (action == ACTION.CAN_PUSH && event instanceof BlockEvent) {
+						BlockEvent blockEvent = (BlockEvent)event;
+						if (area.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
+							return false;
+						}
+					}
+					
 					if ((action == ACTION.BURN || action == ACTION.IS_FLAMMABLE || action == ACTION.FIRE_SPREAD_ATTEMPT) && area.data.allowBurning)
 						return false;
 					
@@ -395,6 +403,21 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		else if (event.getType() == BlockEvent.TYPE.FIRE_SPREAD_ATTEMPT) {
 			if (isProtectedBlock(event, ACTION.FIRE_SPREAD_ATTEMPT, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
 				event.markNotAllowed();
+			}
+		}
+		else if (event.getType() == BlockEvent.TYPE.CAN_PUSH_BLOCK) {
+			if (isProtectedBlock(event, ACTION.CAN_PUSH, null, event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
+				event.markNotAllowed();
+			}
+			else {
+				int nextX = event.getX() + Facing.offsetsXForSide[event.getPistonOrientation()];
+				int nextY = event.getY() + Facing.offsetsYForSide[event.getPistonOrientation()];
+				int nextZ = event.getZ() + Facing.offsetsZForSide[event.getPistonOrientation()];
+				int nextBlockId = event.getWorld().getBlockId(nextX, nextY, nextZ);
+				
+				if (isProtectedBlock(event, ACTION.CAN_PUSH, null, nextBlockId > 0 ? Block.blocksList[nextBlockId] : null, event.getWorld(), nextX, nextY, nextZ)) {
+					event.markNotAllowed();
+				}
 			}
 		}
 	}
