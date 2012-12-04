@@ -1,3 +1,16 @@
+Version 4.38.4 (vMC 1.4.5 BTW 4.38)
+
+  - Added protection against pistons outside protected areas pushing blocks
+    into those areas to Protected Zones.
+
+  - Changed Protected Zones to always allow activation of ender chests,
+    enchantment tables, infernal enchanters, and beds.
+
+  - Changed Protected Zones to allow fence gates when doors are allowed.
+
+  - Changed the way internal methods in Protected Zones are called to
+    prevent too many arguments for IsProtectedBlock methods.
+
 Version 4.38.2-b (vMC 1.4.5 BTW 4.38)
 
   - Fixed bug with /zonelist when there are no zones.
