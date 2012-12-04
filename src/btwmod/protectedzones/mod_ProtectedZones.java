@@ -280,7 +280,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						return false;
 					
 					if (action == ACTION.ACTIVATE) {
-						if (area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor))
+						if (area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate))
 							return false;
 						
 						if (area.data.allowContainers && block instanceof BlockContainer)
