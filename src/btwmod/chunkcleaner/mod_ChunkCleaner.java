@@ -16,6 +16,7 @@ import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.ServerAPI;
+import btwmods.Util;
 import btwmods.WorldAPI;
 import btwmods.io.Settings;
 import btwmods.world.IWorldTickListener;
@@ -85,7 +86,7 @@ public class mod_ChunkCleaner implements IMod, IWorldTickListener {
 			world.theChunkProviderServer.dropChunk(chunk.xPosition, chunk.zPosition);
 			
 			if (debugLogging)
-				ModLoader.outputInfo("Cleaned chunk: " + chunk.xPosition + "," + chunk.zPosition);
+				ModLoader.outputInfo("Cleaned chunk: " + chunk.xPosition + "," + chunk.zPosition + " from " + Util.getWorldNameFromDimension(world.provider.dimensionId));
 		}
 	}
 	
