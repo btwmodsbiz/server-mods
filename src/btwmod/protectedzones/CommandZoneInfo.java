@@ -34,15 +34,15 @@ public class CommandZoneInfo extends CommandBase {
 				sender.sendChatToPlayer("A zone with that name does not exist.");
 			}
 			else {
-				sender.sendChatToPlayer("§c=== Zone " + area.data.name + " ===");
+				sender.sendChatToPlayer(Util.COLOR_RED + "=== Zone " + area.data.name + " ===");
 				
 				if (area.data.isCube)
-					sender.sendChatToPlayer("§b<Cube>§f " + area.data.x1 + "," + area.data.y1 + "," + area.data.z1 + " to " + area.data.x2 + "," + area.data.y2 + "," + area.data.z2 + " in " + Util.getWorldNameFromDimension(area.data.dimension));
+					sender.sendChatToPlayer(Util.COLOR_AQUA + "<Cube>" + Util.COLOR_WHITE + " " + area.data.x1 + "," + area.data.y1 + "," + area.data.z1 + " to " + area.data.x2 + "," + area.data.y2 + "," + area.data.z2 + " in " + Util.getWorldNameFromDimension(area.data.dimension));
 				else
-					sender.sendChatToPlayer("§b<Area>§f " + area.data.x1 + "," + area.data.z1 + " to " + area.data.x2 + "," + area.data.z2 + " in " + Util.getWorldNameFromDimension(area.data.dimension));
+					sender.sendChatToPlayer(Util.COLOR_AQUA + "<Area>" + Util.COLOR_WHITE + " " + area.data.x1 + "," + area.data.z1 + " to " + area.data.x2 + "," + area.data.z2 + " in " + Util.getWorldNameFromDimension(area.data.dimension));
 				
-				String settingsHeader = "§b<Settings>§f ";
-				String playersHeader = "§b<Players>§f ";
+				String settingsHeader = Util.COLOR_AQUA + "<Settings>" + Util.COLOR_WHITE + " ";
+				String playersHeader = Util.COLOR_AQUA + "<Players>" + Util.COLOR_WHITE + " ";
 				
 				List<String> settingMessages = Util.combineIntoMaxLengthMessages(area.data.settingsAsList(), Packet3Chat.maxChatLength, ", ", true);
 				if (settingMessages.size() == 1 && (settingsHeader.length() + settingMessages.get(0).length()) <= Packet3Chat.maxChatLength) {
