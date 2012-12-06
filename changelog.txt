@@ -1,3 +1,12 @@
+Version 4.38.5 (vMC 1.4.5 BTW 4.38)
+
+  - Added Chunk Cleaner mod to unload stuck chunks.
+
+  - Changed Protected Zones to include fence gates again, after the change
+    was removed somehow.
+
+  - Changed CommandZoneInfo to use Util's chat color constants.
+
 Version 4.38.4 (vMC 1.4.5 BTW 4.38)
 
   - Added protection against pistons outside protected areas pushing blocks
