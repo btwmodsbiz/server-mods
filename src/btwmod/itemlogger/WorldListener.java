@@ -1,9 +1,6 @@
 package btwmod.itemlogger;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import net.minecraft.src.BlockContainer;
+import net.minecraft.src.BlockChest;
 import net.minecraft.src.ItemStack;
 
 import btwmods.IMod;
@@ -12,10 +9,10 @@ import btwmods.world.IBlockListener;
 
 public class WorldListener implements IBlockListener {
 
-	private IMod mod;
-	private Logger logger;
+	private mod_ItemLogger mod;
+	private ILogger logger;
 
-	public WorldListener(mod_ItemLogger mod, Logger logger) {
+	public WorldListener(mod_ItemLogger mod, ILogger logger) {
 		this.mod = mod;
 		this.logger = logger;
 	}
@@ -27,19 +24,13 @@ public class WorldListener implements IBlockListener {
 
 	@Override
 	public void onBlockAction(BlockEvent event) {
-		if (event.getType() == BlockEvent.TYPE.BROKEN && event.getBlock() instanceof BlockContainer) {
+		if (logger == null)
+			return;
+		
+		if (event.getType() == BlockEvent.TYPE.BROKEN && event.getBlock() instanceof BlockChest) {
 			ItemStack[] contents = event.getContents();
 			if (contents != null) {
-				StringBuilder sb = new StringBuilder();
-				
-				for (int i = 0; i < contents.length; i++) {
-					if (contents[i] != null) {
-						if (sb.length() > 0) sb.append(", ");
-						sb.append(contents[i].stackSize).append(" ").append(contents[i].getItemName());
-					}
-				}
-				
-				logger.log(Level.INFO, "Container broken at " + event.getX() + "/" + event.getY() + "/" + event.getZ() + (sb.length() == 0 ? " but was empty." : " and ejected: " + sb.toString()), new Object[] { "broken container", event, contents });
+				logger.containerBroken(event, event.getX(), event.getY(), event.getZ(), event.getContents());
 			}
 		}
 	}
