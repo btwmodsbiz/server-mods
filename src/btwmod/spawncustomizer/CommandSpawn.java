@@ -28,7 +28,7 @@ public class CommandSpawn extends CommandBase {
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/" + getCommandName() + " <loc|global> ...";
+		return "/" + getCommandName() + " <loc|global>";
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class CommandSpawn extends CommandBase {
 		if (args.length == 1 && args[0].equalsIgnoreCase("loc") && sender instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer)sender;
 			sender.sendChatToPlayer("You are at " + MathHelper.floor_double(player.posX) + "," + MathHelper.floor_double(player.posY) + "," + MathHelper.floor_double(player.posZ)
-					+ " with pitch " + Util.DECIMAL_FORMAT_2.format(player.rotationPitch) + " and yaw " + Util.DECIMAL_FORMAT_2.format(player.rotationYaw));
+					+ " and yaw " + Util.DECIMAL_FORMAT_2.format(player.rotationYaw) + " with pitch " + Util.DECIMAL_FORMAT_2.format(player.rotationPitch));
 		}
 		else if (args.length == 1 && args[0].equalsIgnoreCase("global")) {
 			if (mod.getGlobalSpawn() == null) {
