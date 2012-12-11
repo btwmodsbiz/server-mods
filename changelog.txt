@@ -1,3 +1,14 @@
+Version 4.40.1 (vMC 1.4.5 BTW 4.40)
+
+  - Added Spawn Customizer mod.
+  
+  - Added ability to CommandChunk to load a set of chunks.
+  
+  - Added WIP Live Map mod (should be disabled).
+  
+  - Changed (Rewrote) Item Logger to use new API methods and to
+    include more functionality.
+
 Version 4.40.0 (vMC 1.4.5 BTW 4.40)
 
   - Added dimension name to Chunk Cleanser's debug logging.
