@@ -1,16 +1,11 @@
 package btwmod.livemap;
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
-
-import javax.imageio.ImageIO;
 
 import net.minecraft.src.Block;
 import net.minecraft.src.Chunk;
@@ -24,6 +19,7 @@ import btwmods.world.IChunkListener;
 
 public class mod_LiveMap implements IMod, IChunkListener {
 
+	private int[] zoomLevels = { 16 };
 	private int imageSize = 256;
 	private File imageDir = ModLoader.modDataDir;
 	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
@@ -31,7 +27,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	private ConcurrentLinkedQueue<Chunk> chunkQueue = new ConcurrentLinkedQueue<Chunk>();
 	private volatile ChunkProcessor chunkProcessor = null;
 
-	public final BlockColor[] list = new BlockColor[Block.blocksList.length];
+	public final BlockColor[] blockColors = new BlockColor[Block.blocksList.length];
 
 	@Override
 	public String getName() {
@@ -66,49 +62,51 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	}
 
 	private boolean loadColorData() {
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader(colorData));
-
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.trim().length() > 0 && line.trim().charAt(0) != '#') {
-					BlockColor color = BlockColor.fromConfigLine(line);
+		if (colorData.isFile()) {
+			BufferedReader reader = null;
+			try {
+				reader = new BufferedReader(new FileReader(colorData));
 	
-					if (color == null) {
-						ModLoader.outputError(getName() + " found an invalid colorData entry: " + line, Level.SEVERE);
-						return false;
-	
-					} else {
-						Block block = BlockColor.getBlockByName(color.blockName);
-	
-						if (block == null) {
-							// TODO: Report color for block that does not exist?
-						} else if (list[block.blockID] != null) {
-							ModLoader.outputError(getName() + " found duplicate colorData entries for: " + block.getBlockName(), Level.SEVERE);
+				String line;
+				while ((line = reader.readLine()) != null) {
+					if (line.trim().length() > 0 && line.trim().charAt(0) != '#') {
+						BlockColor color = BlockColor.fromConfigLine(line);
+		
+						if (color == null) {
+							ModLoader.outputError(getName() + " found an invalid colorData entry: " + line, Level.SEVERE);
 							return false;
+		
 						} else {
-							list[block.blockID] = color;
+							Block block = BlockColor.getBlockByName(color.blockName);
+		
+							if (block == null) {
+								// TODO: Report color for block that does not exist?
+							} else if (blockColors[block.blockID] != null) {
+								ModLoader.outputError(getName() + " found duplicate colorData entries for: " + block.getBlockName(), Level.SEVERE);
+								return false;
+							} else {
+								blockColors[block.blockID] = color;
+							}
 						}
 					}
 				}
-			}
-		} catch (IOException e) {
-			ModLoader.outputError(e, getName() + " failed to read the colorData file: " + e.getMessage(), Level.SEVERE);
-			return false;
-		} finally {
-			try {
-				if (reader != null)
-					reader.close();
 			} catch (IOException e) {
-
+				ModLoader.outputError(e, getName() + " failed to read the colorData file: " + e.getMessage(), Level.SEVERE);
+				return false;
+			} finally {
+				try {
+					if (reader != null)
+						reader.close();
+				} catch (IOException e) {
+	
+				}
 			}
 		}
 
 		// Set colors for blocks not set by the config.
-		for (int i = 0; i < list.length; i++) {
-			if (Block.blocksList[i] != null && list[i] == null) {
-				list[i] = BlockColor.fromBlock(Block.blocksList[i]);
+		for (int i = 0; i < blockColors.length; i++) {
+			if (Block.blocksList[i] != null && blockColors[i] == null) {
+				blockColors[i] = BlockColor.fromBlock(Block.blocksList[i]);
 			}
 		}
 
@@ -131,29 +129,38 @@ public class mod_LiveMap implements IMod, IChunkListener {
 			chunkQueue.add(event.getChunk());
 
 			if (chunkProcessor == null || !chunkProcessor.isRunning()) {
-				new Thread(chunkProcessor = new ChunkProcessor()).start();
+				new Thread(chunkProcessor = new ChunkProcessor(new MapManager[] { new MapManager(this, 0, imageSize, zoomLevels, blockColors, new File(imageDir, "overworld")) })).start();
 			}
 		}
 	}
 
 	private class ChunkProcessor implements Runnable {
+		
+		private final MapManager[] maps;
+		
 		private volatile boolean isRunning = true;
-		private Map<String, BufferedImage> images = new LinkedHashMap<String, BufferedImage>();
 
 		public boolean isRunning() {
 			return isRunning;
+		}
+		
+		public ChunkProcessor(MapManager[] maps) {
+			this.maps = maps;
 		}
 
 		@Override
 		public void run() {
 			while (this == chunkProcessor) {
+				
 				Chunk chunk = null;
 				while ((chunk = chunkQueue.poll()) != null) {
-					renderChunk(chunk, 16);
+					renderChunk(chunk);
 				}
+				
+				save();
 
 				try {
-					Thread.sleep(15L * 1000L);
+					Thread.sleep(2L * 1000L);
 				} catch (InterruptedException e) {
 
 				}
@@ -161,46 +168,17 @@ public class mod_LiveMap implements IMod, IChunkListener {
 
 			isRunning = false;
 		}
-
-		public void renderChunk(Chunk chunk, int chunksPerImage) {
-			int fileX = chunk.xPosition / chunksPerImage;
-			int fileZ = chunk.zPosition / chunksPerImage;
-
-			String key = fileX + "/" + fileZ;
-
-			BufferedImage image = images.get(key);
-			if (image == null) {
-				try {
-					image = getImage(fileX, fileZ);
-				} catch (IOException e) {
-					ModLoader.outputError(e, getName() + " failed to load the existing image at " + getFile(fileX, fileZ).getName());
-					chunkQueue.add(chunk);
-				}
-			}
-
-			if (image != null) {
-
+		
+		private void renderChunk(Chunk chunk) {
+			for (int i = 0; i < maps.length; i++) {
+				maps[i].processChunk(chunk);
 			}
 		}
-
-		public void renderChunk(BufferedImage image, Chunk chunk, int chunksPerImage) {
-
+		
+		protected void save() {
+			for (int i = 0; i < maps.length; i++) {
+				maps[i].saveAndClear();
+			}
 		}
-	}
-
-	private BufferedImage getImage(int x, int z) throws IOException {
-		return getImage(getFile(x, z));
-	}
-
-	private BufferedImage getImage(File imageFile) throws IOException {
-		if (!imageFile.isFile()) {
-			return new BufferedImage(imageSize, imageSize, BufferedImage.TYPE_INT_ARGB);
-		} else {
-			return ImageIO.read(imageFile);
-		}
-	}
-
-	private File getFile(int x, int z) {
-		return new File(imageDir, x + "_" + z + ".png");
 	}
 }
