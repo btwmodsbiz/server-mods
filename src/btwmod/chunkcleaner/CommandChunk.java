@@ -35,6 +35,36 @@ public class CommandChunk extends CommandBase {
 			else
 				sender.sendChatToPlayer("Chunk cleaning is off.");
 		}
+		else if ((args.length == 4 || args.length == 5) && args[0].equalsIgnoreCase("load")) {
+			
+			int dimension;
+			try {
+				dimension = Util.getWorldDimensionFromName(args[1]);
+			}
+			catch (IllegalArgumentException e) {
+				throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
+			}
+			
+			int chunkX = parseInt(sender, args[2]);
+			int chunkZ = parseInt(sender, args[3]);
+			int radius = args.length == 5 ? parseIntBounded(sender, args[4], 1, 8) : 0;
+			
+			World world = MinecraftServer.getServer().worldServerForDimension(dimension);
+			if (world instanceof WorldServer) {
+				int chunks = 0;
+				for (int xOffset = chunkX - radius; xOffset <= chunkX + radius; xOffset++) {
+					for (int zOffset = chunkZ - radius; zOffset <= chunkZ + radius; zOffset++) {
+						((WorldServer)world).theChunkProviderServer.loadChunk(xOffset, zOffset);
+						chunks++;
+					}
+				}
+				
+				if (chunks > 1)
+					sender.sendChatToPlayer("Loaded " + chunks + " chunks centered on " + chunkX + "," + chunkZ);
+				else
+					sender.sendChatToPlayer("Loaded chunk at " + chunkX + "," + chunkZ);
+			}
+		}
 		else if (args.length == 2 && args[0].equalsIgnoreCase("debug") && Settings.isBooleanValue(args[1])) {
 			mod.debugLogging = Settings.getBooleanValue(args[1], mod.debugLogging);
 			sender.sendChatToPlayer("Chunk cleaning debug logging is now " + (mod.debugLogging ? "on" : "off") + ".");
@@ -118,7 +148,7 @@ public class CommandChunk extends CommandBase {
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
 		if (args.length == 1) {
-			return super.getListOfStringsMatchingLastWord(args, new String[] { "enabled", "debug", "frequency", "num", "check" });
+			return super.getListOfStringsMatchingLastWord(args, new String[] { "enabled", "debug", "frequency", "num", "check", "load" });
 		}
 		else if (args.length == 2 && (args[0].equalsIgnoreCase("enabled") || args[0].equalsIgnoreCase("debug"))) {
 			return super.getListOfStringsMatchingLastWord(args, new String[] { "on", "off" });
@@ -128,6 +158,9 @@ public class CommandChunk extends CommandBase {
 		}
 		else if (args.length == 2 && args[0].equalsIgnoreCase("num")) {
 			return super.getListOfStringsMatchingLastWord(args, new String[] { Integer.toString(mod.chunksChecked) });
+		}
+		else if (args.length == 2 && args[0].equalsIgnoreCase("load")) {
+			return super.getListOfStringsMatchingLastWord(args, new String[] { "Overworld", "Nether", "TheEnd" });
 		}
 		
 		return super.addTabCompletionOptions(sender, args);
