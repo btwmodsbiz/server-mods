@@ -19,7 +19,7 @@ import btwmods.world.IChunkListener;
 
 public class mod_LiveMap implements IMod, IChunkListener {
 
-	private int[] zoomLevels = { 16 };
+	private int[] zoomLevels = { 64, 32, 16, 8, 4 };
 	private int imageSize = 256;
 	private File imageDir = ModLoader.modDataDir;
 	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
@@ -129,7 +129,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 			chunkQueue.add(event.getChunk());
 
 			if (chunkProcessor == null || !chunkProcessor.isRunning()) {
-				new Thread(chunkProcessor = new ChunkProcessor(new MapManager[] { new MapManager(this, 0, imageSize, zoomLevels, blockColors, new File(imageDir, "overworld")) })).start();
+				new Thread(chunkProcessor = new ChunkProcessor(new MapManager[] { new MapManager(this, 0, imageSize, zoomLevels, blockColors, new File(imageDir, "overworld")) }), getName() + " Thread").start();
 			}
 		}
 	}

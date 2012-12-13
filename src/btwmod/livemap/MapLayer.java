@@ -14,16 +14,18 @@ public class MapLayer {
 	public final MapManager map;
 	public final File layerDirectory;
 	public final int chunksPerImage;
+	public final float pixelSize;
 
 	protected Map<String, MapImage> images = new LinkedHashMap<String, MapImage>();
 
 	public MapLayer(MapManager map, File layerDirectory, int chunksPerImage) {
+		if (map.imageSize / chunksPerImage == 0)
+			throw new IllegalArgumentException("imageSize divided by chunksPerImage cannot be less than 1");
+		
 		this.map = map;
 		this.layerDirectory = layerDirectory;
 		this.chunksPerImage = chunksPerImage;
-		
-		if (map.imageSize / chunksPerImage == 0)
-			throw new IllegalArgumentException("imageSize divided by chunksPerImage cannot be less than 1");
+		pixelSize = map.imageSize / chunksPerImage / 16.0F;
 	}
 	
 	public MapImage provideImage(Chunk chunk) throws IOException {
@@ -55,7 +57,6 @@ public class MapLayer {
 	
 	protected void save() throws IOException {
 		for (Entry<String, MapImage> entry : images.entrySet()) {
-			System.out.println("Saving " + entry.getKey());
 			entry.getValue().save();
 		}
 	}

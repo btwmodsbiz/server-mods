@@ -54,7 +54,7 @@ public class BlockColor {
 	}
 
 	public void addTo(PixelColor color) {
-		color.composite(red, green, blue, alpha);
+		color.composite(red, green, blue, (float)alpha / 255);
 	}
 	
 	public Color asColor(boolean withAlpha) {

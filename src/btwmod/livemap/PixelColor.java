@@ -1,5 +1,7 @@
 package btwmod.livemap;
 
+import java.awt.Color;
+
 public class PixelColor {
 	
 	public static final float defaultAlpha = 1.0F;
@@ -16,34 +18,92 @@ public class PixelColor {
 	public PixelColor(float red, float green, float blue) {
 		this(red, green, blue, defaultAlpha);
 	}
+	
+	public PixelColor(Color color) {
+		this((float)color.getRed(), (float)color.getGreen(), (float)color.getBlue(), (float)color.getAlpha());
+	}
+	
+	public PixelColor(BlockColor color) {
+		this((float)color.red, (float)color.green, (float)color.blue, (float)color.alpha);
+	}
 
 	public PixelColor(float red, float green, float blue, float alpha) {
 		this.red = red;
 		this.green = green;
 		this.blue = blue;
 		this.alpha = alpha;
+		checkValues();
 	}
 
-	public void composite(float red, float green, float blue, float alpha) {
+	public PixelColor composite(float red, float green, float blue, float alpha) {
 		this.red += (red - this.red) * alpha;
 		this.green += (green - this.green) * alpha;
 		this.blue += (blue - this.blue) * alpha;
 		this.alpha += (1.0F - this.alpha) * alpha;
+		checkValues();
+		return this;
 	}
 
-	public void composite(float red, float green, float blue, float alpha, float brightness) {
+	public PixelColor composite(float red, float green, float blue, float alpha, float brightness) {
 		composite(red * brightness, green * brightness, blue *  brightness, alpha);
+		return this;
 	}
 
-	public void clear() {
-		alpha = red = green = blue = 0.0F;
+	public PixelColor composite(BlockColor blockColor, float alpha) {
+		composite(blockColor.red, blockColor.green, blockColor.blue, blockColor.alpha * alpha);
+		return this;
+	}
+
+	public PixelColor composite(Color color, float alpha) {
+		composite(color.getRed(), color.getGreen(), color.getBlue(), (float)color.getAlpha() / 255.0F * alpha);
+		return this;
 	}
 	
-	public static int getLuminance(float grey) {
-		return (int)Math.round(.299F * grey + .587F * grey + .114F * grey);
+	public PixelColor scale(float multiplier) {
+		red = red * multiplier;
+		green = green * multiplier;
+		blue = blue * multiplier;
+		checkValues();
+		return this;
+	}
+
+	public PixelColor clear() {
+		alpha = red = green = blue = 0.0F;
+		return this;
+	}
+	
+	public Color asColor() {
+		return new Color(Math.round(red), Math.round(green), Math.round(blue), Math.round(alpha * 255.0F));
+	}
+
+	public void set(float red, float green, float blue) {
+		set(red, green, blue, defaultAlpha);
+	}
+	
+	public void set(Color color) {
+		set((float)color.getRed(), (float)color.getGreen(), (float)color.getBlue(), (float)color.getAlpha() / 255.0F);
+	}
+	
+	public void set(BlockColor color) {
+		set((float)color.red, (float)color.green, (float)color.blue, (float)color.alpha / 255.0F);
+	}
+
+	public void set(float red, float green, float blue, float alpha) {
+		this.red = red;
+		this.green = green;
+		this.blue = blue;
+		this.alpha = alpha;
+		checkValues();
 	}
 	
 	public static int getLuminance(int grey) {
-		return (int)Math.round(.299F * grey + .587F * grey + .114F * grey);
+		return (int)Math.round(.299 * grey + .587 * grey + .114 * grey);
+	}
+	
+	private void checkValues() {
+		red = Math.min(255.0F, Math.max(0.0F, red));
+		green = Math.min(255.0F, Math.max(0.0F, green));
+		blue = Math.min(255.0F, Math.max(0.0F, blue));
+		alpha = Math.min(1.0F, Math.max(0.0F, alpha));
 	}
 }
