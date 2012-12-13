@@ -1,7 +1,6 @@
 package btwmod.livemap;
 
 import java.io.File;
-import java.io.IOException;
 
 import net.minecraft.src.Chunk;
 
@@ -45,9 +44,8 @@ public class MapManager {
 			if (mapLayers[i] != null) {
 				try {
 					mapLayers[i].processChunk(chunk);
-				} catch (IOException e) {
-					// TODO: Handle error properly.
-					e.printStackTrace();
+				} catch (Exception e) {
+					ModLoader.outputError(e, mod.getName() + " failed (" + e.getClass().getSimpleName() + ") to process chunk " + chunk.xPosition + "," + chunk.zPosition + " for layer " + (i+1) + ": " + e.getMessage());
 				}
 			}
 		}
@@ -58,9 +56,8 @@ public class MapManager {
 			if (mapLayers[i] != null) {
 				try {
 					mapLayers[i].save();
-				} catch (IOException e) {
-					// TODO: Handle error properly.
-					e.printStackTrace();
+				} catch (Exception e) {
+					ModLoader.outputError(e, mod.getName() + " failed (" + e.getClass().getSimpleName() + ") to save images for layer " + (i+1) + ": " + e.getMessage());
 				}
 				
 				mapLayers[i].clear();

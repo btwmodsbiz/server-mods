@@ -1,14 +1,11 @@
 package btwmod.livemap;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
 import net.minecraft.src.Chunk;
-import net.minecraft.src.MathHelper;
 
 public class MapImage {
 
@@ -24,7 +21,7 @@ public class MapImage {
 	public final File colorImageFile;
 	public final File heightImageFile;
 	
-	public MapImage(MapLayer mapLayer, int chunkX, int chunkZ) throws IOException {
+	public MapImage(MapLayer mapLayer, int chunkX, int chunkZ) throws Exception {
 		this.mapLayer = mapLayer;
 		
 		this.chunkX = chunkX;
@@ -41,7 +38,7 @@ public class MapImage {
 		return heightImage.getRGB(x, z) & 0xFF;
 	}
 	
-	public void loadImages() throws IOException {
+	public void loadImages() throws Exception {
 		if (colorImageFile.exists()) {
 			colorImage = ImageIO.read(colorImageFile);
 		} else {
@@ -110,7 +107,7 @@ public class MapImage {
 					//	colorPixel.composite(new Color(colorImage.getRGB(posX, northPosZ)), 0.25F);
 					
 					int northHeight = getHeightAt(chunk, xOffset, northPosZ);
-					//int x = heightImage.getRGB(pixelX + xOffset, pixelZ + northPosZ);
+					//int x = heightImage.getRGB(pixelX, pixelZ - 1);
 					//if (x > 0)
 					//	Integer.toString(x);
 					if (northHeight > heightPixel.red)
@@ -185,7 +182,6 @@ public class MapImage {
 	}
 	
 	protected void calculateColor(Chunk chunk, int x, int z, PixelColor colorPixel, PixelColor heightPixel) {
-		int increment = (int)Math.max(1.0F, 1.0F / mapLayer.pixelSize);
 		int count = 0;
 		int red = 0;
 		int green = 0;
@@ -194,6 +190,8 @@ public class MapImage {
 		
 		colorPixel.clear();
 		heightPixel.clear();
+
+		int increment = (int)Math.max(1.0F, 1.0F / mapLayer.pixelSize);
 		
 		for (int iX = 0; iX < increment; iX++) {
 			for (int iZ = 0; iZ < increment; iZ++) {
@@ -208,18 +206,10 @@ public class MapImage {
 					
 					BlockColor blockColor = mapLayer.map.blockColors[blockId];
 					if (blockColor != null) {
-						red += blockColor.red;
-						green += blockColor.green;
-						blue += blockColor.blue;
+						red += blockColor.red * blockColor.alpha / 255;
+						green += blockColor.green * blockColor.alpha / 255;
+						blue += blockColor.blue * blockColor.alpha / 255;
 						height += posY;
-						if (iX == 0 && iZ == 0) {
-							colorPixel.set(blockColor);
-							//heightPixel.set((float)posY, (float)posY, (float)posY);
-						}
-						else {
-							//color.composite(blockColor, 0.5F);
-							//heightPixel.composite((float)posY, (float)posY, (float)posY, 0.5F);
-						}
 					}
 				}
 			}
@@ -228,6 +218,9 @@ public class MapImage {
 		if (count > 0) {
 			colorPixel.set(red / count, green / count, blue / count);
 			heightPixel.set(height / count, height / count, height / count);
+		}
+		else {
+			System.out.println("Unable to calc color for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition);
 		}
 	}
 	
@@ -245,7 +238,7 @@ public class MapImage {
 		return blockId != 0; // && blockId != Block.snow.blockID;
 	}
 
-	protected void save() throws IOException {
+	protected void save() throws Exception {
 		ImageIO.write(colorImage, "png", colorImageFile);
 		ImageIO.write(heightImage, "png", heightImageFile);
 	}

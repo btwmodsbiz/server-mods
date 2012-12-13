@@ -1,7 +1,6 @@
 package btwmod.livemap;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,11 +27,11 @@ public class MapLayer {
 		pixelSize = map.imageSize / chunksPerImage / 16.0F;
 	}
 	
-	public MapImage provideImage(Chunk chunk) throws IOException {
+	public MapImage provideImage(Chunk chunk) throws Exception {
 		return provideImage(chunk.xPosition, chunk.zPosition);
 	}
 
-	private MapImage provideImage(int chunkX, int chunkZ) throws IOException {
+	private MapImage provideImage(int chunkX, int chunkZ) throws Exception {
 		String fileName = getChunkKey(chunkX, chunkZ) + ".png";
 		MapImage image = images.get(fileName);
 		if (image == null) {
@@ -41,9 +40,10 @@ public class MapLayer {
 		return image;
 	}
 
-	public void processChunk(Chunk chunk) throws IOException {
+	public void processChunk(Chunk chunk) throws Exception {
 		if (chunk.worldObj.provider.dimensionId == map.dimension) {
-			provideImage(chunk).renderChunk(chunk);
+			chunk.toString();
+			provideImage(chunk); //.renderChunk(chunk);
 		}
 	}
 
@@ -55,7 +55,7 @@ public class MapLayer {
 		return MathHelper.floor_float((float)chunkX / (float)chunksPerImage) + "_" + MathHelper.floor_float((float)chunkZ / (float)chunksPerImage);
 	}
 	
-	protected void save() throws IOException {
+	protected void save() throws Exception {
 		for (Entry<String, MapImage> entry : images.entrySet()) {
 			entry.getValue().save();
 		}
