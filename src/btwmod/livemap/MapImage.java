@@ -2,9 +2,12 @@ package btwmod.livemap;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import net.minecraft.src.Block;
 import net.minecraft.src.Chunk;
 
 public class MapImage {
@@ -122,41 +125,49 @@ public class MapImage {
 	}
 	
 	protected void calculateColor(Chunk chunk, int x, int z, PixelColor colorPixel, PixelColor heightPixel) {
-		int count = 0;
+		float count = 0.0F;
 		int red = 0;
 		int green = 0;
 		int blue = 0;
+		float alpha = 0;
 		int height = 0;
 		
 		colorPixel.clear();
 		heightPixel.clear();
+		
+		BlockColor[] stack;
 
 		int increment = (int)Math.max(1.0F, 1.0F / mapLayer.pixelSize);
 		
 		for (int iX = 0; iX < increment; iX++) {
 			for (int iZ = 0; iZ < increment; iZ++) {
-				int posY = Math.max(0, chunk.getHeightValue(x + iX, z + iZ));
-				int blockId = chunk.getBlockID(x + iX, posY, z + iZ);
+				int posY = Math.max(0, chunk.getHeightValue(x, z));
 				
-				while (!isRenderedBlock(blockId) && posY > 0)
-					blockId = chunk.getBlockID(x + iX, --posY, z + iZ);
-					
-				if (blockId > 0) {
+				while (chunk.getBlockID(x + iX, posY, z + iZ) == 0 && posY > 0)
+					posY--;
+				
+				// Determine the color for the exact block location.
+				stack = getBlockColorStack(chunk, x + iX, posY, z + iZ);
+				if (stack.length > 0) {
 					count++;
 					
-					BlockColor blockColor = mapLayer.map.blockColors[blockId];
-					if (blockColor != null) {
-						red += blockColor.red * blockColor.alpha / 255;
-						green += blockColor.green * blockColor.alpha / 255;
-						blue += blockColor.blue * blockColor.alpha / 255;
-						height += posY;
+					PixelColor stackColor = new PixelColor();
+					for (int i = stack.length - 1; i >= 0; i--) {
+						stackColor.composite(stack[i]);
 					}
+					
+					// Add to the average color for the map pixel.
+					red += stackColor.red * stackColor.alpha;
+					green += stackColor.green * stackColor.alpha;
+					blue += stackColor.blue * stackColor.alpha;
+					alpha += stackColor.alpha;
+					height += posY;
 				}
 			}
 		}
 		
-		if (count > 0) {
-			colorPixel.set(red / count, green / count, blue / count);
+		if (count > 0.0F) {
+			colorPixel.set(red / count, green / count, blue / count, alpha);
 			heightPixel.set(height / count, height / count, height / count);
 		}
 		else {
@@ -164,7 +175,34 @@ public class MapImage {
 		}
 	}
 	
-	protected static int getHeightAt(Chunk chunk, int x, int z) {
+	protected BlockColor[] getBlockColorStack(Chunk chunk, int x, int y, int z) {
+		List<BlockColor> colorStack = new ArrayList<BlockColor>();
+		int waterBlocks = 0;
+		
+		while (y >= 0) {
+			int blockId = chunk.getBlockID(x, y, z);
+			if (isRenderedBlock(blockId)) {
+				BlockColor blockColor = mapLayer.map.blockColors[blockId];
+				if (blockColor != null) {
+					
+					// Only allow up to 5 water blocks.
+					if ((Block.waterMoving.blockID != blockId && Block.waterStill.blockID != blockId) || ++waterBlocks <= 5) {
+						colorStack.add(blockColor);
+						
+						// Stop once we hit a opaque block.
+						if (!blockColor.isTransparent())
+							break;
+					}
+				}
+			}
+			
+			y--;
+		}
+		
+		return colorStack.toArray(new BlockColor[colorStack.size()]);
+	}
+	
+	protected int getHeightAt(Chunk chunk, int x, int z) {
 		int y = Math.max(0, chunk.getHeightValue(x, z));
 		int blockId = chunk.getBlockID(x, y, z);
 		
