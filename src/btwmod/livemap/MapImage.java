@@ -174,7 +174,15 @@ public class MapImage {
 		return blockId > 0 ? y : -1;
 	}
 	
-	protected static boolean isRenderedBlock(int blockId) {
+	protected boolean isRenderedBlock(int blockId) {
+		
+		if (blockId > 0) {
+			BlockColor blockColor = mapLayer.map.blockColors[blockId];
+			if (blockColor == null || (blockColor.red == 0 && blockColor.green == 0 && blockColor.blue == 0)) {
+				return false;
+			}
+		}
+		
 		return blockId != 0; // && blockId != Block.snow.blockID;
 	}
 
