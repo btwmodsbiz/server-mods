@@ -64,19 +64,6 @@ public class MapImage {
 	public void renderChunk(Chunk chunk) {
 		MapPos pos = new MapPos(chunk, mapLayer);
 		
-		/*int imageX = MathHelper.floor_float((float)chunk.xPosition / (float)mapLayer.chunksPerImage);
-		int imageZ = MathHelper.floor_float((float)chunk.zPosition / (float)mapLayer.chunksPerImage);
-		
-		float pixelsPerChunk = (float)mapLayer.map.imageSize / (float)mapLayer.chunksPerImage;
-		
-		// Determine the chunk coordinates of the upper left chunk in the image.
-		int imageChunkX = imageX * mapLayer.chunksPerImage;
-		int imageChunkZ = imageZ * mapLayer.chunksPerImage;
-		
-		// Determine the offset of the chunk within the image.
-		int chunkOffsetX = chunk.xPosition - imageChunkX;
-		int chunkOffsetZ = chunk.zPosition - imageChunkZ;*/
-		
 		int increment = (int)Math.max(1.0F, 1.0F / mapLayer.pixelSize);
 		
 		PixelColor colorPixel = new PixelColor();
@@ -130,53 +117,6 @@ public class MapImage {
 				
 				colorPixel.clear();
 				heightPixel.clear();
-				
-				/*int posY = Math.max(0, chunk.getHeightValue(posX, posZ));
-				int blockId = chunk.getBlockID(posX, posY, posZ);
-				
-				while (!isRenderedBlock(blockId) && posY > 0)
-					blockId = chunk.getBlockID(posX, --posY, posZ);
-					
-				if (blockId > 0) {
-					BlockColor color = mapLayer.map.blockColors[blockId];
-					if (color != null) {
-						int pixelX = MathHelper.floor_float((chunkOffsetX * pixelsPerChunk) + (posX * pixelsPerChunk / 16));
-						int pixelZ = MathHelper.floor_float((chunkOffsetZ * pixelsPerChunk) + (posZ * pixelsPerChunk / 16));
-						
-						PixelColor pixelColor = new PixelColor(color);
-						
-						// Adjust brightness for height.
-						//if (blockId != Block.lavaMoving.blockID && blockId != Block.lavaStill.blockID && blockId != Block.waterMoving.blockID && blockId != Block.waterStill.blockID)
-						pixelColor.scale((Math.min(1.25F, Math.max(0.75F, (float)(posY / .65) / 100.0F))) / 8 * 8);
-						
-						// Compare to northern block
-						int northPosZ = posZ - 1;
-						if (northPosZ >= 0) {
-							int northHeight = getHeightAt(chunk, posX, northPosZ);
-							if (northHeight > posY)
-								pixelColor.scale(0.85F);
-							else if (northHeight < posY)
-								pixelColor.scale(1.06F);
-						}
-						
-						// Compare to eastern block
-						int eastPosX = posX - 1;
-						if (eastPosX >= 0) {
-							int eastHeight = getHeightAt(chunk, eastPosX, posZ);
-							if (eastHeight > posY)
-								pixelColor.scale(0.85F);
-							else if (eastHeight < posY)
-								pixelColor.scale(1.06F);
-						}
-						
-						for (int iX = 0; iX < mapLayer.pixelSize; iX++) {
-							for (int iZ = 0; iZ < mapLayer.pixelSize; iZ++) {
-								colorImage.setRGB(pixelX + iX, pixelZ + iZ, pixelColor.asColor().getRGB());
-								heightImage.setRGB(pixelX + iX, pixelZ + iZ, 255 << 24 | posY << 16 | posY << 8 | posY);
-							}
-						}
-					}
-				}*/
 			}
 		}
 	}
