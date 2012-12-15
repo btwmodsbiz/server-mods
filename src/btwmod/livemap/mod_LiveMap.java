@@ -5,9 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 import net.minecraft.server.MinecraftServer;
@@ -16,9 +16,6 @@ import net.minecraft.src.Block;
 import net.minecraft.src.Chunk;
 import net.minecraft.src.ChunkProviderServer;
 import net.minecraft.src.IChunkLoader;
-import net.minecraft.src.RegionFile;
-import net.minecraft.src.RegionFileCache;
-import net.minecraft.src.WorldServer;
 
 import btwmods.CommandsAPI;
 import btwmods.IMod;
@@ -27,31 +24,31 @@ import btwmods.ReflectionAPI;
 import btwmods.ServerAPI;
 import btwmods.WorldAPI;
 import btwmods.io.Settings;
-import btwmods.server.ITickListener;
-import btwmods.server.TickEvent;
 import btwmods.world.ChunkEvent;
 import btwmods.world.IChunkListener;
 
-public class mod_LiveMap implements IMod, IChunkListener, ITickListener {
+public class mod_LiveMap implements IMod, IChunkListener {
 	
-	private int regionChunksDequeuedPerSecond = 20;
+	public boolean debugMessages = false;
 
-	private int[] zoomLevels = { 128, 64, 32, 16, 8, 4, 2, 1 };
+	private int[] zoomLevels = { 256, 128, 64, 32, 16, 8 };
 	private int imageSize = 256;
 	private File imageDir = ModLoader.modDataDir;
-	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
-
-	private ConcurrentLinkedQueue<Chunk> chunkQueue = new ConcurrentLinkedQueue<Chunk>();
-	private volatile ChunkProcessor chunkProcessor = null;
 	
-	private Deque<QueuedRegion> regionQueue = new ArrayDeque<QueuedRegion>();
-
+	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
 	public final BlockColor[] blockColors = new BlockColor[Block.blocksList.length];
+	
+	private volatile ChunkProcessor chunkProcessor = null;
+
+	private Queue<Chunk> chunkQueue = new ConcurrentLinkedQueue<Chunk>();
+	private AtomicInteger chunkQueueCount = new AtomicInteger();
 	
 	private IChunkLoader chunkLoaders[];
 	private File chunkLoaderLocations[];
 	
 	private CommandMap commandMap = null;
+	
+	private RegionLoader regionLoader = null;
 
 	@Override
 	public String getName() {
@@ -74,65 +71,12 @@ public class mod_LiveMap implements IMod, IChunkListener, ITickListener {
 		return null;
 	}
 	
-	public void queueRegion(int worldIndex, File location, int x, int z) {
-		regionQueue.add(new QueuedRegion(worldIndex, location, x, z));
+	public int getChunkQueueCount() {
+		return chunkQueueCount.get();
 	}
-
-	@Override
-	public void onTick(TickEvent event) {
-		if (event.getType() == TickEvent.TYPE.END) {
-			if (event.getTickCounter() % 20 == 0) {
-				QueuedRegion region;
-				int polled = 0;
-				while (++polled <= regionChunksDequeuedPerSecond && (region = regionQueue.pollLast()) != null) {
-					if (region instanceof QueuedRegionChunk) {
-						QueuedRegionChunk regionChunk = (QueuedRegionChunk)region;
-						//System.out.println("QueuedRegionChunk " + regionChunk.chunkX + "," + regionChunk.chunkZ + "(" + region.regionX + "." + region.regionZ + ")");
-						
-						if (((WorldServer)regionChunk.world).theChunkProviderServer.chunkExists(regionChunk.chunkX, regionChunk.chunkZ)) {
-							System.out.println("Skipped loaded chunk " + regionChunk.chunkX + "." + regionChunk.chunkZ);
-						}
-						else {
-							//System.out.println("Queued rendering of chunk " + regionChunk.chunkX + "." + regionChunk.chunkZ);
-							
-							try {
-								Chunk chunk = getChunkLoader(regionChunk.worldIndex).loadChunk(regionChunk.world, regionChunk.chunkX, regionChunk.chunkZ);
-								
-								if (chunk == null) {
-									ModLoader.outputError(getName() + " failed to get chunk input stream for chunk " + regionChunk.chunkX + "," + regionChunk.chunkZ + " in world " + regionChunk.worldIndex);
-								}
-								else {
-									// Remove any tick updates that were queued.
-									regionChunk.world.getPendingBlockUpdates(chunk, true);
-									
-									queueChunk(chunk);
-								}
-								
-							} catch (Exception e) {
-								ModLoader.outputError(getName() + " failed (" + e.getClass().getSimpleName() + ") to load chunk " + regionChunk.chunkX + "," + regionChunk.chunkZ + " for world " + regionChunk.worldIndex + ": " + e.getMessage());
-							}
-						}
-					}
-					else {
-						RegionFile regionFile = RegionFileCache.createOrLoadRegionFile(region.location, region.regionX << 5, region.regionZ << 5);
-						//System.out.println("QueuedRegion " + region.regionX + "." + region.regionZ);
-						for (int x = 0; x < 32; x++) {
-							for (int z = 0; z < 32; z++) {
-								if (regionFile.isChunkSaved(x, z)) {
-									//System.out.println("Queued region chunk " + region.regionX + "." + region.regionZ + " (" + x + "," + z + ") " + (region.regionX << 5 | x) + "," + (region.regionZ << 5 | z));
-									regionQueue.add(new QueuedRegionChunk(region, region.regionX << 5 | x, region.regionZ << 5 | z));
-								}
-								else {
-									//System.out.println("Skipping region chunk " + region.regionX + "." + region.regionZ + " (" + x + "," + z + ") " + (region.regionX << 5 | x) + "," + (region.regionZ << 5 | z));
-								}
-							}
-						}
-						
-						//break;
-					}
-				}
-			}
-		}
+	
+	public RegionLoader getRegionLoader() {
+		return regionLoader;
 	}
 
 	@Override
@@ -173,19 +117,21 @@ public class mod_LiveMap implements IMod, IChunkListener, ITickListener {
 			chunkLoaders = null;
 			chunkLoaderLocations = null;
 		}
+		
+		regionLoader = new RegionLoader(this, settings);
 
 		if (!loadColorData())
 			return;
 
 		WorldAPI.addListener(this);
-		ServerAPI.addListener(this);
+		ServerAPI.addListener(regionLoader);
 		CommandsAPI.registerCommand(commandMap = new CommandMap(this), this);
 	}
 
 	@Override
 	public void unload() throws Exception {
 		WorldAPI.removeListener(this);
-		ServerAPI.removeListener(this);
+		ServerAPI.removeListener(regionLoader);
 		CommandsAPI.unregisterCommand(commandMap);
 	}
 
@@ -255,7 +201,8 @@ public class mod_LiveMap implements IMod, IChunkListener, ITickListener {
 	
 	public void queueChunk(Chunk chunk) {
 		chunkQueue.add(chunk);
-
+		chunkQueueCount.incrementAndGet();
+		
 		if (chunkProcessor == null || !chunkProcessor.isRunning()) {
 			new Thread(chunkProcessor = new ChunkProcessor(new MapManager[] { new MapManager(this, 0, imageSize, zoomLevels, blockColors, new File(imageDir, "overworld")) }), getName() + " Thread").start();
 		}
@@ -281,17 +228,32 @@ public class mod_LiveMap implements IMod, IChunkListener, ITickListener {
 				
 				Chunk chunk = null;
 				int count = 0;
+				long start = System.currentTimeMillis();
+				long saving = 0;
 				while ((chunk = chunkQueue.poll()) != null) {
+					chunkQueueCount.decrementAndGet();
 					renderChunk(chunk);
 					
-					if (++count % 50 == 0)
+					if (debugMessages && count == 0)
+						ModLoader.outputInfo(getName() + " thread rendered chunk " + chunk.xPosition + "," + chunk.zPosition + ".");
+					
+					// Save and clear the images every so many chunks.
+					if (++count % 50 == 0) {
+						long startSaving = System.currentTimeMillis();
 						save();
+						saving += System.currentTimeMillis() - startSaving;
+					}
 				}
-				
+
+				long startSaving = System.currentTimeMillis();
 				save();
+				saving += System.currentTimeMillis() - startSaving;
+
+				if (debugMessages && count > 0)
+					ModLoader.outputInfo(getName() + " thread rendered " + count + " chunks in " + (System.currentTimeMillis() - start) + "ms (" + saving + "ms saving).");
 
 				try {
-					Thread.sleep(2L * 1000L);
+					Thread.sleep(1000L);
 				} catch (InterruptedException e) {
 
 				}
@@ -301,7 +263,6 @@ public class mod_LiveMap implements IMod, IChunkListener, ITickListener {
 		}
 		
 		private void renderChunk(Chunk chunk) {
-			//System.out.println("renderChunk " + chunk.xPosition + "," + chunk.zPosition);
 			for (int i = 0; i < maps.length; i++) {
 				maps[i].processChunk(chunk);
 			}
