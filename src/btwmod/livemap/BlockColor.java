@@ -10,13 +10,15 @@ public class BlockColor {
 
 	private static Map<String, Block> blockNameLookup = null;
 
-	public static final int defaultAlpha = 255;
+	public static final float defaultAlpha = 1.0F;
 
 	public static Block getBlockByName(String name) {
 		if (blockNameLookup == null) {
 			blockNameLookup = new HashMap<String, Block>();
 			for (int i = 0; i < Block.blocksList.length; i++) {
-				blockNameLookup.put(Block.blocksList[i].getBlockName(), Block.blocksList[i]);
+				if (Block.blocksList[i] != null) {
+					blockNameLookup.put(Block.blocksList[i].getBlockName(), Block.blocksList[i]);
+				}
 			}
 		}
 
@@ -24,22 +26,22 @@ public class BlockColor {
 	}
 
 	public final String blockName;
-	public final int alpha;
+	public final float alpha;
 	public final int red;
 	public final int blue;
 	public final int green;
 	public final int metadata;
 	public final boolean hasMetadata;
 
-	public BlockColor(String blockName, int red, int green, int blue, int alpha) {
+	public BlockColor(String blockName, int red, int green, int blue, float alpha) {
 		this(blockName, red, green, blue, alpha, 0, true);
 	}
 
-	public BlockColor(String blockName, int red, int green, int blue, int alpha, int metadata) {
+	public BlockColor(String blockName, int red, int green, int blue, float alpha, int metadata) {
 		this(blockName, red, green, blue, alpha, metadata, true);
 	}
 
-	private BlockColor(String blockName, int red, int green, int blue, int alpha, int metadata, boolean hasMetadata) {
+	private BlockColor(String blockName, int red, int green, int blue, float alpha, int metadata, boolean hasMetadata) {
 		this.blockName = blockName;
 		this.red = red;
 		this.green = green;
@@ -50,16 +52,16 @@ public class BlockColor {
 	}
 
 	public boolean isTransparent() {
-		return alpha < 255;
+		return alpha < 1.0F;
 	}
 
 	public void addTo(PixelColor color) {
-		color.composite(red, green, blue, (float)alpha / 255);
+		color.composite(red, green, blue, alpha);
 	}
 	
 	public Color asColor(boolean withAlpha) {
 		if (withAlpha)
-			return new Color(red, green, blue, alpha);
+			return new Color(red, green, blue, alpha * 255);
 		else
 			return new Color(red, green, blue, 255);
 	}
@@ -97,7 +99,7 @@ public class BlockColor {
 		int red = 0;
 		int green = 0;
 		int blue = 0;
-		int alpha = 0;
+		float alpha = defaultAlpha;
 		int metadata = 0;
 		boolean hasMetadata = false;
 
@@ -143,11 +145,11 @@ public class BlockColor {
 							break;
 						case 'a':
 							if (columns[i].charAt(1) == '+')
-								alpha += Integer.parseInt(columns[i].substring(2));
+								alpha += Float.parseFloat(columns[i].substring(2));
 							else if (columns[i].charAt(1) == '-')
-								alpha -= Integer.parseInt(columns[i].substring(2));
+								alpha -= Float.parseFloat(columns[i].substring(2));
 							else
-								alpha = Integer.parseInt(columns[i].substring(1));
+								alpha = Float.parseFloat(columns[i].substring(1));
 							break;
 						case '+':
 							red += Math.max(0, Math.min(255, Integer.parseInt(columns[i].substring(1))));
@@ -177,7 +179,7 @@ public class BlockColor {
 			}
 		}
 
-		if (red < 0 || blue < 0 || green < 0 || alpha < 0 || red > 255 || blue > 255 || green > 255 || alpha > 255)
+		if (red < 0 || blue < 0 || green < 0 || alpha < 0.0F || red > 255 || blue > 255 || green > 255 || alpha > 1.0F)
 			return null;
 
 		return new BlockColor(columns[0], red, green, blue, alpha, metadata, hasMetadata);

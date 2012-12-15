@@ -24,7 +24,7 @@ public class PixelColor {
 	}
 	
 	public PixelColor(BlockColor color) {
-		this((float)color.red, (float)color.green, (float)color.blue, (float)color.alpha);
+		this((float)color.red, (float)color.green, (float)color.blue, color.alpha);
 	}
 
 	public PixelColor(float red, float green, float blue, float alpha) {
@@ -46,6 +46,11 @@ public class PixelColor {
 
 	public PixelColor composite(float red, float green, float blue, float alpha, float brightness) {
 		composite(red * brightness, green * brightness, blue *  brightness, alpha);
+		return this;
+	}
+
+	public PixelColor composite(BlockColor blockColor) {
+		composite(blockColor, 1.0F);
 		return this;
 	}
 
@@ -85,7 +90,7 @@ public class PixelColor {
 	}
 	
 	public void set(BlockColor color) {
-		set((float)color.red, (float)color.green, (float)color.blue, (float)color.alpha / 255.0F);
+		set((float)color.red, (float)color.green, (float)color.blue, color.alpha);
 	}
 
 	public void set(float red, float green, float blue, float alpha) {
