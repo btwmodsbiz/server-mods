@@ -165,8 +165,10 @@ public class RegionLoader implements ITickListener {
 				
 				int queueCheck = regionQueue.size();
 				if (queueCheck > 0) {
-					ModLoader.outputError(mod.getName() + "'s " + RegionLoader.class.getSimpleName() + " completed but had " + queueCheck + " remaining in the queue");
+					ModLoader.outputError(mod.getName() + "'s " + RegionLoader.class.getSimpleName() + " completed but had " + queueCheck + " remaining in the queue.");
 					regionQueue.clear();
+				} else {
+					ModLoader.outputInfo(mod.getName() + "'s " + RegionLoader.class.getSimpleName() + " completed.");
 				}
 			}
 			
@@ -212,8 +214,11 @@ public class RegionLoader implements ITickListener {
 							if (regionFile.isChunkSaved(x, z)) {
 								regionQueue.add(new QueuedRegionChunk(region, region.regionX << 5 | x, region.regionZ << 5 | z));
 							}
-							else if (mod.debugMessages) {
-								ModLoader.outputInfo(mod.getName() + " skipped empty chunk " + x + "," + z + " for region " + region.regionX + "." + region.regionZ);
+							else {
+								processed++;
+								
+								if (mod.debugMessages)
+									 ModLoader.outputInfo(mod.getName() + " skipped empty chunk " + x + "," + z + " for region " + region.regionX + "." + region.regionZ);
 							}
 						}
 					}
