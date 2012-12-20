@@ -33,7 +33,7 @@ public class MapManager {
 					ModLoader.outputError(mod.getName() + " failed to create the directory for zoom level " + (i + 1) + ": " + zoomDir.getPath());
 				}
 				else {
-					mapLayers[i] = new MapLayer(this, zoomDir, zoomLevels[i]);
+					mapLayers[i] = new MapLayer(this, zoomDir, zoomLevels[i], mod.colorizer);
 				}
 			}
 		}

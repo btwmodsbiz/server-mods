@@ -41,6 +41,8 @@ public class BlockColor {
 	
 	public final int biomeId;
 	
+	//public final BiomeColorizer.TYPE biome;
+	
 	public final float alpha;
 	public final int alphaLimit;
 	public final boolean solidAfterAlphaLimit;
@@ -75,6 +77,13 @@ public class BlockColor {
 		this.red = red;
 		this.green = green;
 		this.blue = blue;
+		
+		/*if (blockName.equalsIgnoreCase("tile.grass"))
+			this.biome = BiomeColorizer.TYPE.GRASS;
+		else if (blockName.equalsIgnoreCase("tile.leaves") || blockName.equalsIgnoreCase("tile.vine") || blockName.equalsIgnoreCase("tile.tallgrass") || blockName.equalsIgnoreCase("tile.waterlily"))
+			this.biome = BiomeColorizer.TYPE.FOLIAGE;
+		else
+			this.biome = BiomeColorizer.TYPE.NONE;*/
 		
 		this.biomeId = biomeId;
 		
@@ -120,6 +129,23 @@ public class BlockColor {
 		color.composite(red, green, blue, alpha);
 	}
 	
+	/*public void addTo(PixelColor color, int biomeIndex, BiomeColorizer colorizer) {
+		addTo(color, alpha, biomeIndex, colorizer);
+	}
+	
+	public void addTo(PixelColor color, float alpha, int biomeIndex, BiomeColorizer colorizer) {
+		if (hueAlpha > 0.0F)
+			color.hue(hue, hueAlpha);
+		
+		int biomeColor = getBiomeColor(biomeIndex, colorizer);
+		if (biomeColor != 0) {
+			color.composite(biomeColor >> 16 & 255, biomeColor >> 8 & 255, biomeColor & 255, alpha);
+			return;
+		}
+		
+		color.composite(red, green, blue, alpha);
+	}*/
+	
 	public Color asColor(boolean withAlpha) {
 		if (withAlpha)
 			return new Color(red, green, blue, alpha * 255);
@@ -135,6 +161,49 @@ public class BlockColor {
 		return asColor(true).getRGB();
 	}
 	
+	/*public boolean hasBiomeColor() {
+		return false; //biome != BiomeColorizer.TYPE.NONE;
+	}
+	
+	public int getBiomeColor(int biomeIndex, BiomeColorizer colorizer) {
+		if (colorizer == null || !hasBiomeColor() || biomeIndex >= BiomeGenBase.biomeList.length || BiomeGenBase.biomeList[biomeIndex] == null)
+			return 0;
+		
+		BiomeGenBase biomeGenBase = BiomeGenBase.biomeList[biomeIndex];
+
+		double temperature = (double)BlockColor.clamp_float(biomeGenBase.getFloatTemperature(), 0.0F, 1.0F);
+		double rainfall = (double)BlockColor.clamp_float(biomeGenBase.getIntRainfall() / 65536.0F, 0.0F, 1.0F);
+
+		int color = 0;
+		float multiplier = 1.0F;
+		
+		switch (biome) {
+			case FOLIAGE:
+				color = colorizer.getFoliageColor(temperature, rainfall);
+				if (biomeIndex == BiomeGenBase.swampland.biomeID) {
+					color = ((color & 16711422) + 5115470) / 2;
+					multiplier = 0.8F;
+				}
+				break;
+			case GRASS:
+				color = colorizer.getGrassColor(temperature, rainfall);
+				if (biomeIndex == BiomeGenBase.swampland.biomeID) {
+					color = ((color & 16711422) + 5115470) / 2;
+				}
+				break;
+			case NONE:
+				break;
+			case WATER:
+				//color = colorizer.getWaterColor(temperature, rainfall);
+				break;
+		}
+		
+		if (multiplier != 1.0F)
+			color = Math.round((color >> 16 & 255) * multiplier) << 16 | Math.round((color >> 8 & 255) * multiplier) << 8 | Math.round((color & 255) * multiplier);
+		
+		return color;
+	}*/
+
 	public static float clamp_float(float par0, float par1, float par2) {
 		return par0 < par1 ? par1 : (par0 > par2 ? par2 : par0);
 	}

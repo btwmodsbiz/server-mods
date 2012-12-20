@@ -156,10 +156,32 @@ public class MapImage {
 					// Create a composite color from the BlockColor stack.
 					PixelColor stackColor = new PixelColor();
 					for (int i = stack.length - 1; i >= 0; i--) {
-						stack[i].addTo(stackColor);
+						stack[i].addTo(stackColor); //, biomes == null ? -1 : biomes[z << 4 | x] & 255, mapLayer.colorizer);
 						if (biomes != null && biomes[z << 4 | x] != 255)
 							biomeId += biomes[z << 4 | x];
 					}
+
+					/*if (biomes != null) {
+						int biomeIndex = biomes[z << 4 | x] & 255;
+						
+						//if (biomeIndex != 255)
+						
+						if (biomeIndex != 255) {
+							BiomeGenBase biomeGenBase = biomeIndex == 255 && BiomeGenBase.biomeList[biomeIndex] == null ? BiomeGenBase.plains : BiomeGenBase.biomeList[biomeIndex];
+		
+							double temperature = (double)BlockColor.clamp_float(biomeGenBase.getFloatTemperature(), 0.0F, 1.0F);
+							double rainfall = (double)BlockColor.clamp_float(biomeGenBase.getIntRainfall() / 65536.0F, 0.0F, 1.0F);
+		
+							//stackColor = new PixelColor(new Color(mapLayer.colorizer.getGrassColor(temperature, rainfall)));
+							int grassColor = mapLayer.colorizer.getGrassColor(temperature, rainfall);
+							
+							if (biomeIndex == BiomeGenBase.swampland.biomeID) {
+								 grassColor = ((grassColor & 16711422) + 5115470) / 2;
+							}
+							
+							stackColor.set(new Color(grassColor));
+						}
+					}*/
 					
 					// Add to the average color for the map pixel.
 					red += stackColor.red * stackColor.alpha;

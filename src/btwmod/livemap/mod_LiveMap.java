@@ -35,6 +35,9 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	private int[] zoomLevels = { 256, 128, 64, 32, 16 };
 	private int imageSize = 256;
 	private File imageDir = ModLoader.modDataDir;
+	private File grassColorImage = new File(ModLoader.modsDir, "grasscolor.png");
+	private File foliageColorImage = new File(ModLoader.modsDir, "foliagecolor.png");
+	public final File tempSave = new File(ModLoader.modDataDir, "livemap.temp");
 	
 	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
 	public final BlockColor[] blockColors = new BlockColor[Block.blocksList.length];
@@ -50,6 +53,8 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	private CommandMap commandMap = null;
 	
 	private RegionLoader regionLoader = null;
+	
+	public final BiomeColorizer colorizer = new BiomeColorizer();
 
 	@Override
 	public String getName() {
@@ -99,6 +104,38 @@ public class mod_LiveMap implements IMod, IChunkListener {
 
 		if (settings.hasKey("colorData")) {
 			colorData = new File(settings.get("colorData"));
+		}
+		
+		if (settings.hasKey("grassColorImage")) {
+			grassColorImage = new File(settings.get("grassColorImage"));
+		}
+		
+		if (settings.hasKey("foliageColorImage")) {
+			foliageColorImage = new File(settings.get("foliageColorImage"));
+		}
+		
+		if (grassColorImage.isFile()) {
+			try {
+				colorizer.loadGrassColors(grassColorImage);
+			}
+			catch (Exception e) {
+				ModLoader.outputError(getName() + " failed (" + e.getClass().getSimpleName() + ") to load the grassColorImage: " + e.getMessage());
+			}
+		}
+		else {
+			ModLoader.outputError(getName() + " is missing the grassColorImage. Grass biome color will be disabled.");
+		}
+		
+		if (foliageColorImage.isFile()) {
+			try {
+				colorizer.loadFoliageColors(foliageColorImage);
+			}
+			catch (Exception e) {
+				ModLoader.outputError(getName() + " failed (" + e.getClass().getSimpleName() + ") to load the foliageColorImage: " + e.getMessage());
+			}
+		}
+		else {
+			ModLoader.outputError(getName() + " is missing the foliageColorImage at: " + foliageColorImage.getPath());
 		}
 		
 		try {

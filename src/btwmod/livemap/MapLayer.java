@@ -14,10 +14,11 @@ public class MapLayer {
 	public final File layerDirectory;
 	public final int chunksPerImage;
 	public final float pixelSize;
+	public final BiomeColorizer colorizer;
 
 	protected Map<String, MapImage> images = new LinkedHashMap<String, MapImage>();
 
-	public MapLayer(MapManager map, File layerDirectory, int chunksPerImage) {
+	public MapLayer(MapManager map, File layerDirectory, int chunksPerImage, BiomeColorizer colorizer) {
 		if (map.imageSize / chunksPerImage == 0)
 			throw new IllegalArgumentException("imageSize divided by chunksPerImage cannot be less than 1");
 		
@@ -25,6 +26,8 @@ public class MapLayer {
 		this.layerDirectory = layerDirectory;
 		this.chunksPerImage = chunksPerImage;
 		pixelSize = map.imageSize / chunksPerImage / 16.0F;
+		
+		this.colorizer = colorizer;
 	}
 	
 	public MapImage provideImage(Chunk chunk) throws Exception {
