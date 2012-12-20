@@ -2,22 +2,29 @@ package btwmod.livemap;
 
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.src.Block;
 
 public class BlockColor {
 
-	private static Map<String, Block> blockNameLookup = null;
+	private static Map<String, Set<Block>> blockNameLookup = null;
 
 	public static final float opaque = 1.0F;
 
-	public static Block getBlockByName(String name) {
+	public static Set<Block> getBlocksByName(String name) {
 		if (blockNameLookup == null) {
-			blockNameLookup = new HashMap<String, Block>();
+			blockNameLookup = new HashMap<String, Set<Block>>();
+			
 			for (int i = 0; i < Block.blocksList.length; i++) {
 				if (Block.blocksList[i] != null) {
-					blockNameLookup.put(Block.blocksList[i].getBlockName(), Block.blocksList[i]);
+					Set<Block> blocks = blockNameLookup.get(Block.blocksList[i].getBlockName());
+					if (blocks == null)
+						blockNameLookup.put(Block.blocksList[i].getBlockName(), blocks = new LinkedHashSet<Block>());
+					
+					blocks.add(Block.blocksList[i]);
 				}
 			}
 		}
@@ -105,16 +112,20 @@ public class BlockColor {
 
 		for (int i = 1; i < columns.length; i++) {
 			if (columns[i].equalsIgnoreCase("blockmaterial")) {
-				Block block = getBlockByName(columns[0]);
+				Set<Block> blocks = getBlocksByName(columns[0]);
 
-				// Fail if the block does not exist.
-				if (block == null)
+				// Fail if the block name wasn't found.
+				if (blocks == null || blocks.size() == 0)
 					return null;
 
-				int mapColor = block.blockMaterial.materialMapColor.colorValue;
-				red = mapColor >> 16 & 255;
-				green = mapColor >> 8 & 255;
-				blue = mapColor & 255;
+				// TODO: OK that we're just using the first material for the block name?
+				for (Block block : blocks) {
+					int mapColor = block.blockMaterial.materialMapColor.colorValue;
+					red = mapColor >> 16 & 255;
+					green = mapColor >> 8 & 255;
+					blue = mapColor & 255;
+					break;
+				}
 
 			} else if (columns[i].length() > 0) {
 				try {
