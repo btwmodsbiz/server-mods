@@ -57,6 +57,7 @@ public class CommandMap extends CommandBaseExtended {
 			}
 			else if (isInt(args, 2) && isInt(args, 3)) {
 				int worldIndex;
+				int range = isInt(args, 4) ? parseInt(sender, args[4]) : 0;
 				
 				try {
 					worldIndex = Util.getWorldIndexFromName(args[1]);
@@ -67,8 +68,23 @@ public class CommandMap extends CommandBaseExtended {
 
 				int x = parseInt(sender, args[2]);
 				int z = parseInt(sender, args[3]);
-				if (mod.getRegionLoader().queueRegion(worldIndex, x, z, sender))
+				
+				int regions = 0;
+				for (int iX = x - range; iX <= x + range; iX++) {
+					for (int iZ = z - range; iZ <= z + range; iZ++) {
+						try {
+							mod.getRegionLoader().queueRegion(worldIndex, iX, iZ, regions > 0);
+							regions++;
+						} catch (Exception e) {
+							sender.sendChatToPlayer(e.getMessage());
+						}
+					}
+				}
+
+				if (regions == 1)
 					sender.sendChatToPlayer("Queued region " + x + "." + z + " (" + (32*32) + " chunks) for " + Util.getWorldNameFromIndex(worldIndex) + " for mapping.");
+				else if (regions > 1)
+					sender.sendChatToPlayer("Queued " + regions + " regions (" + (regions*32*32) + " chunks) centered on " + x + "." + z + " for " + Util.getWorldNameFromIndex(worldIndex) + " for mapping.");
 			}
 			else {
 				throw new WrongUsageException("/" + getCommandName() + " region (dequeuelimit | dequeueticks | loadedchunkslimit) (show | <num>)", new Object[0]);
