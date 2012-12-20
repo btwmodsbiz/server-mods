@@ -1,13 +1,12 @@
 package btwmod.livemap;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.imageio.ImageIO;
-
-import net.minecraft.src.Block;
+import btwmods.ModLoader;
 import net.minecraft.src.Chunk;
 
 public class MapImage {
@@ -82,13 +81,13 @@ public class MapImage {
 				
 				// Adjust brightness for height.
 				//if (blockId != Block.lavaMoving.blockID && blockId != Block.lavaStill.blockID && blockId != Block.waterMoving.blockID && blockId != Block.waterStill.blockID)
-				colorPixel.scale((Math.min(1.25F, Math.max(0.75F, (float)(heightPixel.red / .65) / 100.0F))) / 8 * 8);
+				colorPixel.scale((Math.min(1.25F, Math.max(0.75F, getBlockHeight(heightPixel) / .65F / 100.0F))) / 8 * 8);
 				
 				float darken = 0.85F;
 				float ligthen = 1.06F;
 				
 				if (mapLayer.pixelSize < 1)
-					darken = 0.93F;
+					darken = 0.91F;
 				
 				// Compare to northern block
 				int northPosZ = zOffset - 1;
@@ -100,9 +99,9 @@ public class MapImage {
 					//int x = heightImage.getRGB(pixelX, pixelZ - 1);
 					//if (x > 0)
 					//	Integer.toString(x);
-					if (northHeight > heightPixel.red)
+					if (northHeight > getBlockHeight(heightPixel))
 						colorPixel.scale(darken);
-					else if (northHeight < heightPixel.red)
+					else if (northHeight < getBlockHeight(heightPixel))
 						colorPixel.scale(ligthen);
 				}
 				
@@ -110,9 +109,9 @@ public class MapImage {
 				int eastPosX = xOffset - 1;
 				if (eastPosX >= 0) {
 					int eastHeight = getHeightAt(chunk, eastPosX, zOffset);
-					if (eastHeight > heightPixel.red)
+					if (eastHeight > getBlockHeight(heightPixel))
 						colorPixel.scale(darken);
-					else if (eastHeight < heightPixel.red)
+					else if (eastHeight < getBlockHeight(heightPixel))
 						colorPixel.scale(ligthen);
 				}
 				
@@ -141,19 +140,20 @@ public class MapImage {
 		
 		for (int iX = 0; iX < increment; iX++) {
 			for (int iZ = 0; iZ < increment; iZ++) {
-				int posY = Math.max(0, chunk.getHeightValue(x, z));
+				int posY = Math.max(0, chunk.getHeightValue(x + iX, z +iZ));
 				
 				while (chunk.getBlockID(x + iX, posY, z + iZ) == 0 && posY > 0)
 					posY--;
 				
-				// Determine the color for the exact block location.
+				// Get the stack of BlockColors for this exact block location.
 				stack = getBlockColorStack(chunk, x + iX, posY, z + iZ);
 				if (stack.length > 0) {
 					count++;
 					
+					// Create a composite color from the BlockColor stack.
 					PixelColor stackColor = new PixelColor();
 					for (int i = stack.length - 1; i >= 0; i--) {
-						stackColor.composite(stack[i]);
+						stack[i].addTo(stackColor)
 					}
 					
 					// Add to the average color for the map pixel.
@@ -167,8 +167,11 @@ public class MapImage {
 		}
 		
 		if (count > 0.0F) {
-			colorPixel.set(red / count, green / count, blue / count, alpha);
-			heightPixel.set(height / count, height / count, height / count);
+			colorPixel.set(red / count, green / count, blue / count, alpha / count);
+			heightPixel.set(new Color(0, Math.round(height / count), 0));
+			
+			if (getBlockHeight(heightPixel) != Math.round(height / count))
+				ModLoader.outputError("HeightPixel height " + getBlockHeight(heightPixel) + " (color: " + heightPixel.red + "," + heightPixel.green + "," + heightPixel.blue + ") doesn't match " + Math.round(height / count) + " for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition + " in layer " + mapLayer.chunksPerImage);
 		}
 		else {
 			System.out.println("Unable to calc color for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition);
@@ -177,7 +180,7 @@ public class MapImage {
 	
 	protected BlockColor[] getBlockColorStack(Chunk chunk, int x, int y, int z) {
 		List<BlockColor> colorStack = new ArrayList<BlockColor>();
-		int waterBlocks = 0;
+		int[] alphaLimits = null;
 		
 		while (y >= 0) {
 			int blockId = chunk.getBlockID(x, y, z);
@@ -185,13 +188,20 @@ public class MapImage {
 				BlockColor blockColor = mapLayer.map.blockColors[blockId];
 				if (blockColor != null) {
 					
-					// Only allow up to 5 water blocks.
-					if ((Block.waterMoving.blockID != blockId && Block.waterStill.blockID != blockId) || ++waterBlocks <= 5) {
+					// Only create the array when needed.
+					if (blockColor.alphaLimit > 0 && alphaLimits == null)
+						alphaLimits = new int[mapLayer.map.blockColors.length];
+					
+					if (blockColor.alphaLimit <= 0 || ++alphaLimits[blockId] <= blockColor.alphaLimit) {
 						colorStack.add(blockColor);
 						
 						// Stop once we hit a opaque block.
 						if (!blockColor.isTransparent())
 							break;
+					}
+					else if (blockColor.alphaLimit > 0 && blockColor.solidAfterAlphaLimit && alphaLimits[blockId] > blockColor.alphaLimit) {
+						colorStack.add(blockColor.asSolid());
+						break;
 					}
 				}
 			}
@@ -225,7 +235,23 @@ public class MapImage {
 	}
 
 	protected void save() throws Exception {
-		ImageIO.write(colorImage, "png", colorImageFile);
-		ImageIO.write(heightImage, "png", heightImageFile);
+		if (ImageIO.write(colorImage, "png", mapLayer.map.mod.tempSave)) {
+			if (!colorImageFile.exists() || colorImageFile.delete()) {
+				if (mapLayer.map.mod.tempSave.renameTo(colorImageFile)) {
+					// TODO: 
+				}
+			}
+		}
+		if (ImageIO.write(heightImage, "png", mapLayer.map.mod.tempSave)) {
+			if (!heightImageFile.exists() || heightImageFile.delete()) {
+				if (mapLayer.map.mod.tempSave.renameTo(heightImageFile)) {
+					// TODO: 
+				}
+			}
+		}
+	}
+	
+	public static int getBlockHeight(PixelColor color) {
+		return Math.round(color.green);
 	}
 }
