@@ -39,6 +39,8 @@ public class BlockColor {
 	public final int blue;
 	public final int green;
 	
+	public final int biomeId;
+	
 	public final float alpha;
 	public final int alphaLimit;
 	public final boolean solidAfterAlphaLimit;
@@ -51,28 +53,31 @@ public class BlockColor {
 	
 	private BlockColor asSolid = null;
 
-	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit) {
-		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, 0.0F, 0, true);
+	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, int biomeId) {
+		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, 0.0F, 0, true, biomeId);
 	}
 
-	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, float hueAlpha) {
-		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, hueAlpha, 0, true);
+	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, float hueAlpha, int biomeId) {
+		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, hueAlpha, 0, true, biomeId);
 	}
 
-	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, int metadata) {
+	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, int metadata, int biomeId) {
 		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, 0.0F, metadata, true, biomeId);
 	}
 
-	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, float hueAlpha, int metadata) {
+	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, float hueAlpha, int metadata, int biomeId) {
 		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, hueAlpha, metadata, true, biomeId);
 	}
 
-	private BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, float hueAlpha, int metadata, boolean hasMetadata) {
+	private BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, float hueAlpha, int metadata, boolean hasMetadata, int biomeId) {
 		this.blockName = blockName;
 		
 		this.red = red;
 		this.green = green;
 		this.blue = blue;
+		
+		this.biomeId = biomeId;
+		
 		this.alpha = alpha;
 		this.alphaLimit = alphaLimit;
 		this.solidAfterAlphaLimit = solidAfterAlphaLimit;
@@ -143,7 +148,7 @@ public class BlockColor {
 		int green = mapColor >> 8 & 255;
 		int blue = mapColor & 255;
 		
-		return new BlockColor(block.getBlockName(), red, green, blue, BlockColor.opaque, BlockColor.noAlphaLimit, true);
+		return new BlockColor(block.getBlockName(), red, green, blue, BlockColor.opaque, BlockColor.noAlphaLimit, true, -1);
 	}
 
 	public static BlockColor fromConfigLine(String line) {
@@ -159,6 +164,9 @@ public class BlockColor {
 		int red = 0;
 		int green = 0;
 		int blue = 0;
+		
+		int biomeId = -1;
+		
 		float alpha = opaque;
 		int alphaLimit = noAlphaLimit;
 		boolean solidAfterAlphaLimit = false;
@@ -261,6 +269,9 @@ public class BlockColor {
 							metadata = Integer.parseInt(columns[i].substring(1));
 							hasMetadata = true;
 							break;
+						case 'i':
+							biomeId = Integer.parseInt(columns[i].substring(1));
+							break;
 					}
 				} catch (NumberFormatException e) {
 					return null;
@@ -271,7 +282,7 @@ public class BlockColor {
 		}
 
 		try {
-			return new BlockColor(columns[0], red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, hueAlpha, metadata, hasMetadata);
+			return new BlockColor(columns[0], red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, hueAlpha, metadata, hasMetadata, biomeId);
 		}
 		catch (IllegalArgumentException e) {
 			return null;
