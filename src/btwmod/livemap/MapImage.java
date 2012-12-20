@@ -149,7 +149,7 @@ public class MapImage {
 					posY--;
 				
 				// Get the stack of BlockColors for this exact block location.
-				stack = getBlockColorStack(chunk, x + iX, posY, z + iZ);
+				stack = getBlockColorStack(chunk, x + iX, posY, z + iZ, biomes == null ? -1 : biomes[z << 4 | x] & 255);
 				if (stack.length > 0) {
 					count++;
 					
@@ -186,7 +186,7 @@ public class MapImage {
 		}
 	}
 	
-	protected BlockColor[] getBlockColorStack(Chunk chunk, int x, int y, int z) {
+	protected BlockColor[] getBlockColorStack(Chunk chunk, int x, int y, int z, int biomeId) {
 		List<BlockColor> colorStack = new ArrayList<BlockColor>();
 		int[] alphaLimits = null;
 		
