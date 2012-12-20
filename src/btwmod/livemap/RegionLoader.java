@@ -1,6 +1,7 @@
 package btwmod.livemap;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,14 +56,13 @@ public class RegionLoader implements ITickListener {
 		return total - processed;
 	}
 	
-	public boolean queueRegion(int worldIndex, int x, int z) {
-		return queueRegion(worldIndex, x, z, null);
+	public void queueRegion(int worldIndex, int x, int z) throws Exception {
+		queueRegion(worldIndex, x, z, false);
 	}
 	
-	public boolean queueRegion(int worldIndex, int x, int z, ICommandSender sender) {
-		if (total > 0) {
-			if (sender != null)
-				sender.sendChatToPlayer("Can't queue any more regions since there are still chunks queued.");
+	public void queueRegion(int worldIndex, int x, int z, boolean force) throws Exception {
+		if (total > 0 && !force) {
+			throw new IllegalStateException("Can't queue any more regions since there are still chunks queued.");
 		}
 		else {
 			IChunkLoader loader = mod.getChunkLoader(worldIndex);
@@ -72,23 +72,20 @@ public class RegionLoader implements ITickListener {
 				if (location != null) {
 					if (new File(new File(location, "region"), "r." + x + "." + z + ".mca").isFile()) {
 						regionQueue.add(new QueuedRegion(worldIndex, location, x, z));
-						reset(32 * 32);
-						return true;
+						reset(total + 32 * 32);
 					}
-					else if (sender != null) {
-						sender.sendChatToPlayer("Region file for " + x + "." + z + " does not exist.");
+					else {
+						throw new FileNotFoundException("Region file for " + x + "." + z + " does not exist.");
 					}
 				}
-				else if (sender != null) {
-					sender.sendChatToPlayer("The anvil save location could not be determined for the world.");
+				else {
+					throw new FileNotFoundException("The anvil save location could not be determined for the world.");
 				}
 			}
-			else if (sender != null) {
-				sender.sendChatToPlayer("The IChunkLoader could not be retrieved or is not an instance of AnvilChunkLoader.");
+			else {
+				throw new Exception("The IChunkLoader could not be retrieved or is not an instance of AnvilChunkLoader.");
 			}
 		}
-		
-		return false;
 	}
 	
 	public int queueWorld(int worldIndex) {
