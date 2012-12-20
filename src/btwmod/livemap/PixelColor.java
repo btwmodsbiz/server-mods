@@ -49,16 +49,6 @@ public class PixelColor {
 		return this;
 	}
 
-	public PixelColor composite(BlockColor blockColor) {
-		composite(blockColor, 1.0F);
-		return this;
-	}
-
-	public PixelColor composite(BlockColor blockColor, float alpha) {
-		composite(blockColor.red, blockColor.green, blockColor.blue, blockColor.alpha * alpha);
-		return this;
-	}
-
 	public PixelColor composite(Color color, float alpha) {
 		composite(color.getRed(), color.getGreen(), color.getBlue(), (float)color.getAlpha() / 255.0F * alpha);
 		return this;
