@@ -31,7 +31,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	
 	public boolean debugMessages = false;
 
-	private int[] zoomLevels = { 256, 128, 64, 32, 16, 8 };
+	private int[] zoomLevels = { 256, 128, 64, 32, 16 };
 	private int imageSize = 256;
 	private File imageDir = ModLoader.modDataDir;
 	
@@ -151,15 +151,20 @@ public class mod_LiveMap implements IMod, IChunkListener {
 							return false;
 		
 						} else {
-							Block block = BlockColor.getBlockByName(color.blockName);
+							Set<Block> blocks = BlockColor.getBlocksByName(color.blockName);
 		
-							if (block == null) {
+							if (blocks == null) {
 								// TODO: Report color for block that does not exist?
-							} else if (blockColors[block.blockID] != null) {
-								ModLoader.outputError(getName() + " found duplicate colorData entries for: " + block.getBlockName(), Level.SEVERE);
-								return false;
-							} else {
-								blockColors[block.blockID] = color;
+							}
+							else {
+								for (Block block : blocks) {
+									if (blockColors[block.blockID] != null) {
+										ModLoader.outputError(getName() + " found duplicate colorData entries for: " + block.getBlockName(), Level.SEVERE);
+										return false;
+									} else {
+										blockColors[block.blockID] = color;
+									}
+								}
 							}
 						}
 					}
@@ -179,7 +184,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 
 		// Set colors for blocks not set by the config.
 		for (int i = 0; i < blockColors.length; i++) {
-			if (Block.blocksList[i] != null && blockColors[i] == null) {
+			if (Block.blocksList[i] != null && blockColors[i] == null && Block.blocksList[i].getBlockName() != null) {
 				blockColors[i] = BlockColor.fromBlock(Block.blocksList[i]);
 			}
 		}
