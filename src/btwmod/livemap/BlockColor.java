@@ -13,6 +13,7 @@ public class BlockColor {
 	private static Map<String, Set<Block>> blockNameLookup = null;
 
 	public static final float opaque = 1.0F;
+	public static final int noAlphaLimit = 0;
 
 	public static Set<Block> getBlocksByName(String name) {
 		if (blockNameLookup == null) {
@@ -33,29 +34,70 @@ public class BlockColor {
 	}
 
 	public final String blockName;
-	public final float alpha;
+	
 	public final int red;
 	public final int blue;
 	public final int green;
+	
+	public final float alpha;
+	public final int alphaLimit;
+	public final boolean solidAfterAlphaLimit;
+	
 	public final int metadata;
 	public final boolean hasMetadata;
+	
+	public final float hue;
+	public final float hueAlpha;
+	
+	private BlockColor asSolid = null;
 
-	public BlockColor(String blockName, int red, int green, int blue, float alpha) {
-		this(blockName, red, green, blue, alpha, 0, true);
+	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit) {
+		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, 0.0F, 0, true);
 	}
 
-	public BlockColor(String blockName, int red, int green, int blue, float alpha, int metadata) {
-		this(blockName, red, green, blue, alpha, metadata, true);
+	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, float hueAlpha) {
+		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, hueAlpha, 0, true);
 	}
 
-	private BlockColor(String blockName, int red, int green, int blue, float alpha, int metadata, boolean hasMetadata) {
+	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, int metadata) {
+		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, 0.0F, metadata, true, biomeId);
+	}
+
+	public BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, float hueAlpha, int metadata) {
+		this(blockName, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, hueAlpha, metadata, true, biomeId);
+	}
+
+	private BlockColor(String blockName, int red, int green, int blue, float alpha, int alphaLimit, boolean solidAfterAlphaLimit, float hueAlpha, int metadata, boolean hasMetadata) {
 		this.blockName = blockName;
+		
 		this.red = red;
 		this.green = green;
 		this.blue = blue;
 		this.alpha = alpha;
+		this.alphaLimit = alphaLimit;
+		this.solidAfterAlphaLimit = solidAfterAlphaLimit;
+		
+		this.hue = Color.RGBtoHSB(red, green, blue, null)[0];
+		this.hueAlpha = hueAlpha;
+		
 		this.metadata = metadata;
 		this.hasMetadata = hasMetadata;
+		
+		if (red < 0 || blue < 0 || green < 0 || alpha < 0.0F
+				|| red > 255 || blue > 255 || green > 255 || alpha > 1.0F
+				|| hueAlpha < 0.0F || hueAlpha > 1.0F)
+			
+			throw new IllegalArgumentException();
+	}
+	
+	public BlockColor asSolid() {
+		if (!isTransparent())
+			return this;
+		
+		if (asSolid == null)
+			asSolid = new BlockColor(blockName, red, green, blue, 1.0F, 0, false, 0.0F, metadata, hasMetadata, biomeId);
+		
+		return asSolid;
 	}
 
 	public boolean isTransparent() {
@@ -63,6 +105,13 @@ public class BlockColor {
 	}
 
 	public void addTo(PixelColor color) {
+		addTo(color, alpha);
+	}
+
+	public void addTo(PixelColor color, float alpha) {
+		if (hueAlpha > 0.0F)
+			color.hue(hue, hueAlpha);
+		
 		color.composite(red, green, blue, alpha);
 	}
 	
@@ -81,6 +130,10 @@ public class BlockColor {
 		return asColor(true).getRGB();
 	}
 	
+	public static float clamp_float(float par0, float par1, float par2) {
+		return par0 < par1 ? par1 : (par0 > par2 ? par2 : par0);
+	}
+	
 	public static BlockColor fromBlock(Block block) {
 		if (block == null)
 			return null;
@@ -90,7 +143,7 @@ public class BlockColor {
 		int green = mapColor >> 8 & 255;
 		int blue = mapColor & 255;
 		
-		return new BlockColor(block.getBlockName(), red, green, blue, BlockColor.opaque);
+		return new BlockColor(block.getBlockName(), red, green, blue, BlockColor.opaque, BlockColor.noAlphaLimit, true);
 	}
 
 	public static BlockColor fromConfigLine(String line) {
@@ -107,6 +160,11 @@ public class BlockColor {
 		int green = 0;
 		int blue = 0;
 		float alpha = opaque;
+		int alphaLimit = noAlphaLimit;
+		boolean solidAfterAlphaLimit = false;
+		
+		float hueAlpha = 0.0F;
+		
 		int metadata = 0;
 		boolean hasMetadata = false;
 
@@ -155,12 +213,34 @@ public class BlockColor {
 								blue = Integer.parseInt(columns[i].substring(1));
 							break;
 						case 'a':
+							// Reset this in case alpha is specified twice by accident.
+							solidAfterAlphaLimit = false;
+
+							int marker = columns[i].indexOf(':');
+							if (marker >= 0) {
+								
+								// Check for the solid after alpha limit flag.
+								if (columns[i].charAt(columns[i].length() - 1) == 's') {
+									solidAfterAlphaLimit = true;
+									columns[i] = columns[i].substring(0, columns[i].length() - 1);
+								}
+								
+								alphaLimit = Integer.parseInt(columns[i].substring(marker + 1));
+								columns[i] = columns[i].substring(0, marker);
+							}
+							
 							if (columns[i].charAt(1) == '+')
 								alpha += Float.parseFloat(columns[i].substring(2));
 							else if (columns[i].charAt(1) == '-')
 								alpha -= Float.parseFloat(columns[i].substring(2));
 							else
 								alpha = Float.parseFloat(columns[i].substring(1));
+							break;
+						case 'h':
+							if (columns[i].substring(1).indexOf('.') > 0)
+								hueAlpha = Float.parseFloat(columns[i].substring(1));
+							else
+								hueAlpha = (float)Integer.parseInt(columns[i].substring(1)) / 360.0F;
 							break;
 						case '+':
 							red += Math.max(0, Math.min(255, Integer.parseInt(columns[i].substring(1))));
@@ -190,9 +270,11 @@ public class BlockColor {
 			}
 		}
 
-		if (red < 0 || blue < 0 || green < 0 || alpha < 0.0F || red > 255 || blue > 255 || green > 255 || alpha > 1.0F)
+		try {
+			return new BlockColor(columns[0], red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, hueAlpha, metadata, hasMetadata);
+		}
+		catch (IllegalArgumentException e) {
 			return null;
-
-		return new BlockColor(columns[0], red, green, blue, alpha, metadata, hasMetadata);
+		}
 	}
 }
