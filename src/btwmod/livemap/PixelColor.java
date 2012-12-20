@@ -10,6 +10,8 @@ public class PixelColor {
 	public float green;
 	public float blue;
 	public float alpha;
+	
+	private float[] hsbvals = new float[3];
 
 	public PixelColor() {
 		clear();
@@ -45,19 +47,51 @@ public class PixelColor {
 	}
 
 	public PixelColor composite(float red, float green, float blue, float alpha, float brightness) {
-		composite(red * brightness, green * brightness, blue *  brightness, alpha);
-		return this;
+		return composite(red * brightness, green * brightness, blue *  brightness, alpha);
 	}
 
 	public PixelColor composite(Color color, float alpha) {
-		composite(color.getRed(), color.getGreen(), color.getBlue(), (float)color.getAlpha() / 255.0F * alpha);
-		return this;
+		return composite(color.getRed(), color.getGreen(), color.getBlue(), (float)color.getAlpha() / 255.0F * alpha);
+	}
+	
+	public float getHue() {
+		return hsbvals[0];
+	}
+	
+	public int getHueInt() {
+		return Math.round(getHue() * 360);
+	}
+	
+	public float getSaturation() {
+		return hsbvals[1];
+	}
+	
+	public int getSaturationInt() {
+		return Math.round(getSaturation() * 100);
+	}
+	
+	public float getBrightness() {
+		return hsbvals[2];
+	}
+	
+	public int getBrightnessInt() {
+		return Math.round(getBrightness() * 100);
+	}
+	
+	public PixelColor hue(int hue) {
+		return hue(hue, 1.0F);
+	}
+	
+	public PixelColor hue(float hue, float alpha) {
+		float[] hsb = Color.RGBtoHSB(Math.round(red), Math.round(green), Math.round(blue), null);
+		int rgb = Color.HSBtoRGB(hue, hsb[1], hsb[2]);
+		return composite((float)(rgb >> 16 & 255), (float)(rgb >> 8 & 255), (float)(rgb & 255), alpha);
 	}
 	
 	public PixelColor scale(float multiplier) {
-		red = red * multiplier;
-		green = green * multiplier;
-		blue = blue * multiplier;
+		red *= multiplier;
+		green *= multiplier;
+		blue *= multiplier;
 		checkValues();
 		return this;
 	}
@@ -100,5 +134,7 @@ public class PixelColor {
 		green = Math.min(255.0F, Math.max(0.0F, green));
 		blue = Math.min(255.0F, Math.max(0.0F, blue));
 		alpha = Math.min(1.0F, Math.max(0.0F, alpha));
+		
+		Color.RGBtoHSB(Math.round(red), Math.round(green), Math.round(blue), hsbvals);
 	}
 }
