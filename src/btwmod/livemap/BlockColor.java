@@ -10,7 +10,7 @@ public class BlockColor {
 
 	private static Map<String, Block> blockNameLookup = null;
 
-	public static final float defaultAlpha = 1.0F;
+	public static final float opaque = 1.0F;
 
 	public static Block getBlockByName(String name) {
 		if (blockNameLookup == null) {
@@ -83,7 +83,7 @@ public class BlockColor {
 		int green = mapColor >> 8 & 255;
 		int blue = mapColor & 255;
 		
-		return new BlockColor(block.getBlockName(), red, green, blue, BlockColor.defaultAlpha);
+		return new BlockColor(block.getBlockName(), red, green, blue, BlockColor.opaque);
 	}
 
 	public static BlockColor fromConfigLine(String line) {
@@ -99,7 +99,7 @@ public class BlockColor {
 		int red = 0;
 		int green = 0;
 		int blue = 0;
-		float alpha = defaultAlpha;
+		float alpha = opaque;
 		int metadata = 0;
 		boolean hasMetadata = false;
 
