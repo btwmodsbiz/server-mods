@@ -70,6 +70,8 @@ public class MapImage {
 		
 		PixelColor colorPixel = new PixelColor();
 		PixelColor heightPixel = new PixelColor();
+
+		byte[] biomes = chunk.getBiomeArray();
 		
 		for (int xOffset = 0; xOffset < 16; xOffset += increment) {
 			for (int zOffset = 0; zOffset < 16; zOffset += increment) {
@@ -77,7 +79,7 @@ public class MapImage {
 				int pixelX = pos.getX(xOffset);
 				int pixelZ = pos.getZ(zOffset);
 				
-				calculateColor(chunk, xOffset, zOffset, colorPixel, heightPixel);
+				calculateColor(chunk, xOffset, zOffset, biomes, colorPixel, heightPixel);
 				
 				// Adjust brightness for height.
 				//if (blockId != Block.lavaMoving.blockID && blockId != Block.lavaStill.blockID && blockId != Block.waterMoving.blockID && blockId != Block.waterStill.blockID)
@@ -123,13 +125,14 @@ public class MapImage {
 		}
 	}
 	
-	protected void calculateColor(Chunk chunk, int x, int z, PixelColor colorPixel, PixelColor heightPixel) {
+	protected void calculateColor(Chunk chunk, int x, int z, byte[] biomes, PixelColor colorPixel, PixelColor heightPixel) {
 		float count = 0.0F;
 		int red = 0;
 		int green = 0;
 		int blue = 0;
 		float alpha = 0;
 		int height = 0;
+		int biomeId = 0;
 		
 		colorPixel.clear();
 		heightPixel.clear();
@@ -153,7 +156,9 @@ public class MapImage {
 					// Create a composite color from the BlockColor stack.
 					PixelColor stackColor = new PixelColor();
 					for (int i = stack.length - 1; i >= 0; i--) {
-						stack[i].addTo(stackColor)
+						stack[i].addTo(stackColor);
+						if (biomes != null && biomes[z << 4 | x] != 255)
+							biomeId += biomes[z << 4 | x];
 					}
 					
 					// Add to the average color for the map pixel.
@@ -168,10 +173,13 @@ public class MapImage {
 		
 		if (count > 0.0F) {
 			colorPixel.set(red / count, green / count, blue / count, alpha / count);
-			heightPixel.set(new Color(0, Math.round(height / count), 0));
+			heightPixel.set(new Color(0, Math.round(height / count), Math.round(biomeId / count)));
 			
 			if (getBlockHeight(heightPixel) != Math.round(height / count))
 				ModLoader.outputError("HeightPixel height " + getBlockHeight(heightPixel) + " (color: " + heightPixel.red + "," + heightPixel.green + "," + heightPixel.blue + ") doesn't match " + Math.round(height / count) + " for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition + " in layer " + mapLayer.chunksPerImage);
+			
+			if (getBlockBiome(heightPixel) != Math.round(biomeId / count))
+				ModLoader.outputError("HeightPixel biome " + getBlockBiome(heightPixel) + " (color: " + heightPixel.red + "," + heightPixel.green + "," + heightPixel.blue + ") doesn't match " + Math.round(biomeId / count) + " for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition + " in layer " + mapLayer.chunksPerImage);
 		}
 		else {
 			System.out.println("Unable to calc color for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition);
@@ -253,5 +261,9 @@ public class MapImage {
 	
 	public static int getBlockHeight(PixelColor color) {
 		return Math.round(color.green);
+	}
+	
+	public static int getBlockBiome(PixelColor color) {
+		return Math.round(color.blue);
 	}
 }
