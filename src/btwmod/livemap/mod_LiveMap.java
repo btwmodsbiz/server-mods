@@ -35,7 +35,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	private int[] zoomLevels = { 256, 128, 64, 32, 16 };
 	private int imageSize = 256;
 	private File imageDir = ModLoader.modDataDir;
-	
+	public final File tempSave = new File(ModLoader.modDataDir, "livemap.temp");
 	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
 	public final BlockColor[] blockColors = new BlockColor[Block.blocksList.length];
 	
