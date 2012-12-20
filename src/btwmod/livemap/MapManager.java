@@ -26,7 +26,7 @@ public class MapManager {
 		else {
 			mapLayers = new MapLayer[zoomLevels.length];
 			for (int i = 0; i < zoomLevels.length; i++) {
-				File zoomDir = new File(directory, Integer.toString(i + 1));
+				File zoomDir = new File(directory, Integer.toString(zoomLevels[i]));
 				
 				if (!zoomDir.isDirectory() && !zoomDir.mkdir()) {
 					mapLayers[i] = null;
