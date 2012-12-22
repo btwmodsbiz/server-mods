@@ -238,17 +238,29 @@ public class MapImage {
 	protected void save() throws Exception {
 		if (ImageIO.write(colorImage, "png", mapLayer.map.mod.tempSave)) {
 			if (!colorImageFile.exists() || colorImageFile.delete()) {
-				if (mapLayer.map.mod.tempSave.renameTo(colorImageFile)) {
-					// TODO: 
+				if (!mapLayer.map.mod.tempSave.renameTo(colorImageFile)) {
+					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + colorImageFile.getPath());
 				}
 			}
+			else {
+				ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to delete the old image at: " + colorImageFile.getPath());
+			}
+		}
+		else {
+			ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to save the color image to the temp file for " + chunkX + "," + chunkZ);
 		}
 		if (ImageIO.write(heightImage, "png", mapLayer.map.mod.tempSave)) {
 			if (!heightImageFile.exists() || heightImageFile.delete()) {
-				if (mapLayer.map.mod.tempSave.renameTo(heightImageFile)) {
-					// TODO: 
+				if (!mapLayer.map.mod.tempSave.renameTo(heightImageFile)) {
+					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + heightImageFile.getPath());
 				}
 			}
+			else {
+				ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to delete the old image at: " + heightImageFile.getPath());
+			}
+		}
+		else {
+			ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to save the height image to the temp file for " + chunkX + "," + chunkZ);
 		}
 	}
 	
