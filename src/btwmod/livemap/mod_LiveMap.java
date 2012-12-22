@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -37,7 +39,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	private File imageDir = ModLoader.modDataDir;
 	public final File tempSave = new File(ModLoader.modDataDir, "livemap.temp");
 	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
-	public final BlockColor[] blockColors = new BlockColor[Block.blocksList.length];
+	public final BlockColor[][] blockColors = new BlockColor[Block.blocksList.length][];
 	
 	private volatile ChunkProcessor chunkProcessor = null;
 
@@ -137,6 +139,10 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	}
 
 	private boolean loadColorData() {
+		List<List<BlockColor>> blockColorsTemp = new ArrayList<List<BlockColor>>();
+		for (int i = 0; i < Block.blocksList.length; i++)
+			blockColorsTemp.add(null);
+		
 		if (colorData.isFile()) {
 			BufferedReader reader = null;
 			try {
@@ -159,12 +165,11 @@ public class mod_LiveMap implements IMod, IChunkListener {
 							}
 							else {
 								for (Block block : blocks) {
-									if (blockColors[block.blockID] != null) {
-										ModLoader.outputError(getName() + " found duplicate colorData entries for: " + block.getBlockName(), Level.SEVERE);
-										return false;
-									} else {
-										blockColors[block.blockID] = color;
+									List<BlockColor> list = blockColorsTemp.get(block.blockID);
+									if (list == null) {
+										blockColorsTemp.set(block.blockID, list = new ArrayList<BlockColor>());
 									}
+									list.add(color);
 								}
 							}
 						}
@@ -185,9 +190,35 @@ public class mod_LiveMap implements IMod, IChunkListener {
 
 		// Set colors for blocks not set by the config.
 		for (int i = 0; i < blockColors.length; i++) {
-			if (Block.blocksList[i] != null && blockColors[i] == null && Block.blocksList[i].getBlockName() != null) {
-				blockColors[i] = BlockColor.fromBlock(Block.blocksList[i]);
+			if (Block.blocksList[i] != null && Block.blocksList[i].getBlockName() != null) {
+				boolean genericFound = false;
+				List<BlockColor> list = blockColorsTemp.get(i);
+				if (list == null) {
+					blockColorsTemp.set(i, list = new ArrayList<BlockColor>());
+				}
+				else {
+					for (BlockColor color : list) {
+						if (!color.hasFilter())
+							genericFound = true;
+					}
+				}
+				
+				if (!genericFound) {
+					BlockColor color = BlockColor.fromBlock(Block.blocksList[i]);
+					
+					// Only add blocks that have a proper color.
+					if (color.red != 0 || color.green != 0 || color.blue != 0)
+						list.add(BlockColor.fromBlock(Block.blocksList[i]));
+				}
+				
+				if (list.size() > 0)
+					blockColors[i] = blockColorsTemp.get(i).toArray(new BlockColor[list.size()]);
 			}
+		}
+		
+		for (int i = 0; i < blockColors.length; i++) {
+			List<BlockColor> list = blockColorsTemp.get(i);
+			blockColors[i] = list == null || list.size() == 0 ? null : blockColorsTemp.get(i).toArray(new BlockColor[list.size()]);
 		}
 
 		return true;

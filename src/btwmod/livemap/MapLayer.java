@@ -42,7 +42,6 @@ public class MapLayer {
 
 	public void processChunk(Chunk chunk) throws Exception {
 		if (chunk.worldObj.provider.dimensionId == map.dimension) {
-			chunk.toString();
 			provideImage(chunk).renderChunk(chunk);
 		}
 	}

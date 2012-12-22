@@ -10,10 +10,10 @@ public class MapManager {
 	public final mod_LiveMap mod;
 	public final int dimension;
 	public final int imageSize;
-	public final BlockColor[] blockColors;
+	public final BlockColor[][] blockColors;
 	public final MapLayer[] mapLayers;
 	
-	public MapManager(mod_LiveMap mod, int dimension, int imageSize, int[] zoomLevels, BlockColor[] blockColors, File directory) {
+	public MapManager(mod_LiveMap mod, int dimension, int imageSize, int[] zoomLevels, BlockColor[][] blockColors, File directory) {
 		this.mod = mod;
 		this.dimension = dimension;
 		this.imageSize = imageSize;

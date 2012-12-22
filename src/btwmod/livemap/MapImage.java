@@ -193,7 +193,7 @@ public class MapImage {
 		while (y >= 0) {
 			int blockId = chunk.getBlockID(x, y, z);
 			if (isRenderedBlock(blockId)) {
-				BlockColor blockColor = mapLayer.map.blockColors[blockId];
+				BlockColor blockColor = BlockColor.fromBlockList(mapLayer.map.blockColors[blockId], blockId, biomeId, chunk, x, y, z);
 				if (blockColor != null) {
 					
 					// Only create the array when needed.
@@ -231,15 +231,7 @@ public class MapImage {
 	}
 	
 	protected boolean isRenderedBlock(int blockId) {
-		
-		if (blockId > 0) {
-			BlockColor blockColor = mapLayer.map.blockColors[blockId];
-			if (blockColor == null || (blockColor.red == 0 && blockColor.green == 0 && blockColor.blue == 0)) {
-				return false;
-			}
-		}
-		
-		return blockId != 0; // && blockId != Block.snow.blockID;
+		return blockId > 0 && blockId < mapLayer.map.blockColors.length && mapLayer.map.blockColors[blockId] != null;
 	}
 
 	protected void save() throws Exception {
