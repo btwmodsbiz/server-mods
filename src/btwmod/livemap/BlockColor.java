@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.src.Block;
+import net.minecraft.src.Chunk;
 
 public class BlockColor {
 
@@ -178,6 +179,46 @@ public class BlockColor {
 		int blue = mapColor & 255;
 		
 		return new BlockColor(block.getBlockName(), 0, red, green, blue, BlockColor.opaque, BlockColor.noAlphaLimit, true, new int[0]);
+	}
+	
+	public static BlockColor fromBlockList(BlockColor[] list, int blockId, int biomeId, Chunk chunk, int x, int y, int z) {
+		BlockColor ret = null;
+		int metadata = 0;
+		boolean retrievedMetadata = false;
+		
+		if (list != null) {
+			for (BlockColor color : list) {
+				if (color != null) {
+					if (ret == null || color.isStricterThan(ret)) {
+						if (color.blockId > 0 && color.blockId != blockId)
+							continue;
+		
+						if (color.hasMetadata) {
+							if (!retrievedMetadata) {
+								metadata = chunk.getBlockMetadata(x, y, z);
+							}
+		
+							if (color.metadata != (metadata & color.metadataMask))
+								continue;
+						}
+		
+						if (color.biomeIds.length > 0) {
+							boolean foundBiomeId = false;
+							for (int i = 0; i < color.biomeIds.length; i++)
+								if (color.biomeIds[i] == biomeId)
+									foundBiomeId = true;
+							
+							if (!foundBiomeId)
+								continue;
+						}
+		
+						ret = color;
+					}
+				}
+			}
+		}
+		
+		return ret;
 	}
 
 	public static BlockColor fromConfigLine(String line) {
