@@ -106,6 +106,23 @@ public class BlockColor {
 		
 		this.hue = Color.RGBtoHSB(red, green, blue, null)[0];
 	}
+
+	public boolean hasFilter() {
+		return blockId > 0 || biomeIds.length > 0 || hasMetadata;
+	}
+	
+	public boolean isStricterThan(BlockColor color) {
+		if (blockId > 0 && color.blockId <= 0)
+			return true;
+		
+		if (hasMetadata && !color.hasMetadata)
+			return true;
+		
+		if (biomeIds.length > 0 && color.biomeIds.length == 0)
+			return true;
+		
+		return false;
+	}
 	
 	public BlockColor asSolid() {
 		if (!isTransparent())
