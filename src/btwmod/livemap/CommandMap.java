@@ -46,14 +46,29 @@ public class CommandMap extends CommandBaseExtended {
 			sender.sendChatToPlayer(mod.getName() + " has " + mod.getRegionLoader().getQueueRemaining() + " chunks in the queue.");
 		}
 		else if (isStringMatch(args, 0, "region")) {
-			if (isStringMatch(args, 1, "dequeuelimit") && isInt(args, 2)) {
-				sender.sendChatToPlayer(args[1].toLowerCase() + " changed from " + mod.getRegionLoader().regionChunksDequeLimit + " to " + (mod.getRegionLoader().regionChunksDequeLimit = parseIntBounded(sender, args[2], 1, 500)) + ".");
+			if (isStringMatch(args, 1, "dequeuelimit")) {
+				if (isInt(args, 2))
+					sender.sendChatToPlayer(args[1].toLowerCase() + " changed from " + mod.getRegionLoader().regionChunksDequeLimit + " to " + (mod.getRegionLoader().regionChunksDequeLimit = parseIntBounded(sender, args[2], 1, 500)) + ".");
+				else if (args.length == 2)
+					sender.sendChatToPlayer(args[1].toLowerCase() + " is " + mod.getRegionLoader().regionChunksDequeLimit + ".");
+				else
+					throw new WrongUsageException("/" + getCommandName() + " " + args[0].toLowerCase() + " " + args[1].toLowerCase() + " [num]", new Object[0]);
 			}
-			else if (isStringMatch(args, 1, "dequeueticks") && isInt(args, 2)) {
-				sender.sendChatToPlayer(args[1].toLowerCase() + " changed from " + mod.getRegionLoader().regionChunksDequeTicks + " to " + (mod.getRegionLoader().regionChunksDequeTicks = parseIntWithMin(sender, args[2], 1)) + ".");
+			else if (isStringMatch(args, 1, "dequeueticks")) {
+				if (isInt(args, 2))
+					sender.sendChatToPlayer(args[1].toLowerCase() + " changed from " + mod.getRegionLoader().regionChunksDequeTicks + " to " + (mod.getRegionLoader().regionChunksDequeTicks = parseIntWithMin(sender, args[2], 1)) + ".");
+				else if (args.length == 2)
+					sender.sendChatToPlayer(args[1].toLowerCase() + " is " + mod.getRegionLoader().regionChunksDequeTicks + ".");
+				else
+					throw new WrongUsageException("/" + getCommandName() + " " + args[0].toLowerCase() + " " + args[1].toLowerCase() + " [num]", new Object[0]);
 			}
-			else if (isStringMatch(args, 1, "loadedchunkslimit") && isInt(args, 2)) {
-				sender.sendChatToPlayer(args[1].toLowerCase() + " changed from " + mod.getRegionLoader().regionChunkQueueThreshold + " to " + + (mod.getRegionLoader().regionChunkQueueThreshold = parseIntBounded(sender, args[2], 1, 5000)) + ".");
+			else if (isStringMatch(args, 1, "loadedchunkslimit")) {
+				if (isInt(args, 2))
+					sender.sendChatToPlayer(args[1].toLowerCase() + " changed from " + mod.getRegionLoader().regionChunkQueueThreshold + " to " + + (mod.getRegionLoader().regionChunkQueueThreshold = parseIntBounded(sender, args[2], 1, 5000)) + ".");
+				else if (args.length == 2)
+					sender.sendChatToPlayer(args[1].toLowerCase() + " is " + mod.getRegionLoader().regionChunkQueueThreshold + ".");
+				else
+					throw new WrongUsageException("/" + getCommandName() + " " + args[0].toLowerCase() + " " + args[1].toLowerCase() + " [num]", new Object[0]);
 			}
 			else if (isInt(args, 2) && isInt(args, 3)) {
 				int worldIndex;
@@ -87,7 +102,7 @@ public class CommandMap extends CommandBaseExtended {
 					sender.sendChatToPlayer("Queued " + regions + " regions (" + (regions*32*32) + " chunks) centered on " + x + "." + z + " for " + Util.getWorldNameFromIndex(worldIndex) + " for mapping.");
 			}
 			else {
-				throw new WrongUsageException("/" + getCommandName() + " region (dequeuelimit | dequeueticks | loadedchunkslimit) (show | <num>)", new Object[0]);
+				throw new WrongUsageException("/" + getCommandName() + " region (dequeuelimit | dequeueticks | loadedchunkslimit | <world>) ...", new Object[0]);
 			}
 		}
 		else if (isStringMatch(args, 0, "world") && isWorldName(args, 1)) {
@@ -115,6 +130,12 @@ public class CommandMap extends CommandBaseExtended {
 
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+		if (args.length == 1) {
+			return getListOfStringsMatchingLastWord(args, new String[] { "debug", "region", "remaining", "world" });
+		}
+		else if (args.length == 2 && isStringMatch(args, 0, "region")) {
+			return getListOfStringsMatchingLastWord(args, new String[] { "dequeuelimit", "dequeueticks", "loadedchunkslimit" });
+		}
 		return super.addTabCompletionOptions(sender, args);
 	}
 
