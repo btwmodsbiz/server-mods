@@ -294,9 +294,9 @@ public class BlockColor {
 							blue -= Math.max(0, Math.min(255, Integer.parseInt(columns[i].substring(1))));
 							break;
 						case '#':
-							red = Integer.parseInt(columns[i].substring(1, 2), 16);
-							green = Integer.parseInt(columns[i].substring(3, 4), 16);
-							blue = Integer.parseInt(columns[i].substring(5, 6), 16);
+							red = Integer.parseInt(columns[i].substring(1, 3), 16);
+							green = Integer.parseInt(columns[i].substring(3, 5), 16);
+							blue = Integer.parseInt(columns[i].substring(5, 7), 16);
 							break;
 						case 'm':
 
