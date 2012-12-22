@@ -132,7 +132,8 @@ public class MapImage {
 		int blue = 0;
 		float alpha = 0;
 		int height = 0;
-		int biomeId = 0;
+		int biomeId = 255;
+		int[] biomeIdCounts = new int[256];
 		
 		colorPixel.clear();
 		heightPixel.clear();
@@ -157,8 +158,11 @@ public class MapImage {
 					PixelColor stackColor = new PixelColor();
 					for (int i = stack.length - 1; i >= 0; i--) {
 						stack[i].addTo(stackColor);
-						if (biomes != null && biomes[z << 4 | x] != 255)
-							biomeId += biomes[z << 4 | x];
+						if (biomes != null && biomes[z << 4 | x] != 255) {
+							if (biomeId == 255 || biomeIdCounts[biomeId] < ++biomeIdCounts[biomes[z << 4 | x]]) {
+								biomeId = biomes[z << 4 | x];
+							}
+						}
 					}
 					
 					// Add to the average color for the map pixel.
@@ -173,13 +177,10 @@ public class MapImage {
 		
 		if (count > 0.0F) {
 			colorPixel.set(red / count, green / count, blue / count, alpha / count);
-			heightPixel.set(new Color(0, Math.round(height / count), Math.round(biomeId / count)));
+			heightPixel.set(new Color(0, Math.round(height / count), biomeId));
 			
 			if (getBlockHeight(heightPixel) != Math.round(height / count))
 				ModLoader.outputError("HeightPixel height " + getBlockHeight(heightPixel) + " (color: " + heightPixel.red + "," + heightPixel.green + "," + heightPixel.blue + ") doesn't match " + Math.round(height / count) + " for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition + " in layer " + mapLayer.chunksPerImage);
-			
-			if (getBlockBiome(heightPixel) != Math.round(biomeId / count))
-				ModLoader.outputError("HeightPixel biome " + getBlockBiome(heightPixel) + " (color: " + heightPixel.red + "," + heightPixel.green + "," + heightPixel.blue + ") doesn't match " + Math.round(biomeId / count) + " for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition + " in layer " + mapLayer.chunksPerImage);
 		}
 		else {
 			System.out.println("Unable to calc color for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition);
