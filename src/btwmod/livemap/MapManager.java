@@ -5,6 +5,7 @@ import java.io.File;
 import net.minecraft.src.Chunk;
 
 import btwmods.ModLoader;
+import btwmods.Util;
 
 public class MapManager {
 	public final mod_LiveMap mod;
@@ -19,6 +20,15 @@ public class MapManager {
 		this.imageSize = imageSize;
 		this.blockColors = blockColors;
 		
+		if (Util.getWorldNameFromDimension(dimension) == null)
+			throw new IllegalArgumentException("dimension");
+		
+		if ((imageSize & (imageSize - 1)) != 0)
+			throw new IllegalArgumentException("imageSize");
+		
+		if (zoomLevels.length == 0)
+			throw new IllegalArgumentException("zoomLevels");
+		
 		if (!directory.isDirectory() && !directory.mkdir()) {
 			ModLoader.outputError(mod.getName() + " failed to create the map directory: " + directory.getPath());
 			mapLayers = new MapLayer[0];
@@ -26,6 +36,10 @@ public class MapManager {
 		else {
 			mapLayers = new MapLayer[zoomLevels.length];
 			for (int i = 0; i < zoomLevels.length; i++) {
+				if ((zoomLevels[i] & (zoomLevels[i] - 1)) != 0) {
+					throw new IllegalArgumentException("zoomLevels");
+				}
+				
 				File zoomDir = new File(directory, Integer.toString(zoomLevels[i]));
 				
 				if (!zoomDir.isDirectory() && !zoomDir.mkdir()) {
