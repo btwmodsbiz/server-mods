@@ -41,9 +41,9 @@ public class RegionLoader implements ITickListener {
 	public RegionLoader(mod_LiveMap mod, Settings settings) {
 		this.mod = mod;
 		
-		regionChunksDequeLimit = settings.getInt("regionChunksDequeLimit", regionChunksDequeLimit);
-		regionChunksDequeTicks = settings.getInt("regionChunksDequeTicks", regionChunksDequeTicks);
-		regionChunkQueueThreshold = settings.getInt("regionChunkQueueThreshold", regionChunkQueueThreshold);
+		regionChunksDequeLimit = settings.getInt("region", "dequeLimit", regionChunksDequeLimit);
+		regionChunksDequeTicks = settings.getInt("region", "dequeTicks", regionChunksDequeTicks);
+		regionChunkQueueThreshold = settings.getInt("region", "loadedChunksLimit", regionChunkQueueThreshold);
 	}
 	
 	private void reset(int total) {
