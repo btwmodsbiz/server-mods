@@ -25,6 +25,7 @@ import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.ReflectionAPI;
 import btwmods.ServerAPI;
+import btwmods.Util;
 import btwmods.WorldAPI;
 import btwmods.io.Settings;
 import btwmods.world.ChunkEvent;
@@ -52,6 +53,8 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	private CommandMap commandMap = null;
 	
 	private RegionLoader regionLoader = null;
+
+	private MapManager[] mapManagers = null;
 
 	@Override
 	public String getName() {
@@ -120,11 +123,16 @@ public class mod_LiveMap implements IMod, IChunkListener {
 			chunkLoaders = null;
 			chunkLoaderLocations = null;
 		}
-		
-		regionLoader = new RegionLoader(this, settings);
 
 		if (!loadColorData())
 			return;
+		
+		if (!loadMapManagers(settings)) {
+			ModLoader.outputError(getName() + " does not have any valid maps specified.");
+			return;
+		}
+		
+		regionLoader = new RegionLoader(this, settings);
 
 		WorldAPI.addListener(this);
 		ServerAPI.addListener(regionLoader);
@@ -223,6 +231,58 @@ public class mod_LiveMap implements IMod, IChunkListener {
 
 		return true;
 	}
+	
+	private boolean loadMapManagers(Settings settings) {
+		
+		if (!settings.hasKey("maps")) {
+			return false;
+		}
+		
+		List<MapManager> mapsList = new ArrayList<MapManager>();
+		
+		String[] mapNames = settings.get("maps").split("[,; ]+");
+		for (String mapName : mapNames) {
+			String section = "map:" + mapName;
+			if (!settings.hasSection(section)) {
+				ModLoader.outputError(getName() + " is missing the a settings section for map: " + mapName);
+			}
+			else {
+				
+				if (!settings.hasKey(section, "directory")) {
+					ModLoader.outputError(getName() + " is missing the 'directory' setting for: " + section);
+					continue;
+				}
+				
+				File directory = new File(settings.get(section, "directory"));
+				
+				if (!settings.hasKey(section, "dimension")) {
+					ModLoader.outputError(getName() + " is missing the 'dimension' setting for: " + section);
+					continue;
+				}
+				
+				int dimension = settings.getInt(section, "dimension", 255);
+				
+				if (Util.getWorldNameFromDimension(dimension) == null) {
+					ModLoader.outputError(getName() + " has an invalid 'dimension' setting for: " + section);
+					continue;
+				}
+				
+				int imageSize = settings.getInt(section, "imageSize", 256);
+				
+				if (imageSize <= 0 || (imageSize & (imageSize - 1)) != 0) {
+					ModLoader.outputError(getName() + " must have a 'imageSize' setting that is a power of 2 for: " + section);
+					continue;
+				}
+				
+				//new MapManager(this, 0, imageSize, zoomLevels, blockColors, new File(imageDir, "overworld"))
+				mapsList.add(new MapManager(this, dimension, imageSize, zoomLevels, blockColors, directory));
+			}
+		}
+		
+		mapManagers = mapsList.toArray(new MapManager[mapsList.size()]);
+		
+		return mapManagers.length > 0;
+	}
 
 	@Override
 	public IMod getMod() {
@@ -241,7 +301,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 		chunkQueueCount.incrementAndGet();
 		
 		if (chunkProcessor == null || !chunkProcessor.isRunning()) {
-			new Thread(chunkProcessor = new ChunkProcessor(new MapManager[] { new MapManager(this, 0, imageSize, zoomLevels, blockColors, new File(imageDir, "overworld")) }), getName() + " Thread").start();
+			new Thread(chunkProcessor = new ChunkProcessor(mapManagers), getName() + " Thread").start();
 		}
 	}
 
