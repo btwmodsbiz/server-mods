@@ -1,3 +1,7 @@
+Version 4.41.0 (vMC 1.4.6 BTW 4.41)
+
+  - Upgraded to BTW 4.41 and vMC 1.4.6.
+
 Version 4.40.2 (vMC 1.4.5 BTW 4.40)
 
   - Added /watch command to Item Logger and moved watched player settings to
