@@ -1,6 +1,7 @@
 package btwmod.livemap;
 
 import java.awt.Color;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -96,14 +97,25 @@ public class BlockColor {
 		
 		for (int biomeId : biomeIds)
 			if (biomeId < -1 || biomeId > 255)
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("biomeId '" + biomeId + "'");
 		
-		if (blockId < 0 || blockId > 255
-				|| red < 0 || blue < 0 || green < 0 || alpha < 0.0F
-				|| red > 255 || blue > 255 || green > 255 || alpha > 1.0F
-				|| hueAlpha < 0.0F || hueAlpha > 1.0F)
-			
-			throw new IllegalArgumentException();
+		if (blockId < 0 || blockId > 255)
+			throw new IllegalArgumentException("blockId '" + blockId + "'");
+		
+		if (red < 0 || red > 255)
+			throw new IllegalArgumentException("red '" + red + "'");
+		
+		if (green < 0 || green > 255)
+			throw new IllegalArgumentException("green '" + green + "'");
+		
+		if (blue < 0 || blue > 255)
+			throw new IllegalArgumentException("blue '" + blue + "'");
+		
+		if (alpha < 0.0F || alpha > 1.0F)
+			throw new IllegalArgumentException("alpha '" + alpha + "'");
+		
+		if (hueAlpha < 0.0F || hueAlpha > 1.0F)
+			throw new IllegalArgumentException("hueAlpha '" + hueAlpha + "'");
 		
 		this.hue = Color.RGBtoHSB(red, green, blue, null)[0];
 	}
@@ -221,15 +233,21 @@ public class BlockColor {
 		return ret;
 	}
 
-	public static BlockColor fromConfigLine(String line) {
-		if (line == null || line.trim().length() < 2 || line.trim().charAt(0) == '#')
-			return null;
+	public static BlockColor fromConfigLine(String line) throws ParseException, IllegalArgumentException {
+		if (line == null)
+			throw new NullPointerException("line");
+		
+		if (line.trim().length() < 2)
+			throw new ParseException("line too short", 0);
+		
+		if (line.trim().charAt(0) == '#')
+			throw new IllegalArgumentException("line is a comment");
 
 		String[] columns = line.split("[ \t]+");
 
 		// Make sure the block name is not an empty string.
 		if (columns.length > 0 && columns[0].length() == 0)
-			return null;
+			throw new ParseException("block name cannot be empty", 0);
 		
 		int blockId = 0;
 
@@ -255,7 +273,7 @@ public class BlockColor {
 
 				// Fail if the block name wasn't found.
 				if (blocks == null || blocks.size() == 0)
-					return null;
+					throw new ParseException("block name was not found", 0);
 
 				// TODO: OK that we're just using the first material for the block name?
 				for (Block block : blocks) {
@@ -362,9 +380,9 @@ public class BlockColor {
 							break;
 					}
 				} catch (NumberFormatException e) {
-					return null;
+					throw new ParseException("Invalid number '" + e.getMessage() + "' for column " + (i+1) + ": " + columns[i], 0);
 				} catch (IndexOutOfBoundsException e) {
-					return null;
+					throw new ParseException("Index out of bounds '" + e.getMessage() + "' for column " + (i+1) + ": " + columns[i], 0);
 				}
 			}
 		}
@@ -373,7 +391,7 @@ public class BlockColor {
 			return new BlockColor(columns[0], blockId, red, green, blue, alpha, alphaLimit, solidAfterAlphaLimit, hueAlpha, metadata, metadataMask, hasMetadata, biomeIds);
 		}
 		catch (IllegalArgumentException e) {
-			return null;
+			throw new ParseException("Illegal arument '" + e.getMessage() + "'", 0);
 		}
 	}
 }

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -159,7 +160,16 @@ public class mod_LiveMap implements IMod, IChunkListener {
 				String line;
 				while ((line = reader.readLine()) != null) {
 					if (line.trim().length() > 0 && line.trim().charAt(0) != '#') {
-						BlockColor color = BlockColor.fromConfigLine(line);
+						BlockColor color;
+						try {
+							color = BlockColor.fromConfigLine(line);
+						} catch (IllegalArgumentException e) {
+							ModLoader.outputError(getName() + " found an invalid ('" + e.getMessage() + "') colorData entry: " + line, Level.SEVERE);
+							return false;
+						} catch (ParseException e) {
+							ModLoader.outputError(getName() + " found an invalid ('" + e.getMessage() + "') colorData entry: " + line, Level.SEVERE);
+							return false;
+						}
 		
 						if (color == null) {
 							ModLoader.outputError(getName() + " found an invalid colorData entry: " + line, Level.SEVERE);
