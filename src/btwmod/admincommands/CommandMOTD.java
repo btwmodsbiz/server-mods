@@ -22,12 +22,18 @@ public class CommandMOTD extends CommandBase {
 		if (args.length == 0) {
 			sender.sendChatToPlayer("MOTD: " + MinecraftServer.getServer().getMOTD());
 		}
-		else if (args.length == 1) {
-			MinecraftServer.getServer().setMOTD(args[0]);
-			sender.sendChatToPlayer("MOTD: " + MinecraftServer.getServer().getMOTD());
-		}
 		else {
-			throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
+			StringBuilder sb = new StringBuilder();
+			for (String arg : args) {
+				if (sb.length() > 0) sb.append(" ");
+				sb.append(arg);
+			}
+			
+			if (sb.toString().trim().length() == 0)
+				throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
+			
+			MinecraftServer.getServer().setMOTD(sb.toString());
+			sender.sendChatToPlayer("MOTD: " + MinecraftServer.getServer().getMOTD());
 		}
 	}
 }
