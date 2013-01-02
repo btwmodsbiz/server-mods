@@ -1,3 +1,9 @@
+Version 4.41.1 (vMC 1.4.6 BTW 4.41)
+
+  - Added Chat mod to color the username in global chat.
+
+  - Fixed bug with the /motd command that prevented it from working.
+
 Version 4.41.0 (vMC 1.4.6 BTW 4.41)
 
   - Upgraded to BTW 4.41 and vMC 1.4.6.
