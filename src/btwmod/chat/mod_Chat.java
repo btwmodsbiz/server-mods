@@ -34,12 +34,14 @@ public class mod_Chat implements IMod, IPlayerChatListener {
 		this.data = data;
 
 		String bannedUsers = settings.get("bannedUsers");
-		for (String bannedUser : bannedUsers.split("[,; ]+"))
-			this.bannedUsers.add(bannedUser.toLowerCase().trim());
+		if (bannedUsers != null)
+			for (String bannedUser : bannedUsers.split("[,; ]+"))
+				this.bannedUsers.add(bannedUser.toLowerCase().trim());
 		
 		String bannedColors = settings.get("bannedColors");
-		for (String bannedColor : bannedColors.split("[,; ]+"))
-			this.bannedColors.add(bannedColor.toLowerCase().trim());
+		if (bannedColors != null)
+			for (String bannedColor : bannedColors.split("[,; ]+"))
+				this.bannedColors.add(bannedColor.toLowerCase().trim());
 		
 		//addColor("black", Util.COLOR_BLACK);
 		//addColor("navy", Util.COLOR_NAVY);
