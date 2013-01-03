@@ -218,7 +218,7 @@ public class SQLLogger implements ILogger, ITickListener {
 			lastPlayerPos.put(player.username.toLowerCase(), x + "," + y + "," + z);
 		
 		mod.queueWrite(outputFile, buildStatement("playerposition",
-				"datetime, username, x, y, z",
+				"datetime, username, dimension, x, y, z",
 				new Object[] { sqlDateFormat.format(new Date()), player.username, dimension, x, y, z }));
 	}
 
