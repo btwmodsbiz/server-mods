@@ -178,6 +178,14 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 					MathHelper.floor_double(event.getPlayerInstance().posZ),
 					event.getType() == PlayerInstanceEvent.TYPE.LOGOUT);
 		}
+		else if (event.getType() == PlayerInstanceEvent.TYPE.DEATH) {
+			logger.playerDeath(event, event.getPlayerInstance(),
+					event.getPlayerInstance().dimension,
+					MathHelper.floor_double(event.getPlayerInstance().posX), 
+					MathHelper.floor_double(event.getPlayerInstance().posY),
+					MathHelper.floor_double(event.getPlayerInstance().posZ),
+					event.getDeathMessage());
+		}
 	}
 
 	@Override

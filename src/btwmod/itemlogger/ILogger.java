@@ -28,6 +28,7 @@ public interface ILogger {
 	public void playerRemove(PlayerBlockEvent event, EntityPlayer player, int dimension, int x, int y, int z);
 	public void playerPosition(EntityPlayer player, int dimension, int x, int y, int z);
 	public void playerLogin(PlayerInstanceEvent event, EntityPlayer player, int dimension, int x, int y, int z, boolean isLogout);
+	public void playerDeath(PlayerInstanceEvent event, EntityPlayer player, int dimension, int x, int y, int z, String deathMessage);
 	public void playerDropAll(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, InventoryPlayer inventory);
 	public void playerDropItem(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack);
 	public void playerUseEntity(PlayerActionEvent event, EntityPlayer player, int dimension, int x, int y, int z, Entity entity, int entityX, int entityY, int entityZ, boolean isAttack);

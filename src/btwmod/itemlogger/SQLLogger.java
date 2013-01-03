@@ -231,6 +231,14 @@ public class SQLLogger implements ILogger, ITickListener {
 	}
 
 	@Override
+	public void playerDeath(PlayerInstanceEvent event, EntityPlayer player, int dimension, int x, int y, int z, String deathMessage) {
+		lastPlayerPos.remove(player.username.toLowerCase());
+		mod.queueWrite(outputFile, buildStatement("playerdeath",
+				"datetime, username, dimension, x, y, z, message",
+				new Object[] { sqlDateFormat.format(new Date()), player.username, dimension, x, y, z, deathMessage }));
+	}
+
+	@Override
 	public void playerDropAll(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, InventoryPlayer inventory) {
 		ItemStack[] fullInventory = new ItemStack[inventory.armorInventory.length + inventory.mainInventory.length];
 		System.arraycopy(inventory.armorInventory, 0, fullInventory, 0, inventory.armorInventory.length);
