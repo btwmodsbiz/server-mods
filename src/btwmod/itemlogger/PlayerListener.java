@@ -141,7 +141,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 				break;
 			case CHECK_PLAYEREDIT:
 				if (mod.isWatchedPlayer(event.getPlayer()))
-					logger.playerEdit(event, event.getPlayer(), event.getPlayer().dimension, event.getDirection(), event.getX(), event.getY(), event.getZ(), event.getItemStack());
+					logger.playerEdit(event, event.getPlayer(), event.getDirection(), event.getPlayer().dimension, event.getX(), event.getY(), event.getZ(), event.getItemStack());
 				break;
 			case PLACE_ATTEMPT:
 				break;
