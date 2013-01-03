@@ -1,3 +1,27 @@
+Version 4.41.2 (vMC 1.4.6 BTW 4.41)
+
+  - Added missing dimension ID to ItemLogger's ILogger and related classes.
+  
+  - Added proper 'wrong usage' messages to Item Logger's /watch command.
+  
+  - Added support to Item Logger for logging player deaths.
+  
+  - Added dimension to the key names used by lastPlayerPos in SQLLogger.
+  
+  - Changed SQLLogger's playerLogin method to clear the player's last known
+    position.
+
+  - Fixed bug in Protected Zone's ZoneSettings where the dimension ID was
+    not saved correctly.
+
+  - Fixed NullPointerException bug in mod_Chat.
+  
+  - Fixed missing column name in SQLLogger.
+  
+  - Fixed bug in PlayerListener's onPlayerBlockAction method where the 
+    order of values were incorrect when calling the logger's playerEdit
+    method.
+
 Version 4.41.1 (vMC 1.4.6 BTW 4.41)
 
   - Added Chat mod to color the username in global chat.
