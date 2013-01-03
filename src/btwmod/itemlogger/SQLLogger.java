@@ -55,7 +55,7 @@ public class SQLLogger implements ILogger, ITickListener {
 			if (newDir.isDirectory())
 				outputDir = newDir;
 			else
-				ModLoader.outputError(mod.getName() + "'s [" + SQLLogger.class.getSimpleName() + "]outputDir setting does not point to a directory.");
+				ModLoader.outputError(mod.getName() + "'s [" + SQLLogger.class.getSimpleName() + "] outputDir setting does not point to a directory.");
 		}
 		
 		if (settings.hasKey(SQLLogger.class.getSimpleName(), "dateFormat")) {
@@ -63,14 +63,14 @@ public class SQLLogger implements ILogger, ITickListener {
 				dateFormat = new SimpleDateFormat(settings.get(SQLLogger.class.getSimpleName(), "dateFormat"));
 			}
 			catch (IllegalArgumentException e) {
-				ModLoader.outputError(e, mod.getName() + "'s [" + SQLLogger.class.getSimpleName() + "]dateFormat is invalid: " + e.getMessage());
+				ModLoader.outputError(e, mod.getName() + "'s [" + SQLLogger.class.getSimpleName() + "] dateFormat is invalid: " + e.getMessage());
 			}
 		}
 		
 		if (settings.hasKey(SQLLogger.class.getSimpleName(), "fileNamePattern")) {
 			String newPattern = settings.get(SQLLogger.class.getSimpleName(), "fileNamePattern");
 			if (newPattern.length() == 0) {
-				ModLoader.outputError(mod.getName() + "'s [" + SQLLogger.class.getSimpleName() + "]fileNamePattern cannot be an empty string.");
+				ModLoader.outputError(mod.getName() + "'s [" + SQLLogger.class.getSimpleName() + "] fileNamePattern cannot be an empty string.");
 			}
 			else {
 				fileNamePattern = newPattern;
@@ -151,17 +151,17 @@ public class SQLLogger implements ILogger, ITickListener {
 	}
 
 	@Override
-	public void containerOpened(ContainerEvent event, EntityPlayer player, Block block, int x, int y, int z) {
+	public void containerOpened(ContainerEvent event, EntityPlayer player, Block block, int dimension, int x, int y, int z) {
 		mod.queueWrite(outputFile, buildStatement("containers",
-				"datetime, actiontype, username, container, x, y, z",
-				new Object[] { sqlDateFormat.format(new Date()), "open", player.username, event.getBlock().getBlockName(), x, y, z }));
+				"datetime, actiontype, username, container, dimension, x, y, z",
+				new Object[] { sqlDateFormat.format(new Date()), "open", player.username, event.getBlock().getBlockName(), dimension, x, y, z }));
 	}
 
 	@Override
-	public void containerRemoved(ContainerEvent event, EntityPlayer player, Block block, int x, int y, int z) {
+	public void containerRemoved(ContainerEvent event, EntityPlayer player, Block block, int dimension, int x, int y, int z) {
 		mod.queueWrite(outputFile, buildStatement("containers",
-				"datetime, actiontype, username, container, x, y, z",
-				new Object[] { sqlDateFormat.format(new Date()), "remove", player.username, event.getBlock().getBlockName(), x, y, z }));
+				"datetime, actiontype, username, container, dimension, x, y, z",
+				new Object[] { sqlDateFormat.format(new Date()), "remove", player.username, event.getBlock().getBlockName(), dimension, x, y, z }));
 	}
 
 	@Override
@@ -179,33 +179,33 @@ public class SQLLogger implements ILogger, ITickListener {
 	}
 
 	@Override
-	public void containerBroken(BlockEvent event, int x, int y, int z, ItemStack[] contents) {
+	public void containerBroken(BlockEvent event, int dimension, int x, int y, int z, ItemStack[] contents) {
 		String contentsList = mod.getItemStackList(contents);
 		
 		if (contentsList.length() != 0)
 			mod.queueWrite(outputFile, buildStatement("containerbroken",
-					"datetime, container, x, y, z, contents",
-					new Object[] { sqlDateFormat.format(new Date()), event.getBlockId() > 0 ? event.getBlock().getBlockName() : "air", x, y, z, contentsList }));
+					"datetime, container, dimension, x, y, z, contents",
+					new Object[] { sqlDateFormat.format(new Date()), event.getBlockId() > 0 ? event.getBlock().getBlockName() : "air", dimension, x, y, z, contentsList }));
 	}
 
 	@Override
-	public void playerEdit(PlayerBlockEvent event, EntityPlayer player, int direction, int x, int y, int z, ItemStack itemStack) {
+	public void playerEdit(PlayerBlockEvent event, EntityPlayer player, int direction, int dimension, int x, int y, int z, ItemStack itemStack) {
 		int blockId = event.getWorld().getBlockId(x, y, z);
 		mod.queueWrite(outputFile, buildStatement("playeredits",
-				"datetime, actiontype, username, block, x, y, z, helditem",
-				new Object[] { sqlDateFormat.format(new Date()), "edit", player.username, blockId == 0 ? "air" : Block.blocksList[blockId].getBlockName(), x, y, z, mod.getFullItemStackName(itemStack) }));
+				"datetime, actiontype, username, block, dimension, x, y, z, helditem",
+				new Object[] { sqlDateFormat.format(new Date()), "edit", player.username, blockId == 0 ? "air" : Block.blocksList[blockId].getBlockName(), dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
 	}
 
 	@Override
-	public void playerRemove(PlayerBlockEvent event, EntityPlayer player, int x, int y, int z) {
+	public void playerRemove(PlayerBlockEvent event, EntityPlayer player, int dimension, int x, int y, int z) {
 		int blockId = event.getWorld().getBlockId(x, y, z);
 		mod.queueWrite(outputFile, buildStatement("playeredits",
-				"datetime, actiontype, username, block, x, y, z, helditem",
-				new Object[] { sqlDateFormat.format(new Date()), "remove", player.username, blockId == 0 ? "Air" : Block.blocksList[blockId].getBlockName(), x, y, z, null }));
+				"datetime, actiontype, username, block, dimension, x, y, z, helditem",
+				new Object[] { sqlDateFormat.format(new Date()), "remove", player.username, blockId == 0 ? "Air" : Block.blocksList[blockId].getBlockName(), dimension, x, y, z, null }));
 	}
 
 	@Override
-	public void playerPosition(EntityPlayer player, int x, int y, int z) {
+	public void playerPosition(EntityPlayer player, int dimension, int x, int y, int z) {
 		String lastPos = lastPlayerPos.get(player.username.toLowerCase());
 		
 		if (lastPos == null)
@@ -219,36 +219,36 @@ public class SQLLogger implements ILogger, ITickListener {
 		
 		mod.queueWrite(outputFile, buildStatement("playerposition",
 				"datetime, username, x, y, z",
-				new Object[] { sqlDateFormat.format(new Date()), player.username, x, y, z }));
+				new Object[] { sqlDateFormat.format(new Date()), player.username, dimension, x, y, z }));
 	}
 
 	@Override
-	public void playerLogin(PlayerInstanceEvent event, EntityPlayer player, int x, int y, int z, boolean isLogout) {
+	public void playerLogin(PlayerInstanceEvent event, EntityPlayer player, int dimension, int x, int y, int z, boolean isLogout) {
 		mod.queueWrite(outputFile, buildStatement("playerinstance",
-				"datetime, actiontype, username, x, y, z",
-				new Object[] { sqlDateFormat.format(new Date()), isLogout ? "logout" : "login", player.username, x, y, z }));
+				"datetime, actiontype, username, dimension, x, y, z",
+				new Object[] { sqlDateFormat.format(new Date()), isLogout ? "logout" : "login", player.username, dimension, x, y, z }));
 	}
 
 	@Override
-	public void playerDropAll(DropEvent event, EntityPlayer player, int x, int y, int z, InventoryPlayer inventory) {
+	public void playerDropAll(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, InventoryPlayer inventory) {
 		ItemStack[] fullInventory = new ItemStack[inventory.armorInventory.length + inventory.mainInventory.length];
 		System.arraycopy(inventory.armorInventory, 0, fullInventory, 0, inventory.armorInventory.length);
 		System.arraycopy(inventory.mainInventory, 0, fullInventory, inventory.armorInventory.length, inventory.mainInventory.length);
 		
 		mod.queueWrite(outputFile, buildStatement("playerdrop",
-				"datetime, actiontype, player, x, y, z, items",
-				new Object[] { sqlDateFormat.format(new Date()), "all", x, y, z, mod.getItemStackList(fullInventory) }));
+				"datetime, actiontype, player, dimension, x, y, z, items",
+				new Object[] { sqlDateFormat.format(new Date()), "all", dimension, x, y, z, mod.getItemStackList(fullInventory) }));
 	}
 
 	@Override
-	public void playerDropItem(DropEvent event, EntityPlayer player, int x, int y, int z, ItemStack itemStack) {
+	public void playerDropItem(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack) {
 		mod.queueWrite(outputFile, buildStatement("playerdrop",
-				"datetime, actiontype, player, x, y, z, items",
-				new Object[] { sqlDateFormat.format(new Date()), event.getType() == DropEvent.TYPE.EJECT ? "eject" : "drop", x, y, z, mod.getFullItemStackName(itemStack) }));
+				"datetime, actiontype, player, dimension, x, y, z, items",
+				new Object[] { sqlDateFormat.format(new Date()), event.getType() == DropEvent.TYPE.EJECT ? "eject" : "drop", dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
 	}
 
 	@Override
-	public void playerUseEntity(PlayerActionEvent event, EntityPlayer player, int x, int y, int z, Entity entity, int entityX, int entityY, int entityZ, boolean isAttack) {
+	public void playerUseEntity(PlayerActionEvent event, EntityPlayer player, int dimension, int x, int y, int z, Entity entity, int entityX, int entityY, int entityZ, boolean isAttack) {
 		StringBuilder extra = new StringBuilder();
 		
 		if (entity.isDead || (entity instanceof EntityLiving && ((EntityLiving)entity).getHealth() <= 0)) {
@@ -262,8 +262,8 @@ public class SQLLogger implements ILogger, ITickListener {
 		}
 		
 		mod.queueWrite(outputFile, buildStatement("playeruseentity",
-				"datetime, actiontype, player, x, y, z, entity, entityX, entityY, entityZ, extra",
-				new Object[] { sqlDateFormat.format(new Date()), isAttack ? "attack" : "use", x, y, z, player.username, x, y, z, entity.getEntityName(), entityX, entityY, entityZ, extra.toString() }));
+				"datetime, actiontype, player, dimension, x, y, z, entity, entityX, entityY, entityZ, extra",
+				new Object[] { sqlDateFormat.format(new Date()), isAttack ? "attack" : "use", player.username, dimension, x, y, z, entity.getEntityName(), entityX, entityY, entityZ, extra.toString() }));
 	}
 
 	@Override

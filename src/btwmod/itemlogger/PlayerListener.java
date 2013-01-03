@@ -44,14 +44,14 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 		EntityPlayer player = event.getPlayer();
 		switch (event.getType()) {
 			case OPENED:
-				logger.containerOpened(event, player, event.getBlock(), event.getX(), event.getY(), event.getZ());
+				logger.containerOpened(event, player, event.getBlock(), event.getWorld().provider.dimensionId, event.getX(), event.getY(), event.getZ());
 				break;
 				
 			case PLACED:
 				break;
 				
 			case REMOVED:
-				logger.containerRemoved(event, player, event.getBlock(), event.getX(), event.getY(), event.getZ());
+				logger.containerRemoved(event, player, event.getBlock(), event.getWorld().provider.dimensionId, event.getX(), event.getY(), event.getZ());
 				break;
 		}
 	}
@@ -60,6 +60,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 	public void onPlayerItemDrop(DropEvent event) {
 		if (event.getType() == DropEvent.TYPE.ALL) {
 			logger.playerDropAll(event, event.getPlayer(),
+					event.getPlayer().dimension,
 					MathHelper.floor_double(event.getPlayer().posX), 
 					MathHelper.floor_double(event.getPlayer().posY),
 					MathHelper.floor_double(event.getPlayer().posZ),
@@ -67,6 +68,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 		}
 		else if (event.getType() == DropEvent.TYPE.EJECT) {
 			logger.playerDropItem(event, event.getPlayer(),
+					event.getPlayer().dimension,
 					MathHelper.floor_double(event.getPlayer().posX), 
 					MathHelper.floor_double(event.getPlayer().posY),
 					MathHelper.floor_double(event.getPlayer().posZ),
@@ -139,13 +141,13 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 				break;
 			case CHECK_PLAYEREDIT:
 				if (mod.isWatchedPlayer(event.getPlayer()))
-					logger.playerEdit(event, event.getPlayer(), event.getDirection(), event.getX(), event.getY(), event.getZ(), event.getItemStack());
+					logger.playerEdit(event, event.getPlayer(), event.getPlayer().dimension, event.getDirection(), event.getX(), event.getY(), event.getZ(), event.getItemStack());
 				break;
 			case PLACE_ATTEMPT:
 				break;
 			case REMOVE_ATTEMPT:
 				if (mod.isWatchedPlayer(event.getPlayer()))
-					logger.playerRemove(event, event.getPlayer(), event.getX(), event.getY(), event.getZ());
+					logger.playerRemove(event, event.getPlayer(), event.getPlayer().dimension, event.getX(), event.getY(), event.getZ());
 				break;
 		}
 	}
@@ -154,6 +156,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 	public void onPlayerAction(PlayerActionEvent event) {
 		if (event.getType() == PlayerActionEvent.TYPE.PLAYER_USE_ENTITY && mod.isWatchedPlayer(event.getPlayer())) {
 			logger.playerUseEntity(event, event.getPlayer(),
+					event.getPlayer().dimension,
 					MathHelper.floor_double(event.getPlayer().posX), 
 					MathHelper.floor_double(event.getPlayer().posY),
 					MathHelper.floor_double(event.getPlayer().posZ),
@@ -169,6 +172,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
 		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN || event.getType() == PlayerInstanceEvent.TYPE.LOGOUT) {
 			logger.playerLogin(event, event.getPlayerInstance(),
+					event.getPlayerInstance().dimension,
 					MathHelper.floor_double(event.getPlayerInstance().posX), 
 					MathHelper.floor_double(event.getPlayerInstance().posY),
 					MathHelper.floor_double(event.getPlayerInstance().posZ),
@@ -183,6 +187,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 			for (EntityPlayer player : players) {
 				if (mod.isWatchedPlayer(player)) {
 					logger.playerPosition(player,
+							player.dimension,
 						MathHelper.floor_double(player.posX), 
 						MathHelper.floor_double(player.posY),
 						MathHelper.floor_double(player.posZ));

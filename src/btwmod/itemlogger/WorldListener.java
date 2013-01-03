@@ -30,7 +30,7 @@ public class WorldListener implements IBlockListener {
 		if (event.getType() == BlockEvent.TYPE.BROKEN && event.getBlock() instanceof BlockChest) {
 			ItemStack[] contents = event.getContents();
 			if (contents != null) {
-				logger.containerBroken(event, event.getX(), event.getY(), event.getZ(), event.getContents());
+				logger.containerBroken(event, event.getWorld().provider.dimensionId, event.getX(), event.getY(), event.getZ(), event.getContents());
 			}
 		}
 	}
