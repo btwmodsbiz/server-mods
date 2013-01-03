@@ -209,13 +209,13 @@ public class SQLLogger implements ILogger, ITickListener {
 		String lastPos = lastPlayerPos.get(player.username.toLowerCase());
 		
 		if (lastPos == null)
-			lastPlayerPos.put(player.username.toLowerCase(), x + "," + y + "," + z);
+			lastPlayerPos.put(player.username.toLowerCase(), dimension + "," + x + "," + y + "," + z);
 		
-		else if (lastPos.equals(x + "," + y + "," + z))
+		else if (lastPos.equals(dimension + "," + x + "," + y + "," + z))
 			return;
 		
 		else
-			lastPlayerPos.put(player.username.toLowerCase(), x + "," + y + "," + z);
+			lastPlayerPos.put(player.username.toLowerCase(), dimension + "," + x + "," + y + "," + z);
 		
 		mod.queueWrite(outputFile, buildStatement("playerposition",
 				"datetime, username, dimension, x, y, z",
