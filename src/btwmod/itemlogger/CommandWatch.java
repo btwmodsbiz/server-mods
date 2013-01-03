@@ -76,10 +76,10 @@ public class CommandWatch extends CommandBaseExtended {
 			return getListOfStringsMatchingLastWord(args, new String[] { "list", "add", "remove" });
 		
 		else if (args.length == 2 && args[0].equalsIgnoreCase("add"))
-			return getListOfStringsMatchingLastWord(args, mod.getWatchedPlayers());
+			return getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames());
 		
 		else if (args.length == 2 && args[0].equalsIgnoreCase("remove"))
-			return getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames());
+			return getListOfStringsMatchingLastWord(args, mod.getWatchedPlayers());
 			
 		return super.addTabCompletionOptions(sender, args);
 	}
