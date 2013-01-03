@@ -224,6 +224,7 @@ public class SQLLogger implements ILogger, ITickListener {
 
 	@Override
 	public void playerLogin(PlayerInstanceEvent event, EntityPlayer player, int dimension, int x, int y, int z, boolean isLogout) {
+		lastPlayerPos.remove(player.username.toLowerCase());
 		mod.queueWrite(outputFile, buildStatement("playerinstance",
 				"datetime, actiontype, username, dimension, x, y, z",
 				new Object[] { sqlDateFormat.format(new Date()), isLogout ? "logout" : "login", player.username, dimension, x, y, z }));
