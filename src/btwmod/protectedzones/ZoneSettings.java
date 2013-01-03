@@ -191,7 +191,7 @@ public class ZoneSettings {
 	public void saveToSettings(Settings settings, String section) {
 		settings.set(section, "name", name);
 		
-		settings.setInt("dimension", dimension);
+		settings.setInt(section, "dimension", dimension);
 		
 		settings.setInt(section, "x1", x1);
 		settings.setInt(section, "z1", z1);
