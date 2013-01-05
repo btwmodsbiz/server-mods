@@ -1,6 +1,7 @@
 package btwmod.chat;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import net.minecraft.server.MinecraftServer;
@@ -35,6 +36,11 @@ public class CommandChatColor extends CommandBaseExtended {
 	@Override
 	public String getCommandName() {
 		return "chatcolor";
+	}
+
+	@Override
+	public List getCommandAliases() {
+		return Arrays.asList(new String[] { "chatcolour" });
 	}
 
 	@Override
