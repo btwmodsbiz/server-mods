@@ -117,7 +117,7 @@ public class mod_Chat implements IMod, IPlayerChatListener {
 
 	@Override
 	public void onPlayerChatAction(PlayerChatEvent event) {
-		if (event.type == PlayerChatEvent.TYPE.GLOBAL) {
+		if (event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL) {
 			// Attempt to get the user's setting.
 			String color = data.get(event.player.username.toLowerCase(), "color");
 			
