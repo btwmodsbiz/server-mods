@@ -25,13 +25,15 @@ import btwmods.world.WorldTickEvent;
 public class mod_ChunkCleaner implements IMod, IWorldTickListener {
 	
 	public static final int MAX_CHUNKS_CHECKED = 50;
-	public static final int CHUNK_RANGE = 12;
+	public static final int CHUNK_RANGE_SAFETY = 2;
 	
 	private static Random rnd = new Random();
 	public int chunksChecked = 5;
 	public int checkFrequency = 20;
 	public boolean debugLogging = false;
 	public boolean enabled = true;
+	
+	private int chunkRange = 10;
 	
 	private ICommand commandChunk;
 
@@ -46,6 +48,8 @@ public class mod_ChunkCleaner implements IMod, IWorldTickListener {
 		enabled = settings.getBoolean("enabledOnStart", enabled);
 		debugLogging = settings.getBoolean("debugLogging", debugLogging);
 		checkFrequency = Math.max(1, settings.getInt("checkFrequency", checkFrequency));
+		
+		chunkRange = MinecraftServer.getServer().getConfigurationManager().getViewDistance() + CHUNK_RANGE_SAFETY;
 		
 		WorldAPI.addListener(this);
 		CommandsAPI.registerCommand(commandChunk = new CommandChunk(this), this);
@@ -90,15 +94,15 @@ public class mod_ChunkCleaner implements IMod, IWorldTickListener {
 		}
 	}
 	
-	public static boolean hasPlayerInRange(World world, int chunkX, int chunkZ) {
+	public boolean hasPlayerInRange(World world, int chunkX, int chunkZ) {
 		return !getPlayersWithinRange(world, chunkX, chunkZ, true).isEmpty();
 	}
 	
-	public static List<EntityPlayer> getPlayersWithinRange(World world, int chunkX, int chunkZ) {
+	public List<EntityPlayer> getPlayersWithinRange(World world, int chunkX, int chunkZ) {
 		return getPlayersWithinRange(world, chunkX, chunkZ, false);
 	}
 	
-	private static List<EntityPlayer> getPlayersWithinRange(World world, int chunkX, int chunkZ, boolean stopAtFirst) {
+	private List<EntityPlayer> getPlayersWithinRange(World world, int chunkX, int chunkZ, boolean stopAtFirst) {
 		List<EntityPlayer> players = world.playerEntities;
 		ArrayList<EntityPlayer> inRange = new ArrayList<EntityPlayer>();
 		
@@ -106,7 +110,7 @@ public class mod_ChunkCleaner implements IMod, IWorldTickListener {
 			int playerChunkX = MathHelper.floor_double(player.posX) >> 4;
 			int playerChunkZ = MathHelper.floor_double(player.posZ) >> 4;
 			
-			if (chunkX >= playerChunkX - CHUNK_RANGE && chunkX <= playerChunkX + CHUNK_RANGE && chunkZ >= playerChunkZ - CHUNK_RANGE && chunkZ <= playerChunkZ + CHUNK_RANGE) {
+			if (chunkX >= playerChunkX - chunkRange && chunkX <= playerChunkX + chunkRange && chunkZ >= playerChunkZ - chunkRange && chunkZ <= playerChunkZ + chunkRange) {
 				inRange.add(player);
 				
 				if (stopAtFirst)
