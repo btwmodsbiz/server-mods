@@ -1,3 +1,16 @@
+Version 4.41.2-b (vMC 1.4.6 BTW 4.41)
+
+  - Added /chatcolour as alias for /chatcolor.
+  
+  - Added the show argument to the /chatcolor command and changed the
+    command usage to be simpler as a result.
+  
+  - Changed mod_ChunkCleaner to use the server's view-distance to determine
+    if a chunk is in range. It however adds 2 to the value just to be safe.
+
+  - Fixed bug where the /watch command was not giving the correct tab
+    completion for add and remove.
+
 Version 4.41.2 (vMC 1.4.6 BTW 4.41)
 
   - Added missing dimension ID to ItemLogger's ILogger and related classes.
