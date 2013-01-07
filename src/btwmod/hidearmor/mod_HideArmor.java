@@ -1,6 +1,7 @@
 package btwmod.hidearmor;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,11 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 		CommandsAPI.unregisterCommand(this);
 		NetworkAPI.removeListener(this);
 		PlayerAPI.removeListener(this);
+	}
+
+	@Override
+	public List getCommandAliases() {
+        return Arrays.asList(new String[] { "armour" });
 	}
 
 	@Override
