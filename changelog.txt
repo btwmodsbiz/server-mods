@@ -1,3 +1,11 @@
+Version 4.41.3 (vMC 1.4.6 BTW 4.41)
+
+  - Added /armour as alias for /armor.
+  
+  - Added chat history restoration to mod_Chat.
+
+  - Change to mod_Chat after change to PlayerChatEvent.
+
 Version 4.41.2-b (vMC 1.4.6 BTW 4.41)
 
   - Added /chatcolour as alias for /chatcolor.
