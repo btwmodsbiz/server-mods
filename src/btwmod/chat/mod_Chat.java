@@ -1,6 +1,8 @@
 package btwmod.chat;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,9 +14,12 @@ import btwmods.PlayerAPI;
 import btwmods.Util;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerChatListener;
+import btwmods.player.IPlayerInstanceListener;
 import btwmods.player.PlayerChatEvent;
+import btwmods.player.PlayerInstanceEvent;
+import btwmods.util.ValuePair;
 
-public class mod_Chat implements IMod, IPlayerChatListener {
+public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListener {
 
 	public String globalMessageFormat = "<%1$s> %2$s";
 	public Set<String> bannedColors = new HashSet<String>();
@@ -23,6 +28,12 @@ public class mod_Chat implements IMod, IPlayerChatListener {
 	private Settings data = null;
 	private Map<String, String> colorLookup = new HashMap<String, String>();
 	private CommandChatColor commandChatColor;
+	
+	public int chatRestoreLines = 30;
+	private long chatRestoreTimeout = 20L;
+	private Deque<ValuePair<String, Long>> chatRestoreBuffer = new ArrayDeque<ValuePair<String, Long>>();
+	private Map<String, Long> loginTime = new HashMap<String, Long>();
+	private Map<String, Long> logoutTime = new HashMap<String, Long>();
 	
 	@Override
 	public String getName() {
@@ -42,6 +53,9 @@ public class mod_Chat implements IMod, IPlayerChatListener {
 		if (bannedColors != null)
 			for (String bannedColor : bannedColors.split("[,; ]+"))
 				this.bannedColors.add(bannedColor.toLowerCase().trim());
+		
+		chatRestoreLines = settings.getInt("chatRestoreLines", chatRestoreLines);
+		chatRestoreTimeout = settings.getLong("chatRestoreTimeout", chatRestoreTimeout);
 		
 		//addColor("black", Util.COLOR_BLACK);
 		//addColor("navy", Util.COLOR_NAVY);
@@ -99,6 +113,12 @@ public class mod_Chat implements IMod, IPlayerChatListener {
 		return data.get(username.toLowerCase(), "color");
 	}
 	
+	/**
+	 * Get the vMC color code for a named color.
+	 * 
+	 * @param color The named color.
+	 * @return The two characters that represent this color in vMC.
+	 */
 	public String getColorChar(String color) {
 		return colorLookup.get(color.toLowerCase());
 	}
@@ -118,10 +138,10 @@ public class mod_Chat implements IMod, IPlayerChatListener {
 	@Override
 	public void onPlayerChatAction(PlayerChatEvent event) {
 		if (event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL) {
+			
 			// Attempt to get the user's setting.
 			String color = data.get(event.player.username.toLowerCase(), "color");
 			
-			// Convert the setting to a color.
 			if (color != null)
 				color = getColorChar(color);
 			
@@ -133,6 +153,38 @@ public class mod_Chat implements IMod, IPlayerChatListener {
 			));
 			
 			event.sendAsGlobalMessage();
+		}
+		else if (event.type == PlayerChatEvent.TYPE.GLOBAL) {
+			chatRestoreBuffer.add(new ValuePair(event.originalMessage, new Long(System.currentTimeMillis())));
+			
+			if (chatRestoreBuffer.size() > chatRestoreLines)
+				chatRestoreBuffer.pollFirst();
+		}
+	}
+
+	@Override
+	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
+		long currentTimeMillis = System.currentTimeMillis();
+		
+		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN) {
+			String userKey = event.getPlayerInstance().username.toLowerCase();
+			
+			Long loginSessionStart = loginTime.get(userKey);
+			Long lastLogout = logoutTime.get(userKey);
+			
+			// Reset the login time if they've been logged out longer than the restore timeout.
+			if (loginTime == null || lastLogout == null || lastLogout.longValue() < currentTimeMillis - chatRestoreTimeout * 1000L) {
+				loginTime.put(userKey, loginSessionStart = new Long(currentTimeMillis));
+			}
+			else {
+				for (ValuePair<String, Long> message : chatRestoreBuffer) {
+					if (message.value.longValue() >= loginSessionStart)
+						event.getPlayerInstance().sendChatToPlayer(message.key);
+				}
+			}
+		}
+		else if (event.getType() == PlayerInstanceEvent.TYPE.LOGOUT) {
+			logoutTime.put(event.getPlayerInstance().username.toLowerCase(), new Long(System.currentTimeMillis()));
 		}
 	}
 }
