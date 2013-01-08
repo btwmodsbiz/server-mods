@@ -245,15 +245,15 @@ public class SQLLogger implements ILogger, ITickListener {
 		System.arraycopy(inventory.mainInventory, 0, fullInventory, inventory.armorInventory.length, inventory.mainInventory.length);
 		
 		mod.queueWrite(outputFile, buildStatement("playerdrop",
-				"datetime, actiontype, player, dimension, x, y, z, items",
-				new Object[] { sqlDateFormat.format(new Date()), "all", dimension, x, y, z, mod.getItemStackList(fullInventory) }));
+				"datetime, actiontype, username, dimension, x, y, z, items",
+				new Object[] { sqlDateFormat.format(new Date()), "all", player.username, dimension, x, y, z, mod.getItemStackList(fullInventory) }));
 	}
 
 	@Override
 	public void playerDropItem(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack) {
 		mod.queueWrite(outputFile, buildStatement("playerdrop",
-				"datetime, actiontype, player, dimension, x, y, z, items",
-				new Object[] { sqlDateFormat.format(new Date()), event.getType() == DropEvent.TYPE.EJECT ? "eject" : "drop", dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
+				"datetime, actiontype, username, dimension, x, y, z, items",
+				new Object[] { sqlDateFormat.format(new Date()), event.getType() == DropEvent.TYPE.EJECT ? "eject" : "drop", player.username, dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
 	}
 
 	@Override
@@ -271,7 +271,7 @@ public class SQLLogger implements ILogger, ITickListener {
 		}
 		
 		mod.queueWrite(outputFile, buildStatement("playeruseentity",
-				"datetime, actiontype, player, dimension, x, y, z, entity, entityX, entityY, entityZ, extra",
+				"datetime, actiontype, username, dimension, x, y, z, entity, entityX, entityY, entityZ, extra",
 				new Object[] { sqlDateFormat.format(new Date()), isAttack ? "attack" : "use", player.username, dimension, x, y, z, entity.getEntityName(), entityX, entityY, entityZ, extra.toString() }));
 	}
 
