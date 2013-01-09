@@ -33,7 +33,8 @@ public class SQLLogger implements ILogger, ITickListener {
 
 	public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH");
 	public static final SimpleDateFormat commentDateFormat = new SimpleDateFormat("EEE, dd MMM, yyyy HH:mm:ss Z");
-	public static final SimpleDateFormat sqlDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	public static final SimpleDateFormat sqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	public static final SimpleDateFormat sqlTimeFormat = new SimpleDateFormat("HH:mm:ss");
 	
 	private mod_ItemLogger mod = null;
 	
@@ -152,24 +153,27 @@ public class SQLLogger implements ILogger, ITickListener {
 
 	@Override
 	public void containerOpened(ContainerEvent event, EntityPlayer player, Block block, int dimension, int x, int y, int z) {
+		Date now = new Date();
 		mod.queueWrite(outputFile, buildStatement("containers",
-				"datetime, actiontype, username, container, dimension, x, y, z",
-				new Object[] { sqlDateFormat.format(new Date()), "open", player.username, event.getBlock().getBlockName(), dimension, x, y, z }));
+				"eventdate, eventtime, actiontype, username, container, dimension, x, y, z",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "open", player.username, event.getBlock().getBlockName(), dimension, x, y, z }));
 	}
 
 	@Override
 	public void containerRemoved(ContainerEvent event, EntityPlayer player, Block block, int dimension, int x, int y, int z) {
+		Date now = new Date();
 		mod.queueWrite(outputFile, buildStatement("containers",
-				"datetime, actiontype, username, container, dimension, x, y, z",
-				new Object[] { sqlDateFormat.format(new Date()), "remove", player.username, event.getBlock().getBlockName(), dimension, x, y, z }));
+				"eventdate, eventtime, actiontype, username, container, dimension, x, y, z",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "remove", player.username, event.getBlock().getBlockName(), dimension, x, y, z }));
 	}
 
 	@Override
 	public void withdrew(SlotEvent event, EntityPlayer player, ItemStack withdrawn, int withdrawnQuantity, Container container, IInventory inventory, BlockInfo lastContainerOpened) {
+		Date now = new Date();
 		mod.queueWrite(outputFile, buildStatement("slots",
-				"datetime, actiontype, username, block, dimension, x, y, z, item, quantity, container, inventory",
+				"eventdate, eventtime, actiontype, username, block, dimension, x, y, z, item, quantity, container, inventory",
 				new Object[] {
-					sqlDateFormat.format(new Date()),
+					sqlDateFormat.format(now), sqlTimeFormat.format(now),
 					"withdrew",
 					player.username,
 					(lastContainerOpened == null ? null : lastContainerOpened.block.getBlockName()),
@@ -187,10 +191,11 @@ public class SQLLogger implements ILogger, ITickListener {
 
 	@Override
 	public void deposited(SlotEvent event, EntityPlayer player, ItemStack deposited, int depositedQuantity, Container container, IInventory inventory, BlockInfo lastContainerOpened) {
+		Date now = new Date();
 		mod.queueWrite(outputFile, buildStatement("slots",
-				"datetime, actiontype, username, block, dimension, x, y, z, item, quantity, container, inventory",
+				"eventdate, eventtime, actiontype, username, block, dimension, x, y, z, item, quantity, container, inventory",
 				new Object[] {
-					sqlDateFormat.format(new Date()),
+					sqlDateFormat.format(now), sqlTimeFormat.format(now),
 					"deposited",
 					player.username,
 					(lastContainerOpened == null ? null : lastContainerOpened.block.getBlockName()),
@@ -208,32 +213,36 @@ public class SQLLogger implements ILogger, ITickListener {
 
 	@Override
 	public void containerBroken(BlockEvent event, int dimension, int x, int y, int z, ItemStack[] contents) {
+		Date now = new Date();
 		String contentsList = mod.getItemStackList(contents);
 		
 		if (contentsList.length() != 0)
 			mod.queueWrite(outputFile, buildStatement("containerbroken",
-					"datetime, container, dimension, x, y, z, contents",
-					new Object[] { sqlDateFormat.format(new Date()), event.getBlockId() > 0 ? event.getBlock().getBlockName() : "air", dimension, x, y, z, contentsList }));
+					"eventdate, eventtime, container, dimension, x, y, z, contents",
+					new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), event.getBlockId() > 0 ? event.getBlock().getBlockName() : "air", dimension, x, y, z, contentsList }));
 	}
 
 	@Override
 	public void playerEdit(PlayerBlockEvent event, EntityPlayer player, int direction, int dimension, int x, int y, int z, ItemStack itemStack) {
+		Date now = new Date();
 		int blockId = event.getWorld().getBlockId(x, y, z);
 		mod.queueWrite(outputFile, buildStatement("playeredits",
-				"datetime, actiontype, username, block, dimension, x, y, z, helditem",
-				new Object[] { sqlDateFormat.format(new Date()), "edit", player.username, blockId == 0 ? "air" : Block.blocksList[blockId].getBlockName(), dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
+				"eventdate, eventtime, actiontype, username, block, dimension, x, y, z, helditem",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "edit", player.username, blockId == 0 ? "air" : Block.blocksList[blockId].getBlockName(), dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
 	}
 
 	@Override
 	public void playerRemove(PlayerBlockEvent event, EntityPlayer player, int dimension, int x, int y, int z) {
+		Date now = new Date();
 		int blockId = event.getWorld().getBlockId(x, y, z);
 		mod.queueWrite(outputFile, buildStatement("playeredits",
-				"datetime, actiontype, username, block, dimension, x, y, z, helditem",
-				new Object[] { sqlDateFormat.format(new Date()), "remove", player.username, blockId == 0 ? "Air" : Block.blocksList[blockId].getBlockName(), dimension, x, y, z, null }));
+				"eventdate, eventtime, actiontype, username, block, dimension, x, y, z, helditem",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "remove", player.username, blockId == 0 ? "Air" : Block.blocksList[blockId].getBlockName(), dimension, x, y, z, null }));
 	}
 
 	@Override
 	public void playerPosition(EntityPlayer player, int dimension, int x, int y, int z) {
+		Date now = new Date();
 		String lastPos = lastPlayerPos.get(player.username.toLowerCase());
 		
 		if (lastPos == null)
@@ -246,46 +255,51 @@ public class SQLLogger implements ILogger, ITickListener {
 			lastPlayerPos.put(player.username.toLowerCase(), dimension + "," + x + "," + y + "," + z);
 		
 		mod.queueWrite(outputFile, buildStatement("playerposition",
-				"datetime, username, dimension, x, y, z",
-				new Object[] { sqlDateFormat.format(new Date()), player.username, dimension, x, y, z }));
+				"eventdate, eventtime, username, dimension, x, y, z",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), player.username, dimension, x, y, z }));
 	}
 
 	@Override
 	public void playerLogin(PlayerInstanceEvent event, EntityPlayer player, int dimension, int x, int y, int z, boolean isLogout) {
+		Date now = new Date();
 		lastPlayerPos.remove(player.username.toLowerCase());
 		mod.queueWrite(outputFile, buildStatement("playerinstance",
-				"datetime, actiontype, username, dimension, x, y, z",
-				new Object[] { sqlDateFormat.format(new Date()), isLogout ? "logout" : "login", player.username, dimension, x, y, z }));
+				"eventdate, eventtime, actiontype, username, dimension, x, y, z",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), isLogout ? "logout" : "login", player.username, dimension, x, y, z }));
 	}
 
 	@Override
 	public void playerDeath(PlayerInstanceEvent event, EntityPlayer player, int dimension, int x, int y, int z, String deathMessage) {
+		Date now = new Date();
 		lastPlayerPos.remove(player.username.toLowerCase());
 		mod.queueWrite(outputFile, buildStatement("playerdeath",
-				"datetime, username, dimension, x, y, z, message",
-				new Object[] { sqlDateFormat.format(new Date()), player.username, dimension, x, y, z, deathMessage }));
+				"eventdate, eventtime, username, dimension, x, y, z, message",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), player.username, dimension, x, y, z, deathMessage }));
 	}
 
 	@Override
 	public void playerDropAll(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, InventoryPlayer inventory) {
+		Date now = new Date();
 		ItemStack[] fullInventory = new ItemStack[inventory.armorInventory.length + inventory.mainInventory.length];
 		System.arraycopy(inventory.armorInventory, 0, fullInventory, 0, inventory.armorInventory.length);
 		System.arraycopy(inventory.mainInventory, 0, fullInventory, inventory.armorInventory.length, inventory.mainInventory.length);
 		
 		mod.queueWrite(outputFile, buildStatement("playerdrop",
-				"datetime, actiontype, username, dimension, x, y, z, items",
-				new Object[] { sqlDateFormat.format(new Date()), "all", player.username, dimension, x, y, z, mod.getItemStackList(fullInventory) }));
+				"eventdate, eventtime, actiontype, username, dimension, x, y, z, items",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "all", player.username, dimension, x, y, z, mod.getItemStackList(fullInventory) }));
 	}
 
 	@Override
 	public void playerDropItem(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack) {
+		Date now = new Date();
 		mod.queueWrite(outputFile, buildStatement("playerdrop",
-				"datetime, actiontype, username, dimension, x, y, z, items",
-				new Object[] { sqlDateFormat.format(new Date()), event.getType() == DropEvent.TYPE.EJECT ? "eject" : "drop", player.username, dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
+				"eventdate, eventtime, actiontype, username, dimension, x, y, z, items",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), event.getType() == DropEvent.TYPE.EJECT ? "eject" : "drop", player.username, dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
 	}
 
 	@Override
 	public void playerUseEntity(PlayerActionEvent event, EntityPlayer player, int dimension, int x, int y, int z, Entity entity, int entityX, int entityY, int entityZ, boolean isAttack) {
+		Date now = new Date();
 		StringBuilder extra = new StringBuilder();
 		
 		if (entity.isDead || (entity instanceof EntityLiving && ((EntityLiving)entity).getHealth() <= 0)) {
@@ -299,8 +313,8 @@ public class SQLLogger implements ILogger, ITickListener {
 		}
 		
 		mod.queueWrite(outputFile, buildStatement("playeruseentity",
-				"datetime, actiontype, username, dimension, x, y, z, entity, entityX, entityY, entityZ, extra",
-				new Object[] { sqlDateFormat.format(new Date()), isAttack ? "attack" : "use", player.username, dimension, x, y, z, entity.getEntityName(), entityX, entityY, entityZ, extra.toString() }));
+				"eventdate, eventtime, actiontype, username, dimension, x, y, z, entity, entityX, entityY, entityZ, extra",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), isAttack ? "attack" : "use", player.username, dimension, x, y, z, entity.getEntityName(), entityX, entityY, entityZ, extra.toString() }));
 	}
 
 	@Override
