@@ -1,6 +1,8 @@
 package btwmod.itemlogger;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.EntityPlayer;
@@ -26,6 +28,7 @@ import btwmods.server.TickEvent;
 
 public class PlayerListener implements ISlotListener, IDropListener, IContainerListener, IPlayerBlockListener, IPlayerActionListener, IPlayerInstanceListener, ITickListener {
 
+	private Map<String, BlockInfo> lastContainerOpened = new HashMap<String, BlockInfo>();
 	private mod_ItemLogger mod;
 	private ILogger logger;
 	
@@ -44,6 +47,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 		EntityPlayer player = event.getPlayer();
 		switch (event.getType()) {
 			case OPENED:
+				lastContainerOpened.put(event.getPlayer().username.toLowerCase(), new BlockInfo(event.getBlock(), event.getWorld().provider.dimensionId, event.getX(), event.getY(), event.getZ()));
 				logger.containerOpened(event, player, event.getBlock(), event.getWorld().provider.dimensionId, event.getX(), event.getY(), event.getZ());
 				break;
 				
@@ -125,11 +129,13 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 				break;
 		}
 		
+		BlockInfo lastContainer = lastContainerOpened.get(event.getPlayer().username.toLowerCase());
+		
 		if (withdrawn != null)
-			logger.withdrew(event, event.getPlayer(), withdrawn, withdrawnQuantity, event.getContainer(), event.getSlot().inventory);
+			logger.withdrew(event, event.getPlayer(), withdrawn, withdrawnQuantity, event.getContainer(), event.getSlot().inventory, lastContainer);
 		
 		if (deposited != null)
-			logger.deposited(event, event.getPlayer(), deposited, depositedQuantity, event.getContainer(), event.getSlot().inventory);
+			logger.deposited(event, event.getPlayer(), deposited, depositedQuantity, event.getContainer(), event.getSlot().inventory, lastContainer);
 	}
 
 	@Override
@@ -171,6 +177,8 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 	@Override
 	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
 		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN || event.getType() == PlayerInstanceEvent.TYPE.LOGOUT) {
+			lastContainerOpened.remove(event.getPlayerInstance().username.toLowerCase());
+			
 			logger.playerLogin(event, event.getPlayerInstance(),
 					event.getPlayerInstance().dimension,
 					MathHelper.floor_double(event.getPlayerInstance().posX), 

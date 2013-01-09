@@ -21,8 +21,8 @@ public interface ILogger {
 	public void init(mod_ItemLogger mod, Settings settings);
 	public void containerOpened(ContainerEvent event, EntityPlayer player, Block block, int dimension, int x, int y, int z);
 	public void containerRemoved(ContainerEvent event, EntityPlayer player, Block block, int dimension, int x, int y, int z);
-	public void withdrew(SlotEvent event, EntityPlayer player, ItemStack withdrawn, int withdrawnQuantity, Container container, IInventory inventory);
-	public void deposited(SlotEvent event, EntityPlayer player, ItemStack deposited, int depositedQuantity, Container container, IInventory inventory);
+	public void withdrew(SlotEvent event, EntityPlayer player, ItemStack withdrawn, int withdrawnQuantity, Container container, IInventory inventory, BlockInfo lastContainerOpened);
+	public void deposited(SlotEvent event, EntityPlayer player, ItemStack deposited, int depositedQuantity, Container container, IInventory inventory, BlockInfo lastContainerOpened);
 	public void containerBroken(BlockEvent event, int dimension, int x, int y, int z, ItemStack[] contents);
 	public void playerEdit(PlayerBlockEvent event, EntityPlayer player, int direction, int dimension, int x, int y, int z, ItemStack itemStack);
 	public void playerRemove(PlayerBlockEvent event, EntityPlayer player, int dimension, int x, int y, int z);

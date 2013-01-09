@@ -165,17 +165,45 @@ public class SQLLogger implements ILogger, ITickListener {
 	}
 
 	@Override
-	public void withdrew(SlotEvent event, EntityPlayer player, ItemStack withdrawn, int withdrawnQuantity, Container container, IInventory inventory) {
+	public void withdrew(SlotEvent event, EntityPlayer player, ItemStack withdrawn, int withdrawnQuantity, Container container, IInventory inventory, BlockInfo lastContainerOpened) {
 		mod.queueWrite(outputFile, buildStatement("slots",
-				"datetime, actiontype, username, item, quantity, container, inventory",
-				new Object[] { sqlDateFormat.format(new Date()), "withdrew", player.username, mod.getFullItemStackName(withdrawn), withdrawnQuantity, container.getClass().getSimpleName(), inventory.getInvName() }));
+				"datetime, actiontype, username, block, dimension, x, y, z, item, quantity, container, inventory",
+				new Object[] {
+					sqlDateFormat.format(new Date()),
+					"withdrew",
+					player.username,
+					(lastContainerOpened == null ? null : lastContainerOpened.block.getBlockName()),
+					(lastContainerOpened == null ? null : lastContainerOpened.dimension),
+					(lastContainerOpened == null ? null : lastContainerOpened.x),
+					(lastContainerOpened == null ? null : lastContainerOpened.y),
+					(lastContainerOpened == null ? null : lastContainerOpened.z),
+					mod.getFullItemStackName(withdrawn),
+					withdrawnQuantity,
+					container.getClass().getSimpleName(),
+					inventory.getInvName()
+				}
+		));
 	}
 
 	@Override
-	public void deposited(SlotEvent event, EntityPlayer player, ItemStack deposited, int depositedQuantity, Container container, IInventory inventory) {
+	public void deposited(SlotEvent event, EntityPlayer player, ItemStack deposited, int depositedQuantity, Container container, IInventory inventory, BlockInfo lastContainerOpened) {
 		mod.queueWrite(outputFile, buildStatement("slots",
-				"datetime, actiontype, username, item, quantity, container, inventory",
-				new Object[] { sqlDateFormat.format(new Date()), "deposited", player.username, mod.getFullItemStackName(deposited), depositedQuantity, container.getClass().getSimpleName(), inventory.getInvName() }));
+				"datetime, actiontype, username, block, dimension, x, y, z, item, quantity, container, inventory",
+				new Object[] {
+					sqlDateFormat.format(new Date()),
+					"deposited",
+					player.username,
+					(lastContainerOpened == null ? null : lastContainerOpened.block.getBlockName()),
+					(lastContainerOpened == null ? null : lastContainerOpened.dimension),
+					(lastContainerOpened == null ? null : lastContainerOpened.x),
+					(lastContainerOpened == null ? null : lastContainerOpened.y),
+					(lastContainerOpened == null ? null : lastContainerOpened.z),
+					mod.getFullItemStackName(deposited),
+					depositedQuantity,
+					container.getClass().getSimpleName(),
+					inventory.getInvName()
+				}
+		));
 	}
 
 	@Override
