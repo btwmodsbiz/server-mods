@@ -1,3 +1,19 @@
+Version 4.41.4 (vMC 1.4.6 BTW 4.41)
+  
+  - Added logging of item uses to ItemLogger.
+  
+  - Changed SQLLogger so that it separates datetime into eventdate
+    and eventtime for indexing.
+  
+  - Changed ItemLogger to record the last known container opened when
+    withdrawing/depositing.
+    
+  - Changed ItemLogger so it always logs all information, but only logs
+    location for non-watched players every 30 seconds (by default).
+    
+  - Fixed bugs in ItemLogger's SQLLogger where column names were incorrect
+    and data for those columns were missing.
+
 Version 4.41.3 (vMC 1.4.6 BTW 4.41)
 
   - Added /armour as alias for /armor.
