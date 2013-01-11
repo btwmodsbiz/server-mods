@@ -146,21 +146,19 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 			case ACTIVATION_ATTEMPT:
 				break;
 			case CHECK_PLAYEREDIT:
-				if (mod.isWatchedPlayer(event.getPlayer()))
-					logger.playerEdit(event, event.getPlayer(), event.getDirection(), event.getPlayer().dimension, event.getX(), event.getY(), event.getZ(), event.getItemStack());
+				logger.playerEdit(event, event.getPlayer(), event.getDirection(), event.getPlayer().dimension, event.getX(), event.getY(), event.getZ(), event.getItemStack());
 				break;
 			case PLACE_ATTEMPT:
 				break;
 			case REMOVE_ATTEMPT:
-				if (mod.isWatchedPlayer(event.getPlayer()))
-					logger.playerRemove(event, event.getPlayer(), event.getPlayer().dimension, event.getX(), event.getY(), event.getZ());
+				logger.playerRemove(event, event.getPlayer(), event.getPlayer().dimension, event.getX(), event.getY(), event.getZ());
 				break;
 		}
 	}
 
 	@Override
 	public void onPlayerAction(PlayerActionEvent event) {
-		if (event.getType() == PlayerActionEvent.TYPE.PLAYER_USE_ENTITY && mod.isWatchedPlayer(event.getPlayer())) {
+		if (event.getType() == PlayerActionEvent.TYPE.PLAYER_USE_ENTITY) {
 			logger.playerUseEntity(event, event.getPlayer(),
 					event.getPlayer().dimension,
 					MathHelper.floor_double(event.getPlayer().posX), 
@@ -198,15 +196,20 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 
 	@Override
 	public void onTick(TickEvent event) {
-		if (event.getType() == TickEvent.TYPE.START && event.getTickCounter() % mod.locationTrackingFrequency == 0) {
-			List<EntityPlayer> players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
-			for (EntityPlayer player : players) {
-				if (mod.isWatchedPlayer(player)) {
-					logger.playerPosition(player,
-							player.dimension,
-						MathHelper.floor_double(player.posX), 
-						MathHelper.floor_double(player.posY),
-						MathHelper.floor_double(player.posZ));
+		if (event.getType() == TickEvent.TYPE.START) {
+			boolean doNormal = event.getTickCounter() % mod.locationTrackingFrequency == 0;
+			boolean doWatched = doNormal || event.getTickCounter() % mod.watchedLocationTrackingFrequency == 0;
+			
+			if (doNormal || doWatched) {
+				List<EntityPlayer> players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+				for (EntityPlayer player : players) {
+					if (doNormal || (doWatched && mod.isWatchedPlayer(player))) {
+						logger.playerPosition(player,
+								player.dimension,
+							MathHelper.floor_double(player.posX), 
+							MathHelper.floor_double(player.posY),
+							MathHelper.floor_double(player.posZ));
+					}
 				}
 			}
 		}

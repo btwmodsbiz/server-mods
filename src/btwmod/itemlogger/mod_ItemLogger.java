@@ -27,9 +27,10 @@ public class mod_ItemLogger implements IMod {
 	
 	private PlayerListener playerListener;
 	private WorldListener worldListener;
-	private final Set<String> watchedPlayers = new HashSet<String>();
 	
-	public int locationTrackingFrequency = 20 * 5;
+	private final Set<String> watchedPlayers = new HashSet<String>();
+	public int locationTrackingFrequency = 20 * 30;
+	public int watchedLocationTrackingFrequency = 20 * 5;
 	
 	private CommandWatch commandWatch;
 	
@@ -51,6 +52,7 @@ public class mod_ItemLogger implements IMod {
 		}
 		
 		locationTrackingFrequency = Math.max(20, settings.getInt("locationTrackingFrequency", locationTrackingFrequency));
+		watchedLocationTrackingFrequency = Math.max(20, settings.getInt("watchedLocationTrackingFrequency", watchedLocationTrackingFrequency));
 
 		if (settings.hasKey("logger")) {
 			if (settings.get("logger").equalsIgnoreCase("sql")) {
