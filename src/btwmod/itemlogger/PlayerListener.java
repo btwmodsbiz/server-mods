@@ -158,7 +158,15 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 
 	@Override
 	public void onPlayerAction(PlayerActionEvent event) {
-		if (event.getType() == PlayerActionEvent.TYPE.PLAYER_USE_ENTITY) {
+		if (event.getType() == PlayerActionEvent.TYPE.USE_ITEM) {
+			logger.playerUseItem(event, event.getPlayer(),
+					event.getPlayer().dimension,
+					MathHelper.floor_double(event.getPlayer().posX), 
+					MathHelper.floor_double(event.getPlayer().posY),
+					MathHelper.floor_double(event.getPlayer().posZ),
+					event.getItemStack());
+		}
+		else if (event.getType() == PlayerActionEvent.TYPE.PLAYER_USE_ENTITY) {
 			logger.playerUseEntity(event, event.getPlayer(),
 					event.getPlayer().dimension,
 					MathHelper.floor_double(event.getPlayer().posX), 

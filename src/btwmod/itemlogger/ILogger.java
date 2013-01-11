@@ -32,4 +32,5 @@ public interface ILogger {
 	public void playerDropAll(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, InventoryPlayer inventory);
 	public void playerDropItem(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack);
 	public void playerUseEntity(PlayerActionEvent event, EntityPlayer player, int dimension, int x, int y, int z, Entity entity, int entityX, int entityY, int entityZ, boolean isAttack);
+	public void playerUseItem(PlayerActionEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack);
 }

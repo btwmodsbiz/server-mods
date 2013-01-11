@@ -318,6 +318,19 @@ public class SQLLogger implements ILogger, ITickListener {
 	}
 
 	@Override
+	public void playerUseItem(PlayerActionEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack) {
+		if (itemStack == null)
+			itemStack = event.getOriginalItemStack();
+		
+		if (itemStack != null) {
+			Date now = new Date();
+			mod.queueWrite(outputFile, buildStatement("playeruseitem",
+					"eventdate, eventtime, username, dimension, x, y, z, item",
+					new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), player.username, dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
+		}
+	}
+
+	@Override
 	public IMod getMod() {
 		return mod;
 	}
