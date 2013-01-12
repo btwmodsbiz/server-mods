@@ -11,67 +11,56 @@ import btwmods.util.Area;
 import btwmods.util.Cube;
 
 public class ZoneSettings {
-	public final String name;
 	
-	public boolean protectBlocks = false;
+	public enum PERMISSION { ON, WHITELIST, OFF };
+	
+	public final String name;
+	public final int dimension;
+	private final Set<Area<ZoneSettings>> areas = new HashSet<Area<ZoneSettings>>(); 
+	
+	public PERMISSION protectBlocks = PERMISSION.OFF;
+	public PERMISSION allowDoors = PERMISSION.ON;
+	public PERMISSION allowContainers = PERMISSION.OFF;
+	public PERMISSION allowOps = PERMISSION.OFF;
+	
 	public boolean protectEntities = false;
-	public boolean allowOps = false;
-	public boolean allowDoors = true;
-	public boolean allowContainers = false;
 	public boolean allowMooshroom = false;
 	public boolean allowVillagers = false;
-	public boolean allowBurning = false;
+	
+	public boolean protectBurning = false;
+	
 	public boolean sendDebugMessages = false;
 	
-	private Set<String> allowedPlayers = new HashSet<String>();
+	private final Set<String> whitelist = new HashSet<String>();
 	
 	public static final String[] settings = {
 		"protectBlocks",
-		"protectEntities",
-		"allowBurning",
-		"allowContainers",
 		"allowDoors",
-		"allowMooshroom",
+		"allowContainers",
 		"allowOps",
-		"allowVillagers"
+		
+		"protectEntities",
+		"allowMooshroom",
+		"allowVillagers",
+		
+		"protectBurning"
 	};
-	
-	public final boolean isCube;
-	
-	public final int dimension;
-	public final int x1;
-	public final int y1;
-	public final int z1;
-	public final int x2;
-	public final int y2;
-	public final int z2;
 	
 	public ZoneSettings(String name, int dimension, int x1, int z1, int x2, int z2) {
 		this.name = name;
-		isCube = false;
-		this.x1 = x1;
-		this.y1 = 0;
-		this.z1 = z1;
-		this.x2 = x2;
-		this.y2 = 0;
-		this.z2 = z2;
 		this.dimension = dimension;
+		areas.add(new Area<ZoneSettings>(x1, z1, x2, z2, this));
 	}
 	
 	public ZoneSettings(String name, int dimension, int x1, int y1, int z1, int x2, int y2, int z2) {
 		this.name = name;
-		isCube = true;
-		this.x1 = x1;
-		this.y1 = y1;
-		this.z1 = z1;
-		this.x2 = x2;
-		this.y2 = y2;
-		this.z2 = z2;
 		this.dimension = dimension;
+		areas.add(new Cube<ZoneSettings>(x1, y1, z1, x2, y2, z2, this));
 	}
 	
 	public ZoneSettings(Settings settings) {
 		name = settings.get("name");
+		
 		isCube = settings.getBoolean("isCube", false);
 		
 		dimension = settings.getInt("dimension", 0);
