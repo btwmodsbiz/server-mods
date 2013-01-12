@@ -173,7 +173,7 @@ public class mod_ItemLogger implements IMod {
 				if (enchant > 1) fullName.append(", ");
 				Enchantment enchantment = Enchantment.enchantmentsList[entry.getKey().intValue()];
 				if (enchantment != null) {
-					fullName.append(enchantment.func_77316_c(entry.getValue().intValue()));
+					fullName.append(enchantment.getTranslatedName(entry.getValue().intValue()));
 				}
 				enchant++;
 			}
