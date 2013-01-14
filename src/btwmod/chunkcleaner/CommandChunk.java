@@ -142,7 +142,7 @@ public class CommandChunk extends CommandBase {
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/" + getCommandName() + " <enabled|debug|frequency|num|check> ...";
+		return "/" + getCommandName() + " (enabled | debug | frequency | num | check) ...";
 	}
 
 	@Override
