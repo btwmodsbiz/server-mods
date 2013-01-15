@@ -1,3 +1,9 @@
+Version 4.42.2 (vMC 1.4.7 BTW 4.42)
+
+  - Added Map Markers mod.
+
+  - Changed help text for /chunk for readability.
+
 Version 4.42.0 (vMC 1.4.7 BTW 4.42)
 
   - Changed ItemLogger method call for on MCP changes.
