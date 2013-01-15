@@ -28,7 +28,7 @@ public class mod_MapMarkers implements IMod {
 	private Map<String, Marker> mapMarkers = new LinkedHashMap<String, Marker>();
 	private CommandMarker commandMarker = null;
 	
-	private File markerFile = null; //new File(ModLoader.modDataDir, "markers.txt");
+	private File markerFile = new File(ModLoader.modDataDir, "markers.txt");
 	public int maxMarkersPerDimension = 3;
 	public long markerCooldownMinutes = 30;
 
@@ -45,9 +45,15 @@ public class mod_MapMarkers implements IMod {
 			.setPrettyPrinting()
 			.enableComplexMapKeySerialization()
 			.create();
+
+
+		if (data.hasKey("markerFile")) {
+			markerFile = new File(data.get("markerFile"));
+		}
 		
 		maxMarkersPerDimension = settings.getInt("maxMarkersPerDimension", maxMarkersPerDimension);
 		markerCooldownMinutes = settings.getLong("markerCooldownMinutes", markerCooldownMinutes);
+		
 		loadMarkers(data);
 		saveMarkers(false);
 		
