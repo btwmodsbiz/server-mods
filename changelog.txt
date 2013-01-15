@@ -1,3 +1,9 @@
+Version 4.42.2-b (vMC 1.4.7 BTW 4.42)
+
+  - Added blue home icon to Map Marker.
+
+  - Fixed bug where Map Markers did not read the markerFile from config.
+
 Version 4.42.2 (vMC 1.4.7 BTW 4.42)
 
   - Added Map Markers mod.
