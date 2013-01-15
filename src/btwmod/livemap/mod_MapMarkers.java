@@ -47,8 +47,8 @@ public class mod_MapMarkers implements IMod {
 			.create();
 
 
-		if (data.hasKey("markerFile")) {
-			markerFile = new File(data.get("markerFile"));
+		if (settings.hasKey("markerFile")) {
+			markerFile = new File(settings.get("markerFile"));
 		}
 		
 		maxMarkersPerDimension = settings.getInt("maxMarkersPerDimension", maxMarkersPerDimension);
