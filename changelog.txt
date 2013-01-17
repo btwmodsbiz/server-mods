@@ -1,3 +1,12 @@
+Version 4.50.0 (vMC 1.4.7 BTW 4.50)
+
+  - Changed CommandDumpTracked for MCP rename.
+  
+  - Changed Spawn Customizer so it changes the actual vanilla spawn
+    coordinates when setting a global spawn.
+    
+  - Fixed bug with Map Markers loading a config setting from the data file.
+
 Version 4.42.2-b (vMC 1.4.7 BTW 4.42)
 
   - Added blue home icon to Map Marker.
