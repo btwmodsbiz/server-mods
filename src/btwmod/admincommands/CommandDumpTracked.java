@@ -70,7 +70,7 @@ public class CommandDumpTracked extends CommandBase {
 					Entity entity = (Entity)obj;
 					sb.append("ID ")
 						.append(entity.entityId).append(": ")
-						.append(entity instanceof EntityItem ? ((EntityItem)entity).func_92014_d().getItemName() : entity.getEntityName())
+						.append(entity instanceof EntityItem ? ((EntityItem)entity).func_92059_d().getItemName() : entity.getEntityName())
 						.append(" (").append(entity.getClass().getSimpleName()).append(") in chunk ")
 						.append(entity.chunkCoordX).append(",").append(entity.chunkCoordZ)
 						.append(" at ").append((long)entity.posX).append("/").append((long)entity.posY).append("/").append((long)entity.posZ);
