@@ -34,6 +34,7 @@ import net.minecraft.src.EntityMob;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntitySlime;
 import net.minecraft.src.ICommandSender;
+import net.minecraft.src.MathHelper;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 import net.minecraft.src.WrongUsageException;
@@ -105,6 +106,7 @@ public class CommandDumpEntities extends CommandBase {
 		Iterator iterator;
 		
 		int entityCount = 0;
+		int deadEntities = 0;
 		int chunkCount = 0;
 		int total = doTile ? world.loadedTileEntityList.size() : world.loadedEntityList.size();
 				
@@ -141,20 +143,43 @@ public class CommandDumpEntities extends CommandBase {
 					entityJson.addProperty("y", entity.posY);
 					entityJson.addProperty("z", entity.posZ);
 					
-					if (entity instanceof EntityLiving)
+					if (entity.isDead) {
+						entityJson.addProperty("isDead", true);
+						deadEntities++;
+					}
+					
+					if (entity instanceof EntityLiving) {
 						entityJson.addProperty("isLiving", true);
+						
+						if (entity instanceof EntityPlayer)
+							entityJson.addProperty("isPlayer", true);
+						
+						else if (entity instanceof EntityAnimal)
+							entityJson.addProperty("isAnimal", true);
+						
+						else if (entity instanceof EntityMob || entity instanceof EntityGhast || entity instanceof EntitySlime) {
+							entityJson.addProperty("isMonster", true);
+							
+							EntityLiving entityLiving = (EntityLiving)entity;
+							EntityPlayer player = entity.worldObj.getClosestPlayerToEntity(entity, -1.0D);
+							entityJson.addProperty("age", entityLiving.getAge());
+							
+							if (player != null) {
+								double deltaX = player.posX - entity.posX;
+								double deltaY = player.posY - entity.posY;
+								double deltaZ = player.posZ - entity.posZ;
+								double dist = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+								
+								JsonObject closestPlayer = new JsonObject();
+								closestPlayer.addProperty("username", player.username);
+								closestPlayer.addProperty("distance", MathHelper.floor_double(Math.sqrt(dist)));
+								entityJson.add("closestPlayer", closestPlayer);
+							}
+						}
+					}
 					
-					if (entity instanceof EntityAnimal)
-						entityJson.addProperty("isAnimal", true);
-					
-					if (entity instanceof EntityMob || entity instanceof EntityGhast || entity instanceof EntitySlime)
-						entityJson.addProperty("isMonster", true);
-					
-					if (entity instanceof EntityItem)
+					else if (entity instanceof EntityItem)
 						entityJson.addProperty("isItem", true);
-					
-					if (entity instanceof EntityPlayer)
-						entityJson.addProperty("isPlayer", true);
 					
 					entities.add(entityJson);
 					entityCount++;
@@ -201,7 +226,7 @@ public class CommandDumpEntities extends CommandBase {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(dumpFile));
 			writer.write(json.toString());
 			writer.close();
-			sender.sendChatToPlayer("Dumped " + entityCount + " of " + total + (doTile ? " tile" : "") + " entities and "
+			sender.sendChatToPlayer("Dumped " + entityCount + (deadEntities > 0 ? " (" + deadEntities + " dead)" : "") + " of " + total + (doTile ? " tile" : "") + " entities and "
 					+ chunkCount + " chunks (" + (System.currentTimeMillis() - startTime) + " ms).");
 			
 		} catch (IOException e) {
