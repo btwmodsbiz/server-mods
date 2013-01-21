@@ -20,6 +20,8 @@ import btwmods.ReflectionAPI;
 import btwmods.WorldAPI;
 import btwmods.io.Settings;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -43,6 +45,8 @@ import net.minecraft.src.WrongUsageException;
 
 public class CommandDumpEntities extends CommandBase {
 	
+	private Gson gson;
+	
 	private File dumpFile = new File(new File("."), "dumpentities.txt");
 	private Map<String,Integer> worldNames = null;
 	
@@ -53,6 +57,12 @@ public class CommandDumpEntities extends CommandBase {
 	private Map<String, Class> tileEntityMap = null;
 	
 	public CommandDumpEntities(Settings settings) {
+
+		gson = new GsonBuilder()
+			.setPrettyPrinting()
+			.enableComplexMapKeySerialization()
+			.create();
+		
 		// Load settings
 		if (settings.hasKey("entityDumpFile")) {
 			dumpFile = new File(settings.get("entityDumpFile"));
@@ -230,7 +240,7 @@ public class CommandDumpEntities extends CommandBase {
 		
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(dumpFile));
-			writer.write(json.toString());
+			writer.write(gson.toJson(json));
 			writer.close();
 			sender.sendChatToPlayer("Dumped " + entityCount + (deadEntities > 0 ? " (" + deadEntities + " dead)" : "") + " of " + total + (doTile ? " tile" : "") + " entities and "
 					+ chunkCount + " chunks (" + (System.currentTimeMillis() - startTime) + " ms).");
