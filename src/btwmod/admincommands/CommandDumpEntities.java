@@ -134,7 +134,7 @@ public class CommandDumpEntities extends CommandBase {
 		
 		while (iterator.hasNext()) {
 			Object next = iterator.next();
-			if (next instanceof Entity) {
+			if (!doTile && next instanceof Entity) {
 				Entity entity = (Entity)next;
 				if (classFilters.size() == 0 || isAssignableFrom(entity.getClass(), classFilters)) {
 					JsonObject entityJson = new JsonObject();
@@ -152,7 +152,9 @@ public class CommandDumpEntities extends CommandBase {
 					}
 					
 					if (entity instanceof EntityLiving) {
+						EntityLiving entityLiving = (EntityLiving)entity;
 						entityJson.addProperty("isLiving", true);
+						entityJson.addProperty("age", entityLiving.getAge());
 						
 						if (entity instanceof EntityPlayer)
 							entityJson.addProperty("isPlayer", true);
@@ -160,13 +162,14 @@ public class CommandDumpEntities extends CommandBase {
 						else if (entity instanceof EntityAnimal)
 							entityJson.addProperty("isAnimal", true);
 						
-						else if (entity instanceof EntityMob || entity instanceof EntityGhast || entity instanceof EntitySlime) {
+						else if (entity instanceof EntityMob || entity instanceof EntityGhast || entity instanceof EntitySlime)
 							entityJson.addProperty("isMonster", true);
-							
-							EntityLiving entityLiving = (EntityLiving)entity;
+
+						if (entityLiving.isPersistenceRequired()) {
+							entityJson.addProperty("persistenceRequired", true);
+						}
+						else if (entityLiving.isDespawnAllowed()) {
 							EntityPlayer player = entity.worldObj.getClosestPlayerToEntity(entity, -1.0D);
-							entityJson.addProperty("age", entityLiving.getAge());
-							
 							if (player != null) {
 								double deltaX = player.posX - entity.posX;
 								double deltaY = player.posY - entity.posY;
@@ -188,7 +191,7 @@ public class CommandDumpEntities extends CommandBase {
 					entityCount++;
 				}
 			}
-			else if (next instanceof TileEntity) {
+			else if (doTile && next instanceof TileEntity) {
 				TileEntity tileEntity = (TileEntity)next;
 				if (classFilters.size() == 0 || isAssignableFrom(tileEntity.getClass(), classFilters)) {
 					JsonObject tileEntityJson = new JsonObject();
