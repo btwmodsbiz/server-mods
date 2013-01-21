@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -103,6 +105,7 @@ public class CommandDumpEntities extends CommandBase {
 		JsonObject json = new JsonObject();
 		JsonArray entities = new JsonArray();
 		json.addProperty("dimension", world.provider.dimensionId);
+		json.addProperty("created", new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z").format(new Date()));
 		
 		json.add("entities", entities);
 		int entityCount = 0;
