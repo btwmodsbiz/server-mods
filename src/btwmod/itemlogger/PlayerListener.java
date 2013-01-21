@@ -78,6 +78,14 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 					MathHelper.floor_double(event.getPlayer().posZ),
 					event.getItems());
 		}
+		else if (event.getType() == DropEvent.TYPE.PICKUP) {
+			logger.playerPickupItem(event, event.getPlayer(),
+					event.getPlayer().dimension,
+					MathHelper.floor_double(event.getPlayer().posX), 
+					MathHelper.floor_double(event.getPlayer().posY),
+					MathHelper.floor_double(event.getPlayer().posZ),
+					event.getItems());
+		}
 	}
 
 	@Override

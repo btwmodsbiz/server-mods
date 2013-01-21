@@ -298,6 +298,14 @@ public class SQLLogger implements ILogger, ITickListener {
 	}
 
 	@Override
+	public void playerPickupItem(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack) {
+		Date now = new Date();
+		mod.queueWrite(outputFile, buildStatement("playerdrop",
+				"eventdate, eventtime, actiontype, username, dimension, x, y, z, items",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "pickup", player.username, dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
+	}
+
+	@Override
 	public void playerUseEntity(PlayerActionEvent event, EntityPlayer player, int dimension, int x, int y, int z, Entity entity, int entityX, int entityY, int entityZ, boolean isAttack) {
 		Date now = new Date();
 		StringBuilder extra = new StringBuilder();
