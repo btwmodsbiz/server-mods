@@ -1,3 +1,15 @@
+Version 4.50.1 (vMC 1.4.7 BTW 4.50)
+
+  - Added Mob Cleaner mod for cleaning out-of-range despawnable entities.
+  
+  - Added more details for entities in CommandDumpEntities.
+  
+  - Added support to ItemLogger for players picking up floating items.
+  
+  - Added more details to CommandDumpEntities' output.
+  
+  - Changed CommandDumpEntities' output to be "pretty printed".
+
 Version 4.50.0 (vMC 1.4.7 BTW 4.50)
 
   - Changed CommandDumpTracked for MCP rename.
