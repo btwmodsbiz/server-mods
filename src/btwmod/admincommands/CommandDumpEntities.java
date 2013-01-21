@@ -96,15 +96,15 @@ public class CommandDumpEntities extends CommandBase {
 		
 		boolean doTile = args.length > 1 && args[1].equalsIgnoreCase("tile");
 		
-		JsonObject json = new JsonObject();
-		
-		JsonArray entities = new JsonArray();
-		json.add("entities", entities);
-		
 		int worldIndex = worldNames.get(args[0]).intValue();
 		World world = MinecraftServer.getServer().worldServers[worldIndex];
 		Iterator iterator;
 		
+		JsonObject json = new JsonObject();
+		JsonArray entities = new JsonArray();
+		json.addProperty("dimension", world.provider.dimensionId);
+		
+		json.add("entities", entities);
 		int entityCount = 0;
 		int deadEntities = 0;
 		int chunkCount = 0;
