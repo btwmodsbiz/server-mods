@@ -1,3 +1,40 @@
+Version 4.50.1 (vMC 1.4.7 BTW 4.50)
+
+  - Added Mob Cleaner mod for cleaning out-of-range despawnable entities.
+  
+  - Added more details for entities in CommandDumpEntities.
+  
+  - Added support to ItemLogger for players picking up floating items.
+  
+  - Added more details to CommandDumpEntities' output.
+  
+  - Changed CommandDumpEntities' output to be "pretty printed".
+
+Version 4.50.0 (vMC 1.4.7 BTW 4.50)
+
+  - Changed CommandDumpTracked for MCP rename.
+  
+  - Changed Spawn Customizer so it changes the actual vanilla spawn
+    coordinates when setting a global spawn.
+    
+  - Fixed bug with Map Markers loading a config setting from the data file.
+
+Version 4.42.2-b (vMC 1.4.7 BTW 4.42)
+
+  - Added blue home icon to Map Marker.
+
+  - Fixed bug where Map Markers did not read the markerFile from config.
+
+Version 4.42.2 (vMC 1.4.7 BTW 4.42)
+
+  - Added Map Markers mod.
+
+  - Changed help text for /chunk for readability.
+
+Version 4.42.0 (vMC 1.4.7 BTW 4.42)
+
+  - Changed ItemLogger method call for on MCP changes.
+
 Version 4.41.4 (vMC 1.4.6 BTW 4.41)
   
   - Added logging of item uses to ItemLogger.

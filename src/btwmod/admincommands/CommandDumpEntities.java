@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -18,6 +20,8 @@ import btwmods.ReflectionAPI;
 import btwmods.WorldAPI;
 import btwmods.io.Settings;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -34,11 +38,14 @@ import net.minecraft.src.EntityMob;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntitySlime;
 import net.minecraft.src.ICommandSender;
+import net.minecraft.src.MathHelper;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 import net.minecraft.src.WrongUsageException;
 
 public class CommandDumpEntities extends CommandBase {
+	
+	private Gson gson;
 	
 	private File dumpFile = new File(new File("."), "dumpentities.txt");
 	private Map<String,Integer> worldNames = null;
@@ -50,6 +57,12 @@ public class CommandDumpEntities extends CommandBase {
 	private Map<String, Class> tileEntityMap = null;
 	
 	public CommandDumpEntities(Settings settings) {
+
+		gson = new GsonBuilder()
+			.setPrettyPrinting()
+			.enableComplexMapKeySerialization()
+			.create();
+		
 		// Load settings
 		if (settings.hasKey("entityDumpFile")) {
 			dumpFile = new File(settings.get("entityDumpFile"));
@@ -95,16 +108,18 @@ public class CommandDumpEntities extends CommandBase {
 		
 		boolean doTile = args.length > 1 && args[1].equalsIgnoreCase("tile");
 		
-		JsonObject json = new JsonObject();
-		
-		JsonArray entities = new JsonArray();
-		json.add("entities", entities);
-		
 		int worldIndex = worldNames.get(args[0]).intValue();
 		World world = MinecraftServer.getServer().worldServers[worldIndex];
 		Iterator iterator;
 		
+		JsonObject json = new JsonObject();
+		JsonArray entities = new JsonArray();
+		json.addProperty("dimension", world.provider.dimensionId);
+		json.addProperty("created", new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z").format(new Date()));
+		
+		json.add("entities", entities);
 		int entityCount = 0;
+		int deadEntities = 0;
 		int chunkCount = 0;
 		int total = doTile ? world.loadedTileEntityList.size() : world.loadedEntityList.size();
 				
@@ -129,7 +144,7 @@ public class CommandDumpEntities extends CommandBase {
 		
 		while (iterator.hasNext()) {
 			Object next = iterator.next();
-			if (next instanceof Entity) {
+			if (!doTile && next instanceof Entity) {
 				Entity entity = (Entity)next;
 				if (classFilters.size() == 0 || isAssignableFrom(entity.getClass(), classFilters)) {
 					JsonObject entityJson = new JsonObject();
@@ -141,26 +156,52 @@ public class CommandDumpEntities extends CommandBase {
 					entityJson.addProperty("y", entity.posY);
 					entityJson.addProperty("z", entity.posZ);
 					
-					if (entity instanceof EntityLiving)
+					if (entity.isDead) {
+						entityJson.addProperty("isDead", true);
+						deadEntities++;
+					}
+					
+					if (entity instanceof EntityLiving) {
+						EntityLiving entityLiving = (EntityLiving)entity;
 						entityJson.addProperty("isLiving", true);
+						entityJson.addProperty("age", entityLiving.getAge());
+						
+						if (entity instanceof EntityPlayer)
+							entityJson.addProperty("isPlayer", true);
+						
+						else if (entity instanceof EntityAnimal)
+							entityJson.addProperty("isAnimal", true);
+						
+						else if (entity instanceof EntityMob || entity instanceof EntityGhast || entity instanceof EntitySlime)
+							entityJson.addProperty("isMonster", true);
+
+						if (entityLiving.isPersistenceRequired()) {
+							entityJson.addProperty("persistenceRequired", true);
+						}
+						else if (entityLiving.isDespawnAllowed()) {
+							EntityPlayer player = entity.worldObj.getClosestPlayerToEntity(entity, -1.0D);
+							if (player != null) {
+								double deltaX = player.posX - entity.posX;
+								double deltaY = player.posY - entity.posY;
+								double deltaZ = player.posZ - entity.posZ;
+								double dist = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+								
+								JsonObject closestPlayer = new JsonObject();
+								closestPlayer.addProperty("username", player.username);
+								closestPlayer.addProperty("distance", MathHelper.floor_double(Math.sqrt(dist)));
+								entityJson.add("closestPlayer", closestPlayer);
+							}
+						}
+					}
 					
-					if (entity instanceof EntityAnimal)
-						entityJson.addProperty("isAnimal", true);
-					
-					if (entity instanceof EntityMob || entity instanceof EntityGhast || entity instanceof EntitySlime)
-						entityJson.addProperty("isMonster", true);
-					
-					if (entity instanceof EntityItem)
+					else if (entity instanceof EntityItem)
 						entityJson.addProperty("isItem", true);
-					
-					if (entity instanceof EntityPlayer)
-						entityJson.addProperty("isPlayer", true);
 					
 					entities.add(entityJson);
 					entityCount++;
 				}
 			}
-			else if (next instanceof TileEntity) {
+			else if (doTile && next instanceof TileEntity) {
 				TileEntity tileEntity = (TileEntity)next;
 				if (classFilters.size() == 0 || isAssignableFrom(tileEntity.getClass(), classFilters)) {
 					JsonObject tileEntityJson = new JsonObject();
@@ -199,9 +240,9 @@ public class CommandDumpEntities extends CommandBase {
 		
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(dumpFile));
-			writer.write(json.toString());
+			writer.write(gson.toJson(json));
 			writer.close();
-			sender.sendChatToPlayer("Dumped " + entityCount + " of " + total + (doTile ? " tile" : "") + " entities and "
+			sender.sendChatToPlayer("Dumped " + entityCount + (deadEntities > 0 ? " (" + deadEntities + " dead)" : "") + " of " + total + (doTile ? " tile" : "") + " entities and "
 					+ chunkCount + " chunks (" + (System.currentTimeMillis() - startTime) + " ms).");
 			
 		} catch (IOException e) {

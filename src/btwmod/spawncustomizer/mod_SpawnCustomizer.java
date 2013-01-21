@@ -2,6 +2,8 @@ package btwmod.spawncustomizer;
 
 import java.io.IOException;
 
+import net.minecraft.server.MinecraftServer;
+
 import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.PlayerAPI;
@@ -34,6 +36,7 @@ public class mod_SpawnCustomizer implements IMod, IPlayerInstanceListener {
 				data.setFloat("global", "yaw", globalSpawn.yaw);
 				data.setFloat("global", "pitch", globalSpawn.pitch);
 				data.saveSettings();
+				MinecraftServer.getServer().worldServers[0].getWorldInfo().setSpawnPosition(globalSpawn.x, globalSpawn.y, globalSpawn.z);
 			}
 		}
 	}
