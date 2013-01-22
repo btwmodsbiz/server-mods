@@ -187,6 +187,6 @@ public class mod_ItemLogger implements IMod {
 		if (itemStack == null)
 			return null;
 		
-		return itemStack.stackSize + " x " + getUniqueItemStackName(itemStack);
+		return getUniqueItemStackName(itemStack) + " x " + itemStack.stackSize;
 	}
 }
