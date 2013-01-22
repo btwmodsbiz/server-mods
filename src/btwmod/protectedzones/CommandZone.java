@@ -6,7 +6,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.Packet3Chat;
 import net.minecraft.src.WrongUsageException;
-import btwmod.livemap.Marker;
 import btwmods.Util;
 import btwmods.commands.CommandBaseExtended;
 import btwmods.util.Area;
@@ -83,7 +82,7 @@ public class CommandZone extends CommandBaseExtended {
 					sender.sendChatToPlayer(Util.COLOR_RED + "Invalid zone parameters.");
 				}
 				else if (mod.add(zone)) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Successfully created new zone: " + args[2]);
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Successfully created new zone: " + Util.COLOR_WHITE + args[2]);
 				}
 				else {
 					sender.sendChatToPlayer(Util.COLOR_RED + "Failed to add new zone.");
@@ -100,14 +99,14 @@ public class CommandZone extends CommandBaseExtended {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
-			if (!ZoneSettings.isValidName(args[1])) {
+			if (!ZoneSettings.isValidName(args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "The zone name specified is invalid.");
 			}
-			else if (!mod.remove(dimension, args[1])) {
+			else if (!mod.remove(dimension, args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with that name does not exist.");
 			}
 			else {
-				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Successfully removed zone: " + args[1]);
+				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Successfully removed zone: " + Util.COLOR_WHITE + args[2]);
 			}
 		}
 		else {
@@ -116,7 +115,7 @@ public class CommandZone extends CommandBaseExtended {
 	}
 	
 	public void processCommandSet(ICommandSender sender, String[] args) {
-		if (args.length == 5) {
+		if (args.length == 5 && isWorldName(args, 1)) {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
@@ -141,7 +140,7 @@ public class CommandZone extends CommandBaseExtended {
 	}
 	
 	public void processCommandAdd(ICommandSender sender, String[] args) {
-		if (args.length == 7 || args.length == 9) {
+		if ((args.length == 7 || args.length == 9) && isWorldName(args, 1)) {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
@@ -164,7 +163,7 @@ public class CommandZone extends CommandBaseExtended {
 					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added area to " + settings.name + ": " + area.x1 + "," + + area.z1 + " to " + area.x2 + "," + area.z2);
 				}
 				else {
-					sender.sendChatToPlayer(Util.COLOR_RED + "An area with the same dimensions already exists for " + settings.name + ".");
+					sender.sendChatToPlayer(Util.COLOR_RED + "An area with the same dimensions already exists for the zone.");
 				}
 			}
 			else {
@@ -181,7 +180,7 @@ public class CommandZone extends CommandBaseExtended {
 					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added cube to zone " + settings.name + ": " + cube.x1 + "," + cube.y1 + "," + cube.z1 + " to " + cube.x2 + "," + cube.y2 + "," + cube.z2);
 				}
 				else {
-					sender.sendChatToPlayer(Util.COLOR_RED + "An area with the same dimensions already exists for zone " + settings.name + ".");
+					sender.sendChatToPlayer(Util.COLOR_RED + "A cube with the same dimensions already exists for the zone.");
 				}
 			}
 		}
@@ -191,7 +190,7 @@ public class CommandZone extends CommandBaseExtended {
 	}
 	
 	public void processCommandRemove(ICommandSender sender, String[] args) {
-		if (args.length == 4) {
+		if (args.length == 4 && isWorldName(args, 1)) {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
@@ -218,7 +217,7 @@ public class CommandZone extends CommandBaseExtended {
 	}
 	
 	public void processCommandInfo(ICommandSender sender, String[] args) {
-		if (args.length == 3) {
+		if (args.length == 3 && isWorldName(args, 1)) {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
@@ -275,21 +274,23 @@ public class CommandZone extends CommandBaseExtended {
 	}
 	
 	public void processCommandList(ICommandSender sender, String[] args) {
-		if (args.length > 1)
+		if (args.length > 2 || !isWorldName(args, 1))
 			throw new WrongUsageException(getCommandUsage("list"), new Object[0]);
 		
-		List<String> zoneNames = mod.getZoneNames();
+		int dimension = Util.getWorldDimensionFromName(args[1]);
+		
+		List<String> zoneNames = mod.getZoneNames(dimension);
 		
 		if (zoneNames.size() == 0) {
-			sender.sendChatToPlayer(Util.COLOR_YELLOW + "There are no zones.");
+			sender.sendChatToPlayer(Util.COLOR_YELLOW + "There are no zones for " + Util.getWorldNameFromDimension(dimension) + ".");
 		}
 		else {
-			String headerShort = Util.COLOR_YELLOW + "Zones: " + Util.COLOR_WHITE;
-			String headerLong = Util.COLOR_YELLOW + "Zones (Page XX/YY): " + Util.COLOR_WHITE;
-			int page = args.length == 2 ? parseIntWithMin(sender, args[1], 1) : 1;
+			String headerShort = Util.COLOR_YELLOW + Util.getWorldNameFromDimension(dimension) + " Zones: " + Util.COLOR_WHITE;
+			String headerLong = Util.COLOR_YELLOW + Util.getWorldNameFromDimension(dimension) + " Zones (Page XX/YY): " + Util.COLOR_WHITE;
+			int page = args.length == 3 ? parseIntWithMin(sender, args[2], 1) : 1;
 			int maxListSize = Packet3Chat.maxChatLength - Math.max(headerShort.length(), headerLong.length());
 			
-			List<String> pages = Util.combineIntoMaxLengthMessages(mod.getZoneNames(), maxListSize, ", ", false);
+			List<String> pages = Util.combineIntoMaxLengthMessages(zoneNames, maxListSize, ", ", false);
 			
 			page = Math.min(page, pages.size());
 			
@@ -299,7 +300,7 @@ public class CommandZone extends CommandBaseExtended {
 	}
 	
 	public void processCommandGrant(ICommandSender sender, String[] args) {
-		if (args.length == 4) {
+		if (args.length == 4 && isWorldName(args, 1)) {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
@@ -355,7 +356,7 @@ public class CommandZone extends CommandBaseExtended {
 				return "/" + getCommandName() + " info <dimension> <zonename>";
 			
 			else if (subCommand.equalsIgnoreCase("list"))
-				return "/" + getCommandName() + " list [<page>]";
+				return "/" + getCommandName() + " list <dimension> [<page>]";
 			
 			else if (subCommand.equalsIgnoreCase("grant"))
 				return "/" + getCommandName() + " grant <dimension> <zonename> <username>";
@@ -382,19 +383,19 @@ public class CommandZone extends CommandBaseExtended {
 		}
 		
 		// <dimension>
-		else if (args.length == 2 && isStringMatch(args, 0, new String[] { "create", "destroy", "set", "add", "remove", "info", "grant", "revoke" })) {
+		else if (args.length == 2 && isStringMatch(args, 0, new String[] { "create", "destroy", "set", "add", "remove", "info", "list", "grant", "revoke" })) {
 			return getListOfStringsMatchingLastWord(args, new String[] { "Overworld", "Nether", "TheEnd" });
 		}
 		
 		// <zonename>
-		else if (args.length == 3 && (isStringMatch(args, 0, new String[] { "destroy", "set", "add", "remove", "info", "grant", "revoke" }))) {
-			List names = mod.getZoneNames();
+		else if (args.length == 3 && isWorldName(args, 1) && (isStringMatch(args, 0, new String[] { "destroy", "set", "add", "remove", "info", "grant", "revoke" }))) {
+			List names = mod.getZoneNames(Util.getWorldDimensionFromName(args[1]));
 			return getListOfStringsMatchingLastWord(args, (String[])names.toArray(new String[names.size()]));
 		}
 		
 		// <setting>
 		else if (args.length == 4 && isStringMatch(args, 0, "set")) {
-			return getListOfStringsMatchingLastWord(args, Marker.TYPE.tabCompletion);
+			return getListOfStringsMatchingLastWord(args, ZoneSettings.settings);
 		}
 		
 		// <value>
