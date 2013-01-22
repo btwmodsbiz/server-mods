@@ -2,10 +2,12 @@ package btwmod.protectedzones;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import btwmods.Util;
 import btwmods.io.Settings;
 import btwmods.util.Area;
 import btwmods.util.Cube;
@@ -16,12 +18,13 @@ public class ZoneSettings {
 	
 	public final String name;
 	public final int dimension;
-	private final Set<Area<ZoneSettings>> areas = new HashSet<Area<ZoneSettings>>(); 
+	private final List<Area<ZoneSettings>> _areas = new ArrayList<Area<ZoneSettings>>();
+	public final List<Area<ZoneSettings>> areas = Collections.unmodifiableList(_areas);
 	
 	public PERMISSION protectBlocks = PERMISSION.OFF;
 	public PERMISSION allowDoors = PERMISSION.ON;
 	public PERMISSION allowContainers = PERMISSION.OFF;
-	public PERMISSION allowOps = PERMISSION.OFF;
+	public boolean allowOps = false;
 	
 	public boolean protectEntities = false;
 	public boolean allowMooshroom = false;
@@ -32,6 +35,8 @@ public class ZoneSettings {
 	public boolean sendDebugMessages = false;
 	
 	private final Set<String> whitelist = new HashSet<String>();
+	
+	private ProtectedZones protectedZones = null;
 	
 	public static final String[] settings = {
 		"protectBlocks",
@@ -46,63 +51,173 @@ public class ZoneSettings {
 		"protectBurning"
 	};
 	
-	public ZoneSettings(String name, int dimension, int x1, int z1, int x2, int z2) {
+	public ZoneSettings(String name, int dimension) throws IllegalArgumentException {
+		if (!isValidName(name))
+			throw new IllegalArgumentException("name");
+		
+		if (Util.getWorldNameFromDimension(dimension) == null)
+			throw new IllegalArgumentException("dimension");
+		
 		this.name = name;
 		this.dimension = dimension;
-		areas.add(new Area<ZoneSettings>(x1, z1, x2, z2, this));
 	}
 	
-	public ZoneSettings(String name, int dimension, int x1, int y1, int z1, int x2, int y2, int z2) {
-		this.name = name;
-		this.dimension = dimension;
-		areas.add(new Cube<ZoneSettings>(x1, y1, z1, x2, y2, z2, this));
-	}
-	
-	public ZoneSettings(Settings settings) {
+	public ZoneSettings(Settings settings) throws IllegalArgumentException {
 		name = settings.get("name");
-		
-		isCube = settings.getBoolean("isCube", false);
-		
 		dimension = settings.getInt("dimension", 0);
 		
-		x1 = settings.getInt("x1", 0);
-		z1 = settings.getInt("z1", 0);
-		x2 = settings.getInt("x2", x1 - 1); // Hint: -1 marks this value as invalid.
-		z2 = settings.getInt("z2", z1 - 1);
+		if (!isValidName(name))
+			throw new IllegalArgumentException("name");
 		
-		y1 = isCube ? settings.getInt("y1", 0) : 0;
-		y2 = isCube ? settings.getInt("y2", y1 - 1) : y1 - 1;
+		if (Util.getWorldNameFromDimension(dimension) == null)
+			throw new IllegalArgumentException("dimension");
 		
-		protectBlocks = settings.getBoolean("protectBlocks", protectBlocks);
-		protectEntities = settings.getBoolean("protectEntities", protectEntities);
+		if (settings.isBoolean("isCube")) {
+			boolean isCube = settings.getBoolean("isCube", false);
+			
+			int x1 = settings.getInt("x1", 0);
+			int y1 = settings.getInt("y1", 0);
+			int z1 = settings.getInt("z1", 0);
+			
+			int x2 = settings.getInt("x2", 0);
+			int y2 = settings.getInt("y2", 0);
+			int z2 = settings.getInt("z2", 0);
+			
+			if (isCube)
+				addCube(x1, y1, z1, x2, y2, z2);
+			else
+				addArea(x1, z1, x2, z2);
+		}
+
+		int areaCount = settings.getInt("areaCount", 0);
+		for (int i = 1; i <= areaCount; i++) {
+			boolean isCube = settings.getBoolean("area" + i + "_isCube", false);
+			
+			int x1 = settings.getInt("area" + i + "_x1", 0);
+			int y1 = settings.getInt("area" + i + "_y1", 0);
+			int z1 = settings.getInt("area" + i + "_z1", 0);
+			
+			int x2 = settings.getInt("area" + i + "_x2", 0);
+			int y2 = settings.getInt("area" + i + "_y2", 0);
+			int z2 = settings.getInt("area" + i + "_z2", 0);
+			
+			if (isCube)
+				addCube(x1, y1, z1, x2, y2, z2);
+			else
+				addArea(x1, z1, x2, z2);
+		}
+		
+		protectBlocks = settings.getEnum(PERMISSION.class, "protectBlocks", protectBlocks);
 		allowOps = settings.getBoolean("allowOps", allowOps);
-		allowDoors = settings.getBoolean("allowDoors", allowDoors);
-		allowContainers = settings.getBoolean("allowContainers", allowContainers);
+		allowDoors = settings.getEnum(PERMISSION.class, "allowDoors", allowDoors);
+		allowContainers = settings.getEnum(PERMISSION.class, "allowContainers", allowContainers);
+		
+		protectEntities = settings.getBoolean("protectEntities", protectEntities);
 		allowMooshroom = settings.getBoolean("allowMooshroom", allowMooshroom);
 		allowVillagers = settings.getBoolean("allowVillagers", allowVillagers);
-		allowBurning = settings.getBoolean("allowBurning", allowBurning);
+		
+		protectBurning = settings.getBoolean("protectBurning", protectBurning);
 		
 		String players = settings.get("allowedPlayers");
 		if (players != null) {
-			this.allowedPlayers.addAll(Arrays.asList(players.toLowerCase().split(";")));
+			this.whitelist.addAll(Arrays.asList(players.toLowerCase().split(";")));
 		}
 	}
 	
+	public void setProtectedZones(ProtectedZones protectedZones) {
+		if (protectedZones != null)
+			throw new IllegalStateException();
+		
+		this.protectedZones = protectedZones;
+	}
+	
+	public Area<ZoneSettings> addArea(int x1, int z1, int x2, int z2) {
+		int tmp;
+		
+		if (x1 > x2) {
+			tmp = x2;
+			x2 = x1;
+			x1 = tmp;
+		}
+		
+		if (z1 > z2) {
+			tmp = z2;
+			z2 = z1;
+			z1 = tmp;
+		}
+		
+		Area<ZoneSettings> newArea = new Area<ZoneSettings>(x1, z1, x2, z2, this);
+
+		return addArea(newArea) ? newArea : null;
+	}
+	
+	public Cube<ZoneSettings> addCube(int x1, int y1, int z1, int x2, int y2, int z2) {
+		int tmp;
+		
+		if (x1 > x2) {
+			tmp = x2;
+			x2 = x1;
+			x1 = tmp;
+		}
+		
+		if (z1 > z2) {
+			tmp = z2;
+			z2 = z1;
+			z1 = tmp;
+		}
+		
+		if (y1 > y2) {
+			tmp = y2;
+			y2 = y1;
+			y1 = tmp;
+		}
+		
+		Cube<ZoneSettings> newCube = new Cube<ZoneSettings>(x1, y1, z1, x2, y2, z2, this);
+
+		return addArea(newCube) ? newCube : null;
+	}
+	
+	private boolean addArea(Area area) {
+		if (!_areas.contains(area) && _areas.add(area)) {
+			
+			if (protectedZones != null)
+				protectedZones.add(area);
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean removeArea(int index) {
+		Area area = null;
+		if (index >= 0 && index < _areas.size() && (area = _areas.remove(index)) != null) {
+			
+			if (protectedZones != null)
+				protectedZones.remove(area);
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
 	public boolean setSetting(String name, String value) {
-		if (name.equalsIgnoreCase("protectBlocks") && Settings.isBooleanValue(value)) {
-			protectBlocks = Settings.getBooleanValue(value, protectBlocks);
+		if (name.equalsIgnoreCase("protectBlocks") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
+			protectBlocks = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), protectBlocks);
 		}
-		else if (name.equalsIgnoreCase("protectEntities") && Settings.isBooleanValue(value)) {
-			protectEntities = Settings.getBooleanValue(value, protectEntities);
-		}
-		else if (name.equalsIgnoreCase("allowDoors") && Settings.isBooleanValue(value)) {
-			allowDoors = Settings.getBooleanValue(value, allowDoors);
+		else if (name.equalsIgnoreCase("allowDoors") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
+			allowDoors = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), allowDoors);
 		}
 		else if (name.equalsIgnoreCase("allowOps") && Settings.isBooleanValue(value)) {
 			allowOps = Settings.getBooleanValue(value, allowOps);
 		}
-		else if (name.equalsIgnoreCase("allowContainers") && Settings.isBooleanValue(value)) {
-			allowContainers = Settings.getBooleanValue(value, allowContainers);
+		else if (name.equalsIgnoreCase("allowContainers") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
+			allowContainers = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), allowContainers);
+		}
+		
+		else if (name.equalsIgnoreCase("protectEntities") && Settings.isBooleanValue(value)) {
+			protectEntities = Settings.getBooleanValue(value, protectEntities);
 		}
 		else if (name.equalsIgnoreCase("allowMooshroom") && Settings.isBooleanValue(value)) {
 			allowMooshroom = Settings.getBooleanValue(value, allowMooshroom);
@@ -110,9 +225,11 @@ public class ZoneSettings {
 		else if (name.equalsIgnoreCase("allowVillagers") && Settings.isBooleanValue(value)) {
 			allowVillagers = Settings.getBooleanValue(value, allowVillagers);
 		}
-		else if (name.equalsIgnoreCase("allowBurning") && Settings.isBooleanValue(value)) {
-			allowBurning = Settings.getBooleanValue(value, allowBurning);
+		
+		else if (name.equalsIgnoreCase("protectBurning") && Settings.isBooleanValue(value)) {
+			protectBurning = Settings.getBooleanValue(value, protectBurning);
 		}
+		
 		else if (name.equalsIgnoreCase("debug") && Settings.isBooleanValue(value)) {
 			sendDebugMessages = Settings.getBooleanValue(value, sendDebugMessages);
 		}
@@ -129,15 +246,19 @@ public class ZoneSettings {
 		StringBuilder sb = new StringBuilder();
 
 		strings.add(name);
-		strings.add("protectBlocks(" + (protectBlocks ? "on" : "off") + ")");
-		strings.add("protectEntities(" + (protectEntities ? "on" : "off") + ")");
+		
+		strings.add("protectBlocks(" + protectBlocks.toString().toLowerCase() + ")");
 		strings.add("allowOps(" + (allowOps ? "on" : "off") + ")");
-		strings.add("allowDoors(" + (allowDoors ? "on" : "off") + ")");
-		strings.add("allowContainers(" + (allowContainers ? "on" : "off") + ")");
+		strings.add("allowDoors(" + (allowDoors.toString().toLowerCase()) + ")");
+		strings.add("allowContainers(" + (allowContainers.toString().toLowerCase()) + ")");
+		
+		strings.add("protectEntities(" + (protectEntities ? "on" : "off") + ")");
 		strings.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
 		strings.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
-		strings.add("allowBurning(" + (allowBurning ? "on" : "off") + ")");
-		strings.add("allowedPlayers(" + allowedPlayers.toString() + ")");
+		
+		strings.add("protectBurning(" + (protectBurning ? "on" : "off") + ")");
+		
+		strings.add("whitelist(" + whitelist.toString() + ")");
 		
 		for (int i = 0; i < strings.size(); i++) {
 			if (i > 0 && i == strings.size() - 1)
@@ -152,29 +273,19 @@ public class ZoneSettings {
 	}
 
 	public boolean grantPlayer(String username) {
-		return allowedPlayers.add(username.trim().toLowerCase());
+		return whitelist.add(username.trim().toLowerCase());
 	}
 	
 	public boolean revokePlayer(String username) {
-		return allowedPlayers.remove(username.trim().toLowerCase());
+		return whitelist.remove(username.trim().toLowerCase());
 	}
 	
-	public boolean isPlayerAllowed(String username) {
-		return allowedPlayers.contains(username.trim().toLowerCase());
-	}
-	
-	public boolean isValid() {
-		return isValidName(name) && x1 <= x2 && z1 <= z2 && (!isCube || y1 <= y2);
+	public boolean isPlayerWhitelisted(String username) {
+		return whitelist.contains(username.trim().toLowerCase());
 	}
 	
 	public static boolean isValidName(String name) {
 		return name != null && name.matches("^[A-Za-z0-9_\\-]{1,25}$");
-	}
-	
-	public Area<ZoneSettings> toArea() {
-		return isCube
-			? new Cube<ZoneSettings>(x1, y1, z1, x2, y2, z2, this)
-			: new Area<ZoneSettings>(x1, z1, x2, z2, this);
 	}
 	
 	public void saveToSettings(Settings settings, String section) {
@@ -182,50 +293,59 @@ public class ZoneSettings {
 		
 		settings.setInt(section, "dimension", dimension);
 		
-		settings.setInt(section, "x1", x1);
-		settings.setInt(section, "z1", z1);
-		settings.setInt(section, "x2", x2);
-		settings.setInt(section, "z2", z2);
+		settings.setInt(section, "areaCount", areas.size());
+		for (int i = 1; i <= areas.size(); i++) {
+			Area area = areas.get(i - 1);
+			settings.setInt(section, "area" + i + "_x1", area.x1);
+			settings.setInt(section, "area" + i + "_z1", area.z1);
+			settings.setInt(section, "area" + i + "_x2", area.x2);
+			settings.setInt(section, "area" + i + "_z2", area.z2);
+			
+			if (area instanceof Cube) {
+				Cube cube = (Cube)area;
+				settings.setBoolean(section, "area" + i + "_isCube", true);
+				settings.setInt(section, "area" + i + "_y1", cube.y1);
+				settings.setInt(section, "area" + i + "_y2", cube.y2);
+			}
+			else {
+				settings.removeKey(section, "area" + i + "_isCube");
+				settings.removeKey(section, "area" + i + "_y1");
+				settings.removeKey(section, "area" + i + "_y2");
+			}
+		}
 		
-		settings.setBoolean(section, "isCube", isCube);
-		
-		settings.setBoolean(section, "protectBlocks", protectBlocks);
-		settings.setBoolean(section, "protectEntities", protectEntities);
+		settings.set(section, "protectBlocks", protectBlocks.toString());
 		settings.setBoolean(section, "allowOps", allowOps);
-		settings.setBoolean(section, "allowDoors", allowDoors);
-		settings.setBoolean(section, "allowContainers", allowContainers);
+		settings.set(section, "allowDoors", allowDoors.toString());
+		settings.set(section, "allowContainers", allowContainers.toString());
+		
+		settings.setBoolean(section, "protectEntities", protectEntities);
 		settings.setBoolean(section, "allowMooshroom", allowMooshroom);
 		settings.setBoolean(section, "allowVillagers", allowVillagers);
-		settings.setBoolean(section, "allowBurning", allowBurning);
+		
+		settings.setBoolean(section, "protectBurning", protectBurning);
 		
 		StringBuilder sb = new StringBuilder();
-		for (String player : allowedPlayers) {
+		for (String player : whitelist) {
 			if (sb.length() > 0) sb.append(";");
 			sb.append(player);
 		}
 		settings.set(section, "allowedPlayers", sb.toString());
-		
-		if (isCube) {
-			settings.setInt(section, "y1", y1);
-			settings.setInt(section, "y2", y2);
-		}
-		else {
-			settings.removeKey(section, "y1");
-			settings.removeKey(section, "y2");
-		}
 	}
 
 	public List<String> settingsAsList() {
 		ArrayList<String> list = new ArrayList<String>();
 		
-		list.add("protectBlocks(" + (protectBlocks ? "on" : "off") + ")");
-		list.add("protectEntities(" + (protectEntities ? "on" : "off") + ")");
+		list.add("protectBlocks(" + protectBlocks.toString().toLowerCase() + ")");
 		list.add("allowOps(" + (allowOps ? "on" : "off") + ")");
-		list.add("allowDoors(" + (allowDoors ? "on" : "off") + ")");
-		list.add("allowContainers(" + (allowContainers ? "on" : "off") + ")");
+		list.add("allowDoors(" + allowDoors.toString().toLowerCase() + ")");
+		list.add("allowContainers(" + allowContainers.toString().toLowerCase() + ")");
+		
+		list.add("protectEntities(" + (protectEntities ? "on" : "off") + ")");
 		list.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
 		list.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
-		list.add("allowBurning(" + (allowBurning ? "on" : "off") + ")");
+		
+		list.add("protectBurning(" + (protectBurning ? "on" : "off") + ")");
 		
 		if (sendDebugMessages)
 			list.add("debug(on)");
@@ -234,6 +354,15 @@ public class ZoneSettings {
 	}
 
 	public List<String> playersAsList() {
-		return Arrays.asList(allowedPlayers.toArray(new String[allowedPlayers.size()]));
+		return Arrays.asList(whitelist.toArray(new String[whitelist.size()]));
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + dimension;
+		result = prime * result + ((name == null) ? 0 : name.toLowerCase().hashCode());
+		return result;
 	}
 }

@@ -2,12 +2,8 @@ package btwmod.protectedzones;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.Block;
@@ -28,7 +24,6 @@ import net.minecraft.src.FCBlockAnvil;
 import net.minecraft.src.FCBlockInfernalEnchanter;
 import net.minecraft.src.FCEntityCanvas;
 import net.minecraft.src.Facing;
-import net.minecraft.src.ICommand;
 import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.MathHelper;
@@ -54,17 +49,17 @@ import btwmods.world.IEntityListener;
 
 public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener, IEntityListener {
 	
-	public enum ACTION { PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY, CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT, CAN_PUSH };
-	private Map<String, Area<ZoneSettings>> areasByName = new TreeMap<String, Area<ZoneSettings>>();
-	private ProtectedZones[] zones;
+	public enum ACTION {
+		PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY,
+		CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT, CAN_PUSH
+	};
+
+	private Settings data;
+	private ProtectedZones[] zonesByDimension;
+	private CommandZone commandZone;
 	
 	private MinecraftServer server;
 	private ServerCommandManager commandManager;
-	
-	private Set<ICommand> commands = new LinkedHashSet<ICommand>();
-	
-	private Settings data;
-	
 	private Set ops;
 	
 	private boolean alwaysAllowOps = true;
@@ -81,12 +76,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		PlayerAPI.addListener(this);
 		WorldAPI.addListener(this);
-		registerCommand(new CommandZoneAdd(this));
-		registerCommand(new CommandZoneDelete(this));
-		registerCommand(new CommandZoneList(this));
-		registerCommand(new CommandZoneSet(this));
-		registerCommand(new CommandZonePlayer(this));
-		registerCommand(new CommandZoneInfo(this));
+		CommandsAPI.registerCommand(commandZone = new CommandZone(this), this);
 		
 		alwaysAllowOps = settings.getBoolean("alwaysAllowOps", alwaysAllowOps);
 		
@@ -94,9 +84,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		this.data = data;
 		
-		zones = new ProtectedZones[server.worldServers.length];
+		zonesByDimension = new ProtectedZones[server.worldServers.length];
 		for (int i = 0; i < server.worldServers.length; i++) {
-			zones[i] = new ProtectedZones();
+			zonesByDimension[i] = new ProtectedZones();
 		}
 		
 		int zoneCount = data.getInt("count", 0);
@@ -111,7 +101,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	public void unload() throws Exception {
 		PlayerAPI.removeListener(this);
 		WorldAPI.removeListener(this);
-		unregisterCommands();
+		CommandsAPI.unregisterCommand(commandZone);
 	}
 
 	@Override
@@ -119,57 +109,49 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return this;
 	}
 	
-	private void registerCommand(ICommand command) {
-		commands.add(command);
-		CommandsAPI.registerCommand(command, this);
-	}
-	
-	private void unregisterCommands() {
-		for (ICommand command : commands) {
-			CommandsAPI.unregisterCommand(command);
-		}
-	}
-	
 	public boolean add(ZoneSettings zoneSettings) {
 		return add(zoneSettings, true);
 	}
 	
 	private boolean add(ZoneSettings zoneSettings, boolean doSave) {
-		if (zoneSettings != null && zoneSettings.isValid() && !areasByName.containsKey(zoneSettings.name.toLowerCase())) {
-			Area<ZoneSettings> area = zoneSettings.toArea();
-			areasByName.put(zoneSettings.name.toLowerCase(), area);
-			zones[Util.getWorldIndexFromDimension(zoneSettings.dimension)].add(area);
+		if (zoneSettings != null && zonesByDimension[Util.getWorldIndexFromDimension(zoneSettings.dimension)].add(zoneSettings)) {
 			
 			if (doSave)
 				saveAreas();
 			
 			return true;
 		}
+		
 		return false;
 	}
 	
-	public boolean remove(String name) {
-		if (name != null) {
-			Area<ZoneSettings> area = areasByName.get(name.toLowerCase());
-			if (area != null) {
-				areasByName.remove(name.toLowerCase());
-				zones[Util.getWorldIndexFromDimension(area.data.dimension)].remove(area);
-				saveAreas();
-				return true;
-			}
+	public boolean remove(int dimension, String name) {
+		if (name != null && zonesByDimension[Util.getWorldIndexFromDimension(dimension)].removeZone(name)) {
+			saveAreas();
+			return true;
 		}
 		
 		return false;
 	}
 	
-	public Area<ZoneSettings> get(String name) {
-		return areasByName.get(name.toLowerCase());
+	public boolean remove(ZoneSettings zoneSettings) {
+		return zoneSettings != null && remove(zoneSettings.dimension, zoneSettings.name);
+	}
+	
+	public ZoneSettings get(int dimension, String name) {
+		return zonesByDimension[Util.getWorldIndexFromDimension(dimension)].getZone(name);
 	}
 	
 	public List<String> getZoneNames() {
-		ArrayList names = new ArrayList(areasByName.keySet());
-		Collections.sort(names);
+		ArrayList names = new ArrayList();
+		for (ProtectedZones zones : zonesByDimension) {
+			names.addAll(zones.getZoneNames());
+		}
 		return names;
+	}
+	
+	public List<String> getZoneNames(int dimension) {
+		return zonesByDimension[Util.getWorldIndexFromDimension(dimension)].getZoneNames();
 	}
 	
 	public static boolean isProtectedBlockType(ACTION action, Block block) {
@@ -228,7 +210,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		if (settings.allowOps && ops.contains(username.trim().toLowerCase()))
 			return true;
 		
-		if (settings.isPlayerAllowed(username))
+		if (settings.isPlayerWhitelisted(username))
 			return true;
 		
 		return false;
@@ -236,7 +218,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	
 	public boolean isProtectedEntity(ACTION action, EntityPlayer player, Entity entity, int x, int y, int z) {
 		if (isProtectedEntityType(action, entity) && (player == null || !isPlayerGloballyAllowed(player.username))) {
-			List<Area<ZoneSettings>> areas = zones[Util.getWorldIndexFromDimension(entity.worldObj.provider.dimensionId)].get(x, y, z);
+			List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(entity.worldObj.provider.dimensionId)].get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
 				if (area.data != null && area.data.protectEntities) {
@@ -271,30 +253,33 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	
 	public boolean isProtectedBlock(APIEvent event, ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z) {
 		if (isProtectedBlockType(action, block) && (player == null || !isPlayerGloballyAllowed(player.username))) {
-			List<Area<ZoneSettings>> areas = zones[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
+			List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
-				if (area.data != null && area.data.protectBlocks) {
+				if (area.data != null) {
 					
-					if (player != null && isPlayerZoneAllowed(player.username, area.data))
-						return false;
-					
-					if (action == ACTION.ACTIVATE) {
-						if (area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate))
+					if (area.data.protectBlocks != ZoneSettings.PERMISSION.OFF) {
+						if (player != null && isPlayerZoneAllowed(player.username, area.data))
 							return false;
 						
-						if (area.data.allowContainers && block instanceof BlockContainer)
-							return false;
-					}
-					
-					if (action == ACTION.CAN_PUSH && event instanceof BlockEvent) {
-						BlockEvent blockEvent = (BlockEvent)event;
-						if (area.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
-							return false;
+						if (action == ACTION.ACTIVATE) {
+							if ((area.data.allowDoors == ZoneSettings.PERMISSION.ON || (area.data.allowDoors == ZoneSettings.PERMISSION.WHITELIST && area.data.isPlayerWhitelisted(player.username)))
+									&& (block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate))
+								return false;
+							
+							if ((area.data.allowContainers == ZoneSettings.PERMISSION.ON || (area.data.allowContainers == ZoneSettings.PERMISSION.WHITELIST && area.data.isPlayerWhitelisted(player.username))) && block instanceof BlockContainer)
+								return false;
+						}
+						
+						if (action == ACTION.CAN_PUSH && event instanceof BlockEvent) {
+							BlockEvent blockEvent = (BlockEvent)event;
+							if (area.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
+								return false;
+							}
 						}
 					}
 					
-					if ((action == ACTION.BURN || action == ACTION.IS_FLAMMABLE || action == ACTION.FIRE_SPREAD_ATTEMPT) && area.data.allowBurning)
+					if (!area.data.protectBurning && (action == ACTION.BURN || action == ACTION.IS_FLAMMABLE || action == ACTION.FIRE_SPREAD_ATTEMPT))
 						return false;
 					
 					if (area.data.sendDebugMessages) {
@@ -448,12 +433,14 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	public void saveAreas() {
 		data.clear();
 		
-		int size = areasByName.size(), i = 1;
-		data.setInt("count", size);
-		for (Map.Entry<String, Area<ZoneSettings>> entry : areasByName.entrySet()) {
-			entry.getValue().data.saveToSettings(data, "zone" + i);
-			i++;
+		int count = 1;
+		for (ProtectedZones zones : zonesByDimension) {
+			for (ZoneSettings zoneSettings : zones.getZones()) {
+				zoneSettings.saveToSettings(data, "zone" + count);
+				count++;
+			}
 		}
+		data.setInt("count", count);
 		
 		try {
 			data.saveSettings();
