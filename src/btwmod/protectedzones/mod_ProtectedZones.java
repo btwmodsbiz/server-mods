@@ -276,9 +276,6 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			for (Area<ZoneSettings> area : areas) {
 				if (area.data != null && area.data.protectBlocks) {
 					
-					if (player != null && isPlayerZoneAllowed(player.username, area.data))
-						return false;
-					
 					if (action == ACTION.ACTIVATE) {
 						if (area.data.allowDoors && (block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate))
 							return false;
@@ -286,6 +283,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						if (area.data.allowContainers && block instanceof BlockContainer)
 							return false;
 					}
+					
+					if (player != null && isPlayerZoneAllowed(player.username, area.data))
+						return false;
 					
 					if (action == ACTION.CAN_PUSH && event instanceof BlockEvent) {
 						BlockEvent blockEvent = (BlockEvent)event;
