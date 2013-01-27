@@ -35,6 +35,8 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	private Map<String, Long> loginTime = new HashMap<String, Long>();
 	private Map<String, Long> logoutTime = new HashMap<String, Long>();
 	
+	private CommandChatAlias commandChatAlias;
+	
 	@Override
 	public String getName() {
 		return "Chat";
@@ -76,6 +78,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		
 		PlayerAPI.addListener(this);
 		CommandsAPI.registerCommand(commandChatColor = new CommandChatColor(this), this);
+		CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
 	}
 	
 	private void addColor(String color, String colorCode) {
@@ -88,6 +91,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	public void unload() throws Exception {
 		PlayerAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandChatColor);
+		CommandsAPI.unregisterCommand(commandChatAlias);
 	}
 
 	@Override
@@ -96,7 +100,10 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	}
 	
 	public boolean setPlayerColor(String username, String color) throws IOException {
-		if (color.equalsIgnoreCase("off") || color.equalsIgnoreCase("white") || isBannedUser(username)) {
+		if (username == null | color == null) {
+			return false;
+		}
+		else if (color.equalsIgnoreCase("off") || color.equalsIgnoreCase("white") || isBannedUser(username)) {
 			data.removeKey(username.toLowerCase(), "color");
 			return true;
 		}
@@ -110,7 +117,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	}
 	
 	public String getPlayerColor(String username) {
-		return data.get(username.toLowerCase(), "color");
+		return username == null ? null : data.get(username.toLowerCase(), "color");
 	}
 	
 	/**
@@ -134,10 +141,40 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	public boolean isBannedUser(String username) {
 		return bannedUsers.contains(username.toLowerCase().trim());
 	}
+	
+	public String getAlias(String username) {
+		return username == null ? null : data.get(username.toLowerCase().trim(), "alias");
+	}
+	
+	public boolean setAlias(String username, String alias) {
+		if (username == null || alias == null)
+			return false;
+		
+		alias = alias.trim();
+		
+		if (alias.length() < 1 || alias.length() > 16)
+			return false;
+		
+		data.set(username.toLowerCase().trim(), "alias", alias);
+		return true;
+	}
+	
+	public void removeAlias(String username) {
+		if (username != null)
+			data.removeKey(username.toLowerCase().trim(), "alias");
+	}
+	
+	public boolean hasAlias(String username) {
+		return getAlias(username) != null;
+	}
 
 	@Override
 	public void onPlayerChatAction(PlayerChatEvent event) {
 		if (event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL) {
+			
+			String username = getAlias(event.player.username);
+			if (username == null)
+				username = event.player.username;
 			
 			// Attempt to get the user's setting.
 			String color = data.get(event.player.username.toLowerCase(), "color");
@@ -147,8 +184,8 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 			
 			event.setMessage(String.format(globalMessageFormat,
 				color == null
-					? event.player.username
-					: color + event.player.username + Util.COLOR_WHITE,
+					? username
+					: color + username + Util.COLOR_WHITE,
 				event.getMessage()
 			));
 			
