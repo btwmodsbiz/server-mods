@@ -104,8 +104,10 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 			return false;
 		}
 		else if (color.equalsIgnoreCase("off") || color.equalsIgnoreCase("white") || isBannedUser(username)) {
-			data.removeKey(username.toLowerCase(), "color");
-			return true;
+			if (data.removeKey(username.toLowerCase(), "color")) {
+				data.saveSettings();
+				return true;
+			}
 		}
 		else if (isValidColor(color)) {
 			data.set(username.toLowerCase(), "color", color.toLowerCase());
@@ -146,22 +148,24 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		return username == null ? null : data.get(username.toLowerCase().trim(), "alias");
 	}
 	
-	public boolean setAlias(String username, String alias) {
-		if (username == null || alias == null)
-			return false;
-		
+	public boolean setAlias(String username, String alias) throws IOException {
 		alias = alias.trim();
 		
 		if (alias.length() < 1 || alias.length() > 16)
 			return false;
 		
 		data.set(username.toLowerCase().trim(), "alias", alias);
+		data.saveSettings();
 		return true;
 	}
 	
-	public void removeAlias(String username) {
-		if (username != null)
-			data.removeKey(username.toLowerCase().trim(), "alias");
+	public boolean removeAlias(String username) throws IOException {
+		if (data.removeKey(username.toLowerCase().trim(), "alias")) {
+			data.saveSettings();
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public boolean hasAlias(String username) {
