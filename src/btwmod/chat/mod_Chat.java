@@ -2,9 +2,11 @@ package btwmod.chat;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,6 +19,7 @@ import btwmods.player.IPlayerChatListener;
 import btwmods.player.IPlayerInstanceListener;
 import btwmods.player.PlayerChatEvent;
 import btwmods.player.PlayerInstanceEvent;
+import btwmods.util.CaselessKey;
 import btwmods.util.ValuePair;
 
 public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListener {
@@ -36,6 +39,9 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	private Map<String, Long> logoutTime = new HashMap<String, Long>();
 	
 	private CommandChatAlias commandChatAlias;
+	
+	private CommandIgnore commandIgnore;
+	public static final String IGNORE_PREFIX = "ignore_";
 	
 	@Override
 	public String getName() {
@@ -79,6 +85,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		PlayerAPI.addListener(this);
 		CommandsAPI.registerCommand(commandChatColor = new CommandChatColor(this), this);
 		CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
+		CommandsAPI.registerCommand(commandIgnore = new CommandIgnore(this), this);
 	}
 	
 	private void addColor(String color, String colorCode) {
@@ -92,6 +99,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		PlayerAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandChatColor);
 		CommandsAPI.unregisterCommand(commandChatAlias);
+		CommandsAPI.unregisterCommand(commandIgnore);
 	}
 
 	@Override
@@ -170,6 +178,48 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	
 	public boolean hasAlias(String username) {
 		return getAlias(username) != null;
+	}
+	
+	public boolean addIgnore(String username, String ignoredUsername, long minutes) throws IOException {
+		if (minutes <= 0)
+			return false;
+		
+		data.setLong(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim(), System.currentTimeMillis() + (minutes * 1000));
+		data.saveSettings();
+		return true;
+	}
+	
+	public boolean isIgnoring(String username, String ignoredUsername) {
+		return getIgnoreTime(username, ignoredUsername) > 0;
+	}
+	
+	public long getIgnoreTime(String username, String ignoredUsername) {
+		return data.getLong(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim(), -1L);
+	}
+	
+	public boolean removeIgnore(String username, String ignoredUsername) throws IOException {
+		if (data.removeKey(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim())) {
+			data.saveSettings();
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public List<String> getIgnores(String username) {
+		Set<CaselessKey> keys = data.getSectionKeys(username.toLowerCase().trim());
+		
+		if (keys != null) {
+			ArrayList<String> ignoredUsers = new ArrayList<String>();
+			for (CaselessKey key : keys) {
+				if (key.key.startsWith(IGNORE_PREFIX)) {
+					ignoredUsers.add(key.key.substring(IGNORE_PREFIX.length()));
+				}
+			}
+			return ignoredUsers;
+		}
+		
+		return null;
 	}
 
 	@Override
