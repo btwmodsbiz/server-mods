@@ -1,3 +1,12 @@
+Version 4.53.0 (vMC 1.4.7 BTW 4.53)
+
+  - Added /chatalias command for use by admins.
+
+  - Changed isProtectedBlock in Protected Zones so it does faster checks
+    before slower ones.
+    
+  - Changed Protected Zones so it always allows carts to be placed on rails.
+
 Version 4.51.2 (vMC 1.4.7 BTW 4.51)
 
   - Changed the format of item stack names to be "<name> x <qty>" so it can
