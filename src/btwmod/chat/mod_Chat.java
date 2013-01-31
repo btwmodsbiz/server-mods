@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.server.MinecraftServer;
+
 import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.PlayerAPI;
@@ -154,6 +156,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		if (alias.length() < 1 || alias.length() > 16)
 			return false;
 		
+		MinecraftServer.getServer().logger.info("Set alias for " + username + " to " + alias);
 		data.set(username.toLowerCase().trim(), "alias", alias);
 		data.saveSettings();
 		return true;
@@ -161,6 +164,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	
 	public boolean removeAlias(String username) throws IOException {
 		if (data.removeKey(username.toLowerCase().trim(), "alias")) {
+			MinecraftServer.getServer().logger.info("Removed alias for " + username);
 			data.saveSettings();
 			return true;
 		}
