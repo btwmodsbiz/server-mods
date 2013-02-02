@@ -1,3 +1,9 @@
+Version 4.54.0 (vMC 1.4.7 BTW 4.54)
+
+  - Added /ignore and /unignore commands.
+  
+  - Added coloring for names in emotes.
+
 Version 4.53.0 (vMC 1.4.7 BTW 4.53)
 
   - Added /chatalias command for use by admins.
