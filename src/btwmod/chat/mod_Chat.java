@@ -194,7 +194,8 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	}
 	
 	public boolean isIgnoring(String username, String ignoredUsername) {
-		return getIgnoreTime(username, ignoredUsername) > 0;
+		long time = getIgnoreTime(username, ignoredUsername);
+		return time > 0 && time > System.currentTimeMillis();
 	}
 	
 	public long getIgnoreTime(String username, String ignoredUsername) {
