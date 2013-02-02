@@ -1,6 +1,5 @@
 package btwmod.chat;
 
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -115,19 +114,19 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		return this;
 	}
 	
-	public boolean setPlayerColor(String username, String color) throws IOException {
+	public boolean setPlayerColor(String username, String color) {
 		if (username == null | color == null) {
 			return false;
 		}
 		else if (color.equalsIgnoreCase("off") || color.equalsIgnoreCase("white") || isBannedUser(username)) {
 			if (data.removeKey(username.toLowerCase(), "color")) {
-				data.saveSettings();
+				data.saveSettings(this);
 				return true;
 			}
 		}
 		else if (isValidColor(color)) {
 			data.set(username.toLowerCase(), "color", color.toLowerCase());
-			data.saveSettings();
+			data.saveSettings(this);
 			return true;
 		}
 		
@@ -164,20 +163,20 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		return username == null ? null : data.get(username.toLowerCase().trim(), "alias");
 	}
 	
-	public boolean setAlias(String username, String alias) throws IOException {
+	public boolean setAlias(String username, String alias) {
 		alias = alias.trim();
 		
 		if (alias.length() < 1 || alias.length() > 16)
 			return false;
 		
 		data.set(username.toLowerCase().trim(), "alias", alias);
-		data.saveSettings();
+		data.saveSettings(this);
 		return true;
 	}
 	
-	public boolean removeAlias(String username) throws IOException {
+	public boolean removeAlias(String username) {
 		if (data.removeKey(username.toLowerCase().trim(), "alias")) {
-			data.saveSettings();
+			data.saveSettings(this);
 			return true;
 		}
 		
@@ -188,12 +187,12 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		return getAlias(username) != null;
 	}
 	
-	public boolean addIgnore(String username, String ignoredUsername, long minutes) throws IOException {
+	public boolean addIgnore(String username, String ignoredUsername, long minutes) {
 		if (minutes <= 0)
 			return false;
 		
 		data.setLong(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim(), System.currentTimeMillis() + (minutes * 1000));
-		data.saveSettings();
+		data.saveSettings(this);
 		return true;
 	}
 	
@@ -206,9 +205,9 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		return data.getLong(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim(), -1L);
 	}
 	
-	public boolean removeIgnore(String username, String ignoredUsername) throws IOException {
+	public boolean removeIgnore(String username, String ignoredUsername) {
 		if (data.removeKey(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim())) {
-			data.saveSettings();
+			data.saveSettings(this);
 			return true;
 		}
 		
