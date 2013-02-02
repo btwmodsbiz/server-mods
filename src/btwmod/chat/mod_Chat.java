@@ -222,9 +222,9 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	
 	public List<String> getIgnores(String username) {
 		Set<CaselessKey> keys = data.getSectionKeys(username.toLowerCase().trim());
+		ArrayList<String> ignoredUsers = new ArrayList<String>();
 		
 		if (keys != null) {
-			ArrayList<String> ignoredUsers = new ArrayList<String>();
 			for (CaselessKey key : keys) {
 				if (key.key.startsWith(IGNORE_PREFIX)) {
 					String ignored = key.key.substring(IGNORE_PREFIX.length());
@@ -232,10 +232,9 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 						ignoredUsers.add(ignored);
 				}
 			}
-			return ignoredUsers;
 		}
 		
-		return null;
+		return ignoredUsers;
 	}
 	
 	public void sendIgnoreList(EntityPlayer player, boolean showWhenEmpty) {
