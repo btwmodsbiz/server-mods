@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.Packet3Chat;
+
 import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.PlayerAPI;
@@ -229,6 +232,28 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		
 		return null;
 	}
+	
+	public void sendIgnoreList(EntityPlayer player, boolean showWhenEmpty) {
+		List<String> ignored = getIgnores(player.username);
+		if (ignored.size() > 0) {
+			String header = Util.COLOR_YELLOW + "You are ignoring: " + Util.COLOR_WHITE;
+			
+			List<String> messages = Util.combineIntoMaxLengthMessages(ignored, Packet3Chat.maxChatLength, ", ", true);
+			
+			if (messages.size() == 1 && messages.get(0).length() + header.length() <= Packet3Chat.maxChatLength) {
+				player.sendChatToPlayer(header + messages.get(0));
+			}
+			else {
+				player.sendChatToPlayer(header);
+				for (String message : messages) {
+					player.sendChatToPlayer(message);
+				}
+			}
+		}
+		else if (showWhenEmpty) {
+			player.sendChatToPlayer(Util.COLOR_YELLOW + "You are not ignoring any players.");
+		}
+	}
 
 	@Override
 	public void onPlayerChatAction(PlayerChatEvent event) {
@@ -286,6 +311,9 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 						event.getPlayerInstance().sendChatToPlayer(message.key);
 				}
 			}
+			
+			sendIgnoreList(event.getPlayerInstance(), false);
+				
 		}
 		else if (event.getType() == PlayerInstanceEvent.TYPE.LOGOUT) {
 			logoutTime.put(event.getPlayerInstance().username.toLowerCase(), new Long(System.currentTimeMillis()));
