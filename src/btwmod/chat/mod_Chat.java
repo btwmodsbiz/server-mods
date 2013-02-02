@@ -25,6 +25,7 @@ import btwmods.util.ValuePair;
 public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListener {
 
 	public String globalMessageFormat = "<%1$s> %2$s";
+	public String emoteMessageFormat = "* %1$s %2$s";
 	public Set<String> bannedColors = new HashSet<String>();
 	public Set<String> bannedUsers = new HashSet<String>();
 	
@@ -229,7 +230,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 
 	@Override
 	public void onPlayerChatAction(PlayerChatEvent event) {
-		if (event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL) {
+		if (event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL || event.type == PlayerChatEvent.TYPE.HANDLE_EMOTE) {
 			
 			String username = getAlias(event.player.username);
 			if (username == null)
@@ -241,7 +242,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 			if (color != null)
 				color = getColorChar(color);
 			
-			event.setMessage(String.format(globalMessageFormat,
+			event.setMessage(String.format(event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL ? globalMessageFormat : emoteMessageFormat,
 				color == null
 					? username
 					: color + username + Util.COLOR_WHITE,
