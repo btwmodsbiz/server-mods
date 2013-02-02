@@ -219,7 +219,9 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 			ArrayList<String> ignoredUsers = new ArrayList<String>();
 			for (CaselessKey key : keys) {
 				if (key.key.startsWith(IGNORE_PREFIX)) {
-					ignoredUsers.add(key.key.substring(IGNORE_PREFIX.length()));
+					String ignored = key.key.substring(IGNORE_PREFIX.length());
+					if (isIgnoring(username, ignored))
+						ignoredUsers.add(ignored);
 				}
 			}
 			return ignoredUsers;
