@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ICommandSender;
-import net.minecraft.src.Packet3Chat;
 import net.minecraft.src.WrongUsageException;
 import btwmods.Util;
 import btwmods.commands.CommandBaseExtended;
@@ -27,22 +26,20 @@ public class CommandIgnore extends CommandBaseExtended {
 		if (sender instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer)sender;
 			if (args.length == 0) {
-				List<String> ignored = mod.getIgnores(player.username);
-				if (ignored == null || ignored.size() == 0) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "You are not ignoring any players.");
+				mod.sendIgnoreList(player, true);
+			}
+			else if (args.length == 2 && isStringMatch(args, 0, "stop")) {
+				if (mod.isIgnoring(player.username, args[1]) && mod.removeIgnore(player.username, args[1])) {
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "You are no longer ignoring " + args[1].toLowerCase() + ".");
 				}
 				else {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Ignored players:");
-					for (String message : Util.combineIntoMaxLengthMessages(ignored, Packet3Chat.maxChatLength, ",", true)) {
-						sender.sendChatToPlayer(message);
-					}
+					sender.sendChatToPlayer(Util.COLOR_RED + "You were not ignoring " + args[1].toLowerCase() + ".");
 				}
 			}
-			else if (args.length == 2 && isStringMatch(args, 1, "remove")) {
-				
-			}
-			else if (args.length == 2) {
-				
+			else if (args.length == 1 || (args.length == 2 && isInt(args, 1))) {
+				int minutes = args.length == 2 ? parseIntBounded(sender, args[1], 1, mod.maxIgnoreMinutes) : mod.defaultIgnoreMinutes;
+				mod.addIgnore(player.username, args[0], minutes);
+				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Ignoring " + args[0].toLowerCase() + " for " + Util.formatSeconds(minutes * 60L) + ".");
 			}
 			else {
 				throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
@@ -51,8 +48,8 @@ public class CommandIgnore extends CommandBaseExtended {
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender par1iCommandSender) {
-		return "/" + getCommandName() + " [<username> (<time> | remove)]";
+	public String getCommandUsage(ICommandSender sender) {
+		return "/" + getCommandName() + " [stop] <username> [<minutes>]";
 	}
 
 	@Override
