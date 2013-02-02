@@ -42,6 +42,8 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	
 	private CommandIgnore commandIgnore;
 	public static final String IGNORE_PREFIX = "ignore_";
+	public int defaultIgnoreMinutes = 30;
+	public int maxIgnoreMinutes = 120;
 	
 	@Override
 	public String getName() {
@@ -64,6 +66,8 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		
 		chatRestoreLines = settings.getInt("chatRestoreLines", chatRestoreLines);
 		chatRestoreTimeout = settings.getLong("chatRestoreTimeout", chatRestoreTimeout);
+		defaultIgnoreMinutes = settings.getInt("defaultIgnoreMinutes", defaultIgnoreMinutes);
+		maxIgnoreMinutes = settings.getInt("maxIgnoreMinutes", maxIgnoreMinutes);
 		
 		//addColor("black", Util.COLOR_BLACK);
 		//addColor("navy", Util.COLOR_NAVY);
