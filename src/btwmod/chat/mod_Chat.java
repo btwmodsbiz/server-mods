@@ -44,6 +44,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	private CommandChatAlias commandChatAlias;
 	
 	private CommandIgnore commandIgnore;
+	private CommandUnignore commandUnignore;
 	public static final String IGNORE_PREFIX = "ignore_";
 	public int defaultIgnoreMinutes = 30;
 	public int maxIgnoreMinutes = 120;
@@ -93,6 +94,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		CommandsAPI.registerCommand(commandChatColor = new CommandChatColor(this), this);
 		CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
 		CommandsAPI.registerCommand(commandIgnore = new CommandIgnore(this), this);
+		CommandsAPI.registerCommand(commandUnignore = new CommandUnignore(this), this);
 	}
 	
 	private void addColor(String color, String colorCode) {
@@ -107,6 +109,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		CommandsAPI.unregisterCommand(commandChatColor);
 		CommandsAPI.unregisterCommand(commandChatAlias);
 		CommandsAPI.unregisterCommand(commandIgnore);
+		CommandsAPI.unregisterCommand(commandUnignore);
 	}
 
 	@Override
