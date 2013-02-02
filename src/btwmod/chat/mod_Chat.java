@@ -1,14 +1,17 @@
 package btwmod.chat;
 
-import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.Packet3Chat;
 
 import btwmods.CommandsAPI;
 import btwmods.IMod;
@@ -19,11 +22,13 @@ import btwmods.player.IPlayerChatListener;
 import btwmods.player.IPlayerInstanceListener;
 import btwmods.player.PlayerChatEvent;
 import btwmods.player.PlayerInstanceEvent;
+import btwmods.util.CaselessKey;
 import btwmods.util.ValuePair;
 
 public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListener {
 
 	public String globalMessageFormat = "<%1$s> %2$s";
+	public String emoteMessageFormat = "* %1$s %2$s";
 	public Set<String> bannedColors = new HashSet<String>();
 	public Set<String> bannedUsers = new HashSet<String>();
 	
@@ -38,6 +43,12 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	private Map<String, Long> logoutTime = new HashMap<String, Long>();
 	
 	private CommandChatAlias commandChatAlias;
+	
+	private CommandIgnore commandIgnore;
+	private CommandUnignore commandUnignore;
+	public static final String IGNORE_PREFIX = "ignore_";
+	public int defaultIgnoreMinutes = 30;
+	public int maxIgnoreMinutes = 120;
 	
 	@Override
 	public String getName() {
@@ -60,6 +71,8 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		
 		chatRestoreLines = settings.getInt("chatRestoreLines", chatRestoreLines);
 		chatRestoreTimeout = settings.getLong("chatRestoreTimeout", chatRestoreTimeout);
+		defaultIgnoreMinutes = settings.getInt("defaultIgnoreMinutes", defaultIgnoreMinutes);
+		maxIgnoreMinutes = settings.getInt("maxIgnoreMinutes", maxIgnoreMinutes);
 		
 		//addColor("black", Util.COLOR_BLACK);
 		//addColor("navy", Util.COLOR_NAVY);
@@ -81,6 +94,8 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		PlayerAPI.addListener(this);
 		CommandsAPI.registerCommand(commandChatColor = new CommandChatColor(this), this);
 		CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
+		CommandsAPI.registerCommand(commandIgnore = new CommandIgnore(this), this);
+		CommandsAPI.registerCommand(commandUnignore = new CommandUnignore(this), this);
 	}
 	
 	private void addColor(String color, String colorCode) {
@@ -94,6 +109,8 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		PlayerAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandChatColor);
 		CommandsAPI.unregisterCommand(commandChatAlias);
+		CommandsAPI.unregisterCommand(commandIgnore);
+		CommandsAPI.unregisterCommand(commandUnignore);
 	}
 
 	@Override
@@ -101,19 +118,19 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		return this;
 	}
 	
-	public boolean setPlayerColor(String username, String color) throws IOException {
+	public boolean setPlayerColor(String username, String color) {
 		if (username == null | color == null) {
 			return false;
 		}
 		else if (color.equalsIgnoreCase("off") || color.equalsIgnoreCase("white") || isBannedUser(username)) {
 			if (data.removeKey(username.toLowerCase(), "color")) {
-				data.saveSettings();
+				data.saveSettings(this);
 				return true;
 			}
 		}
 		else if (isValidColor(color)) {
 			data.set(username.toLowerCase(), "color", color.toLowerCase());
-			data.saveSettings();
+			data.saveSettings(this);
 			return true;
 		}
 		
@@ -150,7 +167,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		return username == null ? null : data.get(username.toLowerCase().trim(), "alias");
 	}
 	
-	public boolean setAlias(String username, String alias) throws IOException {
+	public boolean setAlias(String username, String alias) {
 		alias = alias.trim();
 		
 		if (alias.length() < 1 || alias.length() > 16)
@@ -158,14 +175,14 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		
 		MinecraftServer.getServer().logger.info("Set alias for " + username + " to " + alias);
 		data.set(username.toLowerCase().trim(), "alias", alias);
-		data.saveSettings();
+		data.saveSettings(this);
 		return true;
 	}
 	
-	public boolean removeAlias(String username) throws IOException {
+	public boolean removeAlias(String username) {
 		if (data.removeKey(username.toLowerCase().trim(), "alias")) {
 			MinecraftServer.getServer().logger.info("Removed alias for " + username);
-			data.saveSettings();
+			data.saveSettings(this);
 			return true;
 		}
 		
@@ -175,10 +192,77 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	public boolean hasAlias(String username) {
 		return getAlias(username) != null;
 	}
+	
+	public boolean addIgnore(String username, String ignoredUsername, long minutes) {
+		if (minutes <= 0)
+			return false;
+		
+		data.setLong(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim(), System.currentTimeMillis() + (minutes * 1000));
+		data.saveSettings(this);
+		return true;
+	}
+	
+	public boolean isIgnoring(String username, String ignoredUsername) {
+		long time = getIgnoreTime(username, ignoredUsername);
+		return time > 0 && time > System.currentTimeMillis();
+	}
+	
+	public long getIgnoreTime(String username, String ignoredUsername) {
+		return data.getLong(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim(), -1L);
+	}
+	
+	public boolean removeIgnore(String username, String ignoredUsername) {
+		if (data.removeKey(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim())) {
+			data.saveSettings(this);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public List<String> getIgnores(String username) {
+		Set<CaselessKey> keys = data.getSectionKeys(username.toLowerCase().trim());
+		
+		if (keys != null) {
+			ArrayList<String> ignoredUsers = new ArrayList<String>();
+			for (CaselessKey key : keys) {
+				if (key.key.startsWith(IGNORE_PREFIX)) {
+					String ignored = key.key.substring(IGNORE_PREFIX.length());
+					if (isIgnoring(username, ignored))
+						ignoredUsers.add(ignored);
+				}
+			}
+			return ignoredUsers;
+		}
+		
+		return null;
+	}
+	
+	public void sendIgnoreList(EntityPlayer player, boolean showWhenEmpty) {
+		List<String> ignored = getIgnores(player.username);
+		if (ignored.size() > 0) {
+			String header = Util.COLOR_YELLOW + "You are ignoring: " + Util.COLOR_WHITE;
+			
+			List<String> messages = Util.combineIntoMaxLengthMessages(ignored, Packet3Chat.maxChatLength, ", ", true);
+			
+			if (messages.size() == 1 && messages.get(0).length() + header.length() <= Packet3Chat.maxChatLength) {
+				player.sendChatToPlayer(header + messages.get(0));
+			}
+			else {
+				player.sendChatToPlayer(header);
+				for (String message : messages) {
+					player.sendChatToPlayer(message);
+				}
+			}
+		}
+		else if (showWhenEmpty) {
+			player.sendChatToPlayer(Util.COLOR_YELLOW + "You are not ignoring any players.");
+		}
+	}
 
 	@Override
 	public void onPlayerChatAction(PlayerChatEvent event) {
-		if (event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL) {
+		if (event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL || event.type == PlayerChatEvent.TYPE.HANDLE_EMOTE) {
 			
 			String username = getAlias(event.player.username);
 			if (username == null)
@@ -190,7 +274,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 			if (color != null)
 				color = getColorChar(color);
 			
-			event.setMessage(String.format(globalMessageFormat,
+			event.setMessage(String.format(event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL ? globalMessageFormat : emoteMessageFormat,
 				color == null
 					? username
 					: color + username + Util.COLOR_WHITE,
@@ -204,6 +288,11 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 			
 			if (chatRestoreBuffer.size() > chatRestoreLines)
 				chatRestoreBuffer.pollFirst();
+		}
+		else if (event.type == PlayerChatEvent.TYPE.SEND_TO_PLAYER_ATTEMPT) {
+			if (isIgnoring(event.getTargetPlayer().username, event.player.username)) {
+				event.markNotAllowed();
+			}
 		}
 	}
 
@@ -227,6 +316,9 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 						event.getPlayerInstance().sendChatToPlayer(message.key);
 				}
 			}
+			
+			sendIgnoreList(event.getPlayerInstance(), false);
+				
 		}
 		else if (event.getType() == PlayerInstanceEvent.TYPE.LOGOUT) {
 			logoutTime.put(event.getPlayerInstance().username.toLowerCase(), new Long(System.currentTimeMillis()));
