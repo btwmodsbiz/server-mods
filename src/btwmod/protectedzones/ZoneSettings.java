@@ -21,15 +21,16 @@ public class ZoneSettings {
 	private final List<Area<ZoneSettings>> _areas = new ArrayList<Area<ZoneSettings>>();
 	public final List<Area<ZoneSettings>> areas = Collections.unmodifiableList(_areas);
 	
-	public PERMISSION protectBlocks = PERMISSION.OFF;
+	public PERMISSION protectEdits = PERMISSION.OFF;
 	public PERMISSION allowDoors = PERMISSION.ON;
 	public PERMISSION allowContainers = PERMISSION.OFF;
 	public boolean allowOps = false;
 	
-	public boolean protectEntities = false;
+	public PERMISSION protectEntities = PERMISSION.OFF;
 	public boolean allowMooshroom = false;
 	public boolean allowVillagers = false;
 	
+	public boolean protectExplosions = false;
 	public boolean protectBurning = false;
 	
 	public boolean sendDebugMessages = false;
@@ -39,7 +40,7 @@ public class ZoneSettings {
 	private ProtectedZones protectedZones = null;
 	
 	public static final String[] settings = {
-		"protectBlocks",
+		"protectEdits",
 		"allowDoors",
 		"allowContainers",
 		"allowOps",
@@ -107,12 +108,19 @@ public class ZoneSettings {
 				addArea(x1, z1, x2, z2);
 		}
 		
-		protectBlocks = settings.getEnum(PERMISSION.class, "protectBlocks", protectBlocks);
+		// Old style protectBlocks
+		if (settings.getBoolean("protectBlocks", false)) {
+			protectEdits = PERMISSION.ON;
+			protectExplosions = true;
+			protectBurning = true;
+		}
+		
+		protectEdits = settings.getEnum(PERMISSION.class, "protectEdits", protectEdits);
 		allowOps = settings.getBoolean("allowOps", allowOps);
 		allowDoors = settings.getEnum(PERMISSION.class, "allowDoors", allowDoors);
 		allowContainers = settings.getEnum(PERMISSION.class, "allowContainers", allowContainers);
 		
-		protectEntities = settings.getBoolean("protectEntities", protectEntities);
+		protectEntities = settings.getEnum(PERMISSION.class, "protectEntities", protectEntities);
 		allowMooshroom = settings.getBoolean("allowMooshroom", allowMooshroom);
 		allowVillagers = settings.getBoolean("allowVillagers", allowVillagers);
 		
@@ -203,8 +211,8 @@ public class ZoneSettings {
 	}
 	
 	public boolean setSetting(String name, String value) {
-		if (name.equalsIgnoreCase("protectBlocks") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
-			protectBlocks = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), protectBlocks);
+		if (name.equalsIgnoreCase("protectEdits") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
+			protectEdits = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), protectEdits);
 		}
 		else if (name.equalsIgnoreCase("allowDoors") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
 			allowDoors = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), allowDoors);
@@ -216,8 +224,8 @@ public class ZoneSettings {
 			allowContainers = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), allowContainers);
 		}
 		
-		else if (name.equalsIgnoreCase("protectEntities") && Settings.isBooleanValue(value)) {
-			protectEntities = Settings.getBooleanValue(value, protectEntities);
+		else if (name.equalsIgnoreCase("protectEntities") && Settings.isEnumValue(PERMISSION.class, value)) {
+			protectEntities = Settings.getEnumValue(PERMISSION.class, value, protectEntities);
 		}
 		else if (name.equalsIgnoreCase("allowMooshroom") && Settings.isBooleanValue(value)) {
 			allowMooshroom = Settings.getBooleanValue(value, allowMooshroom);
@@ -247,12 +255,12 @@ public class ZoneSettings {
 
 		strings.add(name);
 		
-		strings.add("protectBlocks(" + protectBlocks.toString().toLowerCase() + ")");
+		strings.add("protectEdits(" + protectEdits.toString().toLowerCase() + ")");
 		strings.add("allowOps(" + (allowOps ? "on" : "off") + ")");
 		strings.add("allowDoors(" + (allowDoors.toString().toLowerCase()) + ")");
 		strings.add("allowContainers(" + (allowContainers.toString().toLowerCase()) + ")");
 		
-		strings.add("protectEntities(" + (protectEntities ? "on" : "off") + ")");
+		strings.add("protectEntities(" + (protectEntities.toString().toLowerCase()) + ")");
 		strings.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
 		strings.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
 		
@@ -282,6 +290,13 @@ public class ZoneSettings {
 	
 	public boolean isPlayerWhitelisted(String username) {
 		return whitelist.contains(username.trim().toLowerCase());
+	}
+	
+	public boolean isPlayerAllowed(String username, PERMISSION permission) {
+		if (permission == PERMISSION.WHITELIST)
+			return isPlayerWhitelisted(username);
+		
+		return permission == PERMISSION.ON;
 	}
 	
 	public static boolean isValidName(String name) {
@@ -314,12 +329,12 @@ public class ZoneSettings {
 			}
 		}
 		
-		settings.set(section, "protectBlocks", protectBlocks.toString());
+		settings.set(section, "protectEdits", protectEdits.toString());
 		settings.setBoolean(section, "allowOps", allowOps);
 		settings.set(section, "allowDoors", allowDoors.toString());
 		settings.set(section, "allowContainers", allowContainers.toString());
 		
-		settings.setBoolean(section, "protectEntities", protectEntities);
+		settings.set(section, "protectEntities", protectEntities.toString());
 		settings.setBoolean(section, "allowMooshroom", allowMooshroom);
 		settings.setBoolean(section, "allowVillagers", allowVillagers);
 		
@@ -336,12 +351,12 @@ public class ZoneSettings {
 	public List<String> settingsAsList() {
 		ArrayList<String> list = new ArrayList<String>();
 		
-		list.add("protectBlocks(" + protectBlocks.toString().toLowerCase() + ")");
+		list.add("protectEdits(" + protectEdits.toString().toLowerCase() + ")");
 		list.add("allowOps(" + (allowOps ? "on" : "off") + ")");
 		list.add("allowDoors(" + allowDoors.toString().toLowerCase() + ")");
 		list.add("allowContainers(" + allowContainers.toString().toLowerCase() + ")");
 		
-		list.add("protectEntities(" + (protectEntities ? "on" : "off") + ")");
+		list.add("protectEntities(" + (protectEntities.toString().toLowerCase()) + ")");
 		list.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
 		list.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
 		
