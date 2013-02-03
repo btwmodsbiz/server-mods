@@ -86,17 +86,14 @@ public class Marker {
 			int dimension = data.getInt(section, index + "dimension", 0);
 			
 			if (markerIndex >= 0 && Util.getWorldNameFromDimension(dimension) != null) {
-				
-				// Empty descriptions should be null.
-				String description = data.get(section, index + "description");
-				if (description != null && description.trim().length() == 0)
-					description = null;
-				
 				int x = data.getInt(section, index + "x", 0);
 				int y = Math.max(-1, data.getInt(section, index + "y", -1));
 				int z = data.getInt(section, index + "z", 0);
 				
-				return new Marker(username, markerIndex, type, dimension, x, y, z);
+				Marker newMarker = new Marker(username, markerIndex, type, dimension, x, y, z);
+				newMarker.setDescription(data.get(section, index + "description"));
+				
+				return newMarker;
 			}
 		}
 		

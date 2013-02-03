@@ -1,6 +1,5 @@
 package btwmod.chat;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +9,6 @@ import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.Packet3Chat;
 import net.minecraft.src.WrongUsageException;
-import btwmods.ModLoader;
 import btwmods.Util;
 import btwmods.commands.CommandBaseExtended;
 
@@ -74,12 +72,8 @@ public class CommandChatColor extends CommandBaseExtended {
 		else if (((args.length == 1 && sender instanceof EntityPlayer) || (args.length == 2 && isFullUsageAllowed(sender))) && mod.isValidColor(args[0])) {
 			String username = args.length == 2 ? args[1] : sender.getCommandSenderName();
 			
-			try {
-				if (!mod.setPlayerColor(username, args[0])) {
-					throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
-				}
-			} catch (IOException e) {
-				ModLoader.outputError(e, CommandChatColor.class.getSimpleName() + " failed to save settings while trying to change a global color: " + e.getMessage());
+			if (!mod.setPlayerColor(username, args[0])) {
+				throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
 			}
 			
 			String newColor = mod.getPlayerColor(username);

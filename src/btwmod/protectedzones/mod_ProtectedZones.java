@@ -13,6 +13,7 @@ import net.minecraft.src.BlockContainer;
 import net.minecraft.src.BlockEnchantmentTable;
 import net.minecraft.src.BlockEnderChest;
 import net.minecraft.src.BlockLever;
+import net.minecraft.src.BlockRail;
 import net.minecraft.src.BlockWorkbench;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityHanging;
@@ -25,6 +26,7 @@ import net.minecraft.src.FCBlockInfernalEnchanter;
 import net.minecraft.src.FCEntityCanvas;
 import net.minecraft.src.Facing;
 import net.minecraft.src.Item;
+import net.minecraft.src.ItemMinecart;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.MathHelper;
 import net.minecraft.src.ServerCommandManager;
@@ -156,6 +158,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	
 	public static boolean isProtectedBlockType(ACTION action, Block block) {
 		if (action == ACTION.ACTIVATE) {
+			if (block instanceof BlockRail)
+				return false;
+			
 			if (block instanceof BlockWorkbench)
 				return false;
 			
@@ -256,11 +261,17 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
+				ItemStack itemStack = null;
+				
 				if (area.data != null) {
 					
 					if (area.data.protectBlocks != ZoneSettings.PERMISSION.OFF) {
-						if (player != null && isPlayerZoneAllowed(player.username, area.data))
-							return false;
+					
+						if (action == ACTION.PLACE) {
+							if (block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart) {
+								return false;
+							}
+						}
 						
 						if (action == ACTION.ACTIVATE) {
 							if ((area.data.allowDoors == ZoneSettings.PERMISSION.ON || (area.data.allowDoors == ZoneSettings.PERMISSION.WHITELIST && area.data.isPlayerWhitelisted(player.username)))
@@ -270,6 +281,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 							if ((area.data.allowContainers == ZoneSettings.PERMISSION.ON || (area.data.allowContainers == ZoneSettings.PERMISSION.WHITELIST && area.data.isPlayerWhitelisted(player.username))) && block instanceof BlockContainer)
 								return false;
 						}
+					
+						if (player != null && isPlayerZoneAllowed(player.username, area.data))
+							return false;
 						
 						if (action == ACTION.CAN_PUSH && event instanceof BlockEvent) {
 							BlockEvent blockEvent = (BlockEvent)event;
@@ -283,8 +297,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						return false;
 					
 					if (area.data.sendDebugMessages) {
-						ItemStack itemStack = null;
-						if (event instanceof PlayerBlockEvent) {
+						if (itemStack != null && event instanceof PlayerBlockEvent) {
 							itemStack = ((PlayerBlockEvent)event).getItemStack();
 						}
 						
