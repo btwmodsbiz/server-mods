@@ -49,6 +49,7 @@ public class ZoneSettings {
 		"allowMooshroom",
 		"allowVillagers",
 		
+		"protectExplosions",
 		"protectBurning"
 	};
 	
@@ -124,6 +125,7 @@ public class ZoneSettings {
 		allowMooshroom = settings.getBoolean("allowMooshroom", allowMooshroom);
 		allowVillagers = settings.getBoolean("allowVillagers", allowVillagers);
 		
+		protectExplosions = settings.getBoolean("protectExplosions", protectExplosions);
 		protectBurning = settings.getBoolean("protectBurning", protectBurning);
 		
 		String players = settings.get("allowedPlayers");
@@ -238,6 +240,10 @@ public class ZoneSettings {
 			protectBurning = Settings.getBooleanValue(value, protectBurning);
 		}
 		
+		else if (name.equalsIgnoreCase("protectExplosions") && Settings.isBooleanValue(value)) {
+			protectExplosions = Settings.getBooleanValue(value, protectExplosions);
+		}
+		
 		else if (name.equalsIgnoreCase("debug") && Settings.isBooleanValue(value)) {
 			sendDebugMessages = Settings.getBooleanValue(value, sendDebugMessages);
 		}
@@ -265,6 +271,7 @@ public class ZoneSettings {
 		strings.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
 		
 		strings.add("protectBurning(" + (protectBurning ? "on" : "off") + ")");
+		strings.add("protectExplosions(" + (protectExplosions ? "on" : "off") + ")");
 		
 		strings.add("whitelist(" + whitelist.toString() + ")");
 		
@@ -339,6 +346,7 @@ public class ZoneSettings {
 		settings.setBoolean(section, "allowVillagers", allowVillagers);
 		
 		settings.setBoolean(section, "protectBurning", protectBurning);
+		settings.setBoolean(section, "protectExplosions", protectExplosions);
 		
 		StringBuilder sb = new StringBuilder();
 		for (String player : whitelist) {
@@ -361,6 +369,7 @@ public class ZoneSettings {
 		list.add("allowVillagers(" + (allowVillagers ? "on" : "off") + ")");
 		
 		list.add("protectBurning(" + (protectBurning ? "on" : "off") + ")");
+		list.add("protectExplosions(" + (protectExplosions ? "on" : "off") + ")");
 		
 		if (sendDebugMessages)
 			list.add("debug(on)");
