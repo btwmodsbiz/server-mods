@@ -228,7 +228,7 @@ public class ZoneSettings {
 			allowContainers = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), allowContainers);
 		}
 		
-		else if (name.equalsIgnoreCase("protectEntities") && Settings.isEnumValue(PERMISSION.class, value)) {
+		else if (name.equalsIgnoreCase("protectEntities") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
 			protectEntities = Settings.getEnumValue(PERMISSION.class, value, protectEntities);
 		}
 		else if (name.equalsIgnoreCase("allowMooshroom") && Settings.isBooleanValue(value)) {
