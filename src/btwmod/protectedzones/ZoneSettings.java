@@ -199,17 +199,12 @@ public class ZoneSettings {
 		return false;
 	}
 	
-	public boolean removeArea(int index) {
+	public Area removeArea(int index) {
 		Area area = null;
-		if (index >= 0 && index < _areas.size() && (area = _areas.remove(index)) != null) {
-			
-			if (protectedZones != null)
-				protectedZones.remove(area);
-			
-			return true;
+		if (index >= 0 && index < _areas.size() && (area = _areas.remove(index)) != null && protectedZones != null) {
+			protectedZones.remove(area);
 		}
-		
-		return false;
+		return area;
 	}
 	
 	public boolean setSetting(String name, String value) {
