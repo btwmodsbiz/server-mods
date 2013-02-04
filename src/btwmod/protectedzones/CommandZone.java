@@ -237,13 +237,7 @@ public class CommandZone extends CommandBaseExtended {
 				
 				for (int i = 1; i <= settings.areas.size(); i++) {
 					Area area = settings.areas.get(i - 1);
-					if (area instanceof Cube) {
-						Cube cube = (Cube)area;
-						sender.sendChatToPlayer(Util.COLOR_AQUA + "<Area #" + i + ">" + Util.COLOR_WHITE + " " + cube.x1 + "," + cube.y1 + "," + cube.z1 + " to " + cube.x2 + "," + cube.y2 + "," + cube.z2);
-					}
-					else {
-						sender.sendChatToPlayer(Util.COLOR_AQUA + "<Area #" + i + ">" + Util.COLOR_WHITE + " " + area.x1 + "," + area.z1 + " to " + area.x2 + "," + area.z2);
-					}
+					sender.sendChatToPlayer(Util.COLOR_AQUA + "<Area #" + i + ">" + Util.COLOR_WHITE + " " + area.toString());
 				}
 				
 				String settingsHeader = Util.COLOR_AQUA + "<Settings>" + Util.COLOR_WHITE + " ";
