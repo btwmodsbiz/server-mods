@@ -1,5 +1,6 @@
 package btwmod.cubemail;
 
+import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,6 +16,7 @@ import net.minecraft.src.NBTTagString;
 import net.minecraft.src.TileEntityChest;
 import net.minecraft.src.World;
 import btwmods.IMod;
+import btwmods.ModLoader;
 import btwmods.PlayerAPI;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerBlockListener;
@@ -84,12 +86,13 @@ public class mod_CubeMail implements IMod, IPlayerBlockListener {
 		
 		for (int i = 0, count = inventory.getSizeInventory(); i < count; i++) {
 			ItemStack book = inventory.getStackInSlot(i);
+			//System.out.println(book == null ? "null" : book.getItemName());
 			if (book != null && book.getItem() == Item.writtenBook) {
 				BookData bookData = getBookData(book);
-				if (bookData != null) {
+				if (bookData != null && sendBook(bookData)) {
+					System.out.println("Sent book: " + bookData.title + " by " + bookData.author);
 					foundValidBook = true;
-					sendBook(bookData);
-					inventory.setInventorySlotContents(i, null);
+					//inventory.setInventorySlotContents(i, null);
 				}
 			}
 		}
@@ -107,7 +110,7 @@ public class mod_CubeMail implements IMod, IPlayerBlockListener {
 				NBTTagString firstPage = (NBTTagString)pages.tagAt(0);
 				if (firstPage != null && firstPage.data != null) {
 					Matcher matcher = toLine.matcher(firstPage.data.trim());
-					if (matcher.matches()) {
+					if (matcher.find(0) && matcher.group(1) != null) {
 						String[] pagesArr = new String[pages.tagCount()];
 						for (int i = 0, count = pages.tagCount(); i < count; i++) {
 							pagesArr[i] = ((NBTTagString)pages.tagAt(i)).data;
@@ -122,9 +125,20 @@ public class mod_CubeMail implements IMod, IPlayerBlockListener {
 		return null;
 	}
 	
-	private void sendBook(BookData bookData) {
-		//NBTTagCompound tagCompound = book.getTagCompound();
-		//int count = data.getInt("to_" + username.toLowerCase(), "count", 0);
-		//tagCompound.
+	private boolean sendBook(BookData bookData) {
+		String section = "to_" + bookData.toUsername.toLowerCase();
+		int nextID = data.getInt(section, "count", 0) + 1;
+		
+		try {
+			data.set(section, "mail" + nextID, bookData.serialize());
+			data.setInt(section, "count", nextID);
+			data.saveSettings(this);
+			return true;
+			
+		} catch (UnsupportedEncodingException e) {
+			ModLoader.outputError(e, getName() + " failed to convert bookData to base64: " + e.getMessage());
+		}
+		
+		return false;
 	}
 }
