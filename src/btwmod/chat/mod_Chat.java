@@ -197,7 +197,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		if (minutes <= 0)
 			return false;
 		
-		data.setLong(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim(), System.currentTimeMillis() + (minutes * 1000));
+		data.setLong(username.toLowerCase().trim(), IGNORE_PREFIX + ignoredUsername.toLowerCase().trim(), System.currentTimeMillis() + (minutes * 60 * 1000));
 		data.saveSettings(this);
 		return true;
 	}
