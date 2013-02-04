@@ -92,7 +92,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		int zoneCount = data.getInt("count", 0);
 		for (int i = 1; i <= zoneCount; i++) {
-			if (data.hasSection("zone" + i) && !add(new ZoneSettings(data.getSectionAsSettings("zone" + i)), false)) {
+			if (data.hasSection("zone" + i) && !add(new ZoneSettings(data.getSectionAsSettings("zone" + i)))) {
 				ModLoader.outputError(getName() + " failed to load zone " + i + " as it has a duplicate name or has invalid dimensions.");
 			}
 		}
@@ -111,28 +111,11 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	}
 	
 	public boolean add(ZoneSettings zoneSettings) {
-		return add(zoneSettings, true);
-	}
-	
-	private boolean add(ZoneSettings zoneSettings, boolean doSave) {
-		if (zoneSettings != null && zonesByDimension[Util.getWorldIndexFromDimension(zoneSettings.dimension)].add(zoneSettings)) {
-			
-			if (doSave)
-				saveAreas();
-			
-			return true;
-		}
-		
-		return false;
+		return zoneSettings != null && zonesByDimension[Util.getWorldIndexFromDimension(zoneSettings.dimension)].add(zoneSettings);
 	}
 	
 	public boolean remove(int dimension, String name) {
-		if (name != null && zonesByDimension[Util.getWorldIndexFromDimension(dimension)].removeZone(name)) {
-			saveAreas();
-			return true;
-		}
-		
-		return false;
+		return name != null && zonesByDimension[Util.getWorldIndexFromDimension(dimension)].removeZone(name);
 	}
 	
 	public boolean remove(ZoneSettings zoneSettings) {
