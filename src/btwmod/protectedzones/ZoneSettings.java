@@ -135,7 +135,7 @@ public class ZoneSettings {
 	}
 	
 	public void setProtectedZones(ProtectedZones protectedZones) {
-		if (protectedZones != null)
+		if (protectedZones != null && this.protectedZones != null)
 			throw new IllegalStateException();
 		
 		this.protectedZones = protectedZones;
