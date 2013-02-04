@@ -235,9 +235,6 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
-				if (player != null)
-					player.sendChatToPlayer(action.toString() + " " + area.toString());
-				
 				ZoneSettings settings = area.data;
 				ItemStack itemStack = null;
 				
