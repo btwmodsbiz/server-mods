@@ -349,9 +349,9 @@ public class ZoneSettings {
 		
 		settings.setInt(section, "dimension", dimension);
 		
-		settings.setInt(section, "areaCount", areas.size());
-		for (int i = 1; i <= areas.size(); i++) {
-			Area area = areas.get(i - 1);
+		settings.setInt(section, "areaCount", _areas.size());
+		for (int i = 1; i <= _areas.size(); i++) {
+			Area area = _areas.get(i - 1);
 			settings.setInt(section, "area" + i + "_x1", area.x1);
 			settings.setInt(section, "area" + i + "_z1", area.z1);
 			settings.setInt(section, "area" + i + "_x2", area.x2);
