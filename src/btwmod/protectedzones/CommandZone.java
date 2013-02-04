@@ -86,6 +86,7 @@ public class CommandZone extends CommandBaseExtended {
 				}
 				else if (mod.add(zone)) {
 					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Created new zone: " + Util.COLOR_WHITE + args[2]);
+					mod.saveAreas();
 				}
 				else {
 					sender.sendChatToPlayer(Util.COLOR_RED + "Failed to add new zone.");
@@ -110,6 +111,7 @@ public class CommandZone extends CommandBaseExtended {
 			}
 			else {
 				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed zone: " + Util.COLOR_WHITE + args[2]);
+				mod.saveAreas();
 			}
 		}
 		else {
@@ -164,7 +166,8 @@ public class CommandZone extends CommandBaseExtended {
 				Area area = settings.addArea(x1, z1, x2, z2);
 				
 				if (area != null) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added area to " + settings.name + ": " + area.x1 + "," + + area.z1 + " to " + area.x2 + "," + area.z2);
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added area to " + settings.name + ": " + area.toString());
+					mod.saveAreas();
 				}
 				else {
 					sender.sendChatToPlayer(Util.COLOR_RED + "An area with the same dimensions already exists for the zone.");
@@ -181,7 +184,8 @@ public class CommandZone extends CommandBaseExtended {
 				Cube cube = settings.addCube(x1, y1, z1, x2, y2, z2);
 				
 				if (cube != null) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added cube to zone " + settings.name + ": " + cube.x1 + "," + cube.y1 + "," + cube.z1 + " to " + cube.x2 + "," + cube.y2 + "," + cube.z2);
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added cube to zone " + settings.name + ": " + cube.toString());
+					mod.saveAreas();
 				}
 				else {
 					sender.sendChatToPlayer(Util.COLOR_RED + "A cube with the same dimensions already exists for the zone.");
@@ -210,6 +214,7 @@ public class CommandZone extends CommandBaseExtended {
 				Area removed = settings.removeArea(areaNum - 1);
 				if (removed != null) {
 					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed area #" + areaNum + " (" + removed.toString() + ") from zone " + settings.name + ".");
+					mod.saveAreas();
 				}
 				else {
 					sender.sendChatToPlayer(Util.COLOR_RED + "Zone " + settings.name + " does not have an area #" + areaNum + ".");
