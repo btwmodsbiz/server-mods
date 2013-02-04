@@ -1,6 +1,5 @@
 package btwmod.protectedzones;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -473,10 +472,6 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		}
 		data.setInt("count", count);
 		
-		try {
-			data.saveSettings();
-		} catch (IOException e) {
-			ModLoader.outputError(e, getName() + " failed (" + e.getClass().getSimpleName() + ") to save to the data file: " + e.getMessage());
-		}
+		data.saveSettings(this);
 	}
 }
