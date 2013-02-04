@@ -188,7 +188,7 @@ public class ZoneSettings {
 	}
 	
 	private boolean addArea(Area area) {
-		if (!_areas.contains(area) && _areas.add(area)) {
+		if (_areas.add(area)) {
 			
 			if (protectedZones != null)
 				protectedZones.add(area);
