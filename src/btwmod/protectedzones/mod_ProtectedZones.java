@@ -253,47 +253,63 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
 			
 			for (Area<ZoneSettings> area : areas) {
+				if (player != null)
+					player.sendChatToPlayer(action.toString() + " " + area.toString());
+				
 				ZoneSettings settings = area.data;
 				ItemStack itemStack = null;
 				
 				if (settings != null) {
 					
-					if (!settings.protectExplosions && action == ACTION.EXPLODE)
-						return false;
-					
-					if (!settings.protectBurning && (action == ACTION.BURN || action == ACTION.IS_FLAMMABLE || action == ACTION.FIRE_SPREAD_ATTEMPT))
-						return false;
-					
-					if (settings.protectEdits != ZoneSettings.PERMISSION.OFF) {
-					
-						if (action == ACTION.PLACE) {
-							// Allow minecarts to be placed on rails.
-							if (block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart) {
+					switch (action) {
+						case EXPLODE:
+							if (!settings.protectExplosions)
 								return false;
-							}
-						}
-						
-						// Protect against pistons from outside the area.
-						if (action == ACTION.CAN_PUSH && event instanceof BlockEvent) {
-							BlockEvent blockEvent = (BlockEvent)event;
-							if (area.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
+							break;
+							
+						case IS_FLAMMABLE:
+						case BURN:
+						case FIRE_SPREAD_ATTEMPT:
+							if (!settings.protectBurning)
 								return false;
-							}
-						}
-						
-						if (player != null) {
-							if (action == ACTION.ACTIVATE) {
-								if ((block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate)
-										&& settings.isPlayerAllowed(player.username, settings.allowDoors))
+							break;
+							
+						case CAN_PUSH:
+							// Protect against pistons from outside the area.
+							if (event instanceof BlockEvent) {
+								BlockEvent blockEvent = (BlockEvent)event;
+								if (area.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
 									return false;
-								
-								if (block instanceof BlockContainer && settings.isPlayerAllowed(player.username, settings.allowContainers))
+								}
+							}
+							break;
+							
+						default:
+							if (settings.protectEdits == ZoneSettings.PERMISSION.OFF)
+								return false;
+							
+							if (action == ACTION.PLACE) {
+								// Allow minecarts to be placed on rails.
+								if (block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart) {
+									return false;
+								}
+							}
+							
+							if (player != null) {
+								if (action == ACTION.ACTIVATE) {
+									if ((block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate)
+											&& settings.isPlayerAllowed(player.username, settings.allowDoors))
+										return false;
+									
+									if (block instanceof BlockContainer && settings.isPlayerAllowed(player.username, settings.allowContainers))
+										return false;
+								}
+							
+								if (settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
 									return false;
 							}
+							break;
 						
-							if (settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
-								return false;
-						}
 					}
 					
 					if (settings.sendDebugMessages) {
