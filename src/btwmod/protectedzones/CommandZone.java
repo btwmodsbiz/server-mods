@@ -53,6 +53,9 @@ public class CommandZone extends CommandBaseExtended {
 		else if (isStringMatch(args, 0, "revoke")) {
 			processCommandGrant(sender, args);
 		}
+		else if (isStringMatch(args, 0, "help") && args.length == 2) {
+			throw new WrongUsageException(getCommandUsage(args[1]), new Object[0]);
+		}
 		else {
 			throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
 		}
@@ -82,7 +85,7 @@ public class CommandZone extends CommandBaseExtended {
 					sender.sendChatToPlayer(Util.COLOR_RED + "Invalid zone parameters.");
 				}
 				else if (mod.add(zone)) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Successfully created new zone: " + Util.COLOR_WHITE + args[2]);
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Created new zone: " + Util.COLOR_WHITE + args[2]);
 				}
 				else {
 					sender.sendChatToPlayer(Util.COLOR_RED + "Failed to add new zone.");
@@ -106,7 +109,7 @@ public class CommandZone extends CommandBaseExtended {
 				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with that name does not exist.");
 			}
 			else {
-				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Successfully removed zone: " + Util.COLOR_WHITE + args[2]);
+				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed zone: " + Util.COLOR_WHITE + args[2]);
 			}
 		}
 		else {
@@ -127,7 +130,8 @@ public class CommandZone extends CommandBaseExtended {
 				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with that name does not exist.");
 			}
 			else if (settings.setSetting(args[3], args[4])) {
-				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Setting '" + args[3] + "' successfully set.");
+				String newValue = settings.getSetting(args[3]);
+				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Setting '" + args[3] + "' set to " + (newValue == null ? "null" : newValue) + ".");
 				mod.saveAreas();
 			}
 			else {
