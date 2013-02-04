@@ -207,8 +207,9 @@ public class CommandZone extends CommandBaseExtended {
 			}
 			else {
 				int areaNum = parseIntWithMin(sender, args[3], 1);
-				if (settings.removeArea(areaNum - 1)) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed area #" + areaNum + " from zone " + settings.name + ".");
+				Area removed = settings.removeArea(areaNum - 1);
+				if (removed != null) {
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed area #" + areaNum + " (" + removed.toString() + ") from zone " + settings.name + ".");
 				}
 				else {
 					sender.sendChatToPlayer(Util.COLOR_RED + "Zone " + settings.name + " does not have an area #" + areaNum + ".");
