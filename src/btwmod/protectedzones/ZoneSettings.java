@@ -128,9 +128,16 @@ public class ZoneSettings {
 		protectExplosions = settings.getBoolean("protectExplosions", protectExplosions);
 		protectBurning = settings.getBoolean("protectBurning", protectBurning);
 		
-		String players = settings.get("allowedPlayers");
+		String players = settings.get("whitelist");
+		
+		if (players == null)
+			players = settings.get("allowedPlayers");
+		
 		if (players != null) {
-			this.whitelist.addAll(Arrays.asList(players.toLowerCase().split(";")));
+			for (String username : players.toLowerCase().split(";")) {
+				if (username.trim().length() > 0)
+					whitelist.add(username);
+			}
 		}
 	}
 	
@@ -387,7 +394,7 @@ public class ZoneSettings {
 			if (sb.length() > 0) sb.append(";");
 			sb.append(player);
 		}
-		settings.set(section, "allowedPlayers", sb.toString());
+		settings.set(section, "whitelist", sb.toString());
 	}
 
 	public List<String> settingsAsList() {
