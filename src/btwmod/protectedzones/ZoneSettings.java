@@ -254,6 +254,45 @@ public class ZoneSettings {
 		return true;
 	}
 	
+	public String getSetting(String name) {
+		if (name.equalsIgnoreCase("protectEdits")) {
+			return protectEdits.toString().toLowerCase();
+		}
+		else if (name.equalsIgnoreCase("allowDoors")) {
+			return allowDoors.toString().toLowerCase();
+		}
+		else if (name.equalsIgnoreCase("allowOps")) {
+			return allowOps ? "on" : "off";
+		}
+		else if (name.equalsIgnoreCase("allowContainers")) {
+			return allowContainers.toString().toLowerCase();
+		}
+		
+		else if (name.equalsIgnoreCase("protectEntities")) {
+			return protectEntities.toString().toLowerCase();
+		}
+		else if (name.equalsIgnoreCase("allowMooshroom")) {
+			return allowMooshroom ? "on" : "off";
+		}
+		else if (name.equalsIgnoreCase("allowVillagers")) {
+			return allowVillagers ? "on" : "off";
+		}
+		
+		else if (name.equalsIgnoreCase("protectBurning")) {
+			return protectBurning ? "on" : "off";
+		}
+		
+		else if (name.equalsIgnoreCase("protectExplosions")) {
+			return protectExplosions ? "on" : "off";
+		}
+		
+		else if (name.equalsIgnoreCase("debug")) {
+			return sendDebugMessages ? "on" : "off";
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public String toString() {
 		ArrayList<String> strings = new ArrayList<String>();
