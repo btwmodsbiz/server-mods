@@ -52,6 +52,7 @@ public class ProtectedZones extends Zones<ZoneSettings> {
 	
 	public boolean add(ZoneSettings zone) {
 		if (!containsZone(zone)) {
+			zone.setProtectedZones(this);
 			byName.put(zone.name.toLowerCase(), zone);
 			addAll(zone.areas);
 			return true;
@@ -67,6 +68,7 @@ public class ProtectedZones extends Zones<ZoneSettings> {
 	public boolean removeZone(String name) {
 		ZoneSettings removed;
 		if (name != null && (removed = byName.remove(name.toLowerCase())) != null) {
+			removed.setProtectedZones(null);
 			removeAll(removed.areas);
 			return true;
 		}
@@ -77,6 +79,9 @@ public class ProtectedZones extends Zones<ZoneSettings> {
 	@Override
 	public void clear() {
 		super.clear();
+		for (Entry<String, ZoneSettings> entry : byName.entrySet()) {
+			entry.getValue().setProtectedZones(null);
+		}
 		byName.clear();
 	}
 }
