@@ -228,7 +228,7 @@ public class ZoneSettings {
 			allowContainers = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), allowContainers);
 		}
 		
-		else if (name.equalsIgnoreCase("protectEntities") && Settings.isEnumValue(PERMISSION.class, value)) {
+		else if (name.equalsIgnoreCase("protectEntities") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
 			protectEntities = Settings.getEnumValue(PERMISSION.class, value, protectEntities);
 		}
 		else if (name.equalsIgnoreCase("allowMooshroom") && Settings.isBooleanValue(value)) {
@@ -420,6 +420,18 @@ public class ZoneSettings {
 
 	public List<String> playersAsList() {
 		return Arrays.asList(whitelist.toArray(new String[whitelist.size()]));
+	}
+	
+	public int getAreaIndex(Area area) {
+		if (area.data == this) {
+			for (int i = 0; i < areas.size(); i++) {
+				Area item = areas.get(i);
+				if (item.equals(area))
+					return i;
+			}
+		}
+		
+		return -1;
 	}
 
 	@Override

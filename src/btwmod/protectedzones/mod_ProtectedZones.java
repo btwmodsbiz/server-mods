@@ -193,34 +193,42 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return alwaysAllowOps && ops.contains(username.trim().toLowerCase());
 	}
 	
-	public boolean isProtectedEntity(ACTION action, EntityPlayer player, Entity entity, int x, int y, int z) {
-		if (isProtectedEntityType(action, entity) && (player == null || !isPlayerGloballyAllowed(player.username))) {
-			List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(entity.worldObj.provider.dimensionId)].get(x, y, z);
-			
-			for (Area<ZoneSettings> area : areas) {
-				ZoneSettings settings = area.data;
-				if (settings != null && settings.protectEntities != ZoneSettings.PERMISSION.OFF) {
+	protected boolean isProtectedEntity(ACTION action, EntityPlayer player, Entity entity, int x, int y, int z) {
+		if (!isProtectedEntityType(action, entity))
+			return false;
+		
+		if (player != null && isPlayerGloballyAllowed(player.username))
+			return false;
+		
+		List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(entity.worldObj.provider.dimensionId)].get(x, y, z);
+		
+		for (Area<ZoneSettings> area : areas) {
+			ZoneSettings settings = area.data;
+			if (settings != null && settings.protectEntities != ZoneSettings.PERMISSION.OFF) {
+				
+				boolean isProtected = true;
+				
+				if (entity instanceof EntityMooshroom) {
+					if (settings.allowMooshroom)
+						isProtected = false;
 					
-					if (entity instanceof EntityMooshroom) {
-						if (settings.allowMooshroom)
-							return false;
-						
-						if (player != null && action == ACTION.USE_ENTITY) {
-							ItemStack heldItem = player.getHeldItem();
-							if (heldItem != null && heldItem.getItem() == Item.bowlEmpty) {
-								return false;
-							}
+					else if (player != null && action == ACTION.USE_ENTITY) {
+						ItemStack heldItem = player.getHeldItem();
+						if (heldItem != null && heldItem.getItem() == Item.bowlEmpty) {
+							isProtected = false;
 						}
 					}
-					else if (entity instanceof EntityVillager && settings.allowVillagers) {
-						return false;
-					}
-					
-					if (player != null && settings.protectEntities == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
-						return false;
-					
+				}
+				else if (entity instanceof EntityVillager && settings.allowVillagers) {
+					isProtected = false;
+				}
+				
+				if (isProtected && player != null && settings.protectEntities == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
+					isProtected = false;
+				
+				if (isProtected) {
 					if (settings.sendDebugMessages)
-						commandManager.notifyAdmins(server, 0, "Protect " + entity.getEntityName() + " " + action + " " + x + "," + y + "," + z + (player == null ? "" : " by " + player.username), new Object[0]);
+						commandManager.notifyAdmins(server, 0, "Protect " + entity.getEntityName() + " " + action + " " + x + "," + y + "," + z + (player == null ? "" : " from " + player.username + " by " + area.data.name + "#" + area.data.getAreaIndex(area)), new Object[0]);
 					
 					return true;
 				}
@@ -230,70 +238,78 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return false;
 	}
 	
-	public boolean isProtectedBlock(APIEvent event, ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z) {
-		if (isProtectedBlockType(action, block) && (player == null || !isPlayerGloballyAllowed(player.username))) {
-			List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
+	protected boolean isProtectedBlock(APIEvent event, ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z) {
+		if (!isProtectedBlockType(action, block))
+			return false;
+		
+		if (player != null && isPlayerGloballyAllowed(player.username))
+			return true;
+		
+		List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
+		
+		for (Area<ZoneSettings> area : areas) {
+			ZoneSettings settings = area.data;
+			ItemStack itemStack = null;
 			
-			for (Area<ZoneSettings> area : areas) {
-				if (player != null)
-					player.sendChatToPlayer(action.toString() + " " + area.toString());
+			if (settings != null) {
 				
-				ZoneSettings settings = area.data;
-				ItemStack itemStack = null;
+				boolean isProtected = false;
 				
-				if (settings != null) {
-					
-					switch (action) {
-						case EXPLODE:
-							if (!settings.protectExplosions)
-								return false;
-							break;
+				switch (action) {
+					case EXPLODE:
+						if (settings.protectExplosions)
+							isProtected = true;
+						break;
+						
+					case IS_FLAMMABLE:
+					case BURN:
+					case FIRE_SPREAD_ATTEMPT:
+						if (settings.protectBurning)
+							isProtected = true;
+						break;
+						
+					case CAN_PUSH:
+						// Protect against pistons from outside the area.
+						if (event instanceof BlockEvent) {
+							BlockEvent blockEvent = (BlockEvent)event;
 							
-						case IS_FLAMMABLE:
-						case BURN:
-						case FIRE_SPREAD_ATTEMPT:
-							if (!settings.protectBurning)
-								return false;
-							break;
-							
-						case CAN_PUSH:
-							// Protect against pistons from outside the area.
-							if (event instanceof BlockEvent) {
-								BlockEvent blockEvent = (BlockEvent)event;
-								if (area.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
-									return false;
+							// Check all areas for the ZoneSettings.
+							for (Area zoneArea : area.data.areas) {
+								if (!zoneArea.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
+									isProtected = true;
+									break;
 								}
 							}
-							break;
-							
-						default:
-							if (settings.protectEdits == ZoneSettings.PERMISSION.OFF)
-								return false;
-							
-							if (action == ACTION.PLACE) {
-								// Allow minecarts to be placed on rails.
-								if (block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart) {
-									return false;
-								}
-							}
+						}
+						break;
+						
+					default:
+						if (settings.protectEdits != ZoneSettings.PERMISSION.OFF) {
+							isProtected = true;
 							
 							if (player != null) {
-								if (action == ACTION.ACTIVATE) {
+								// Allow minecarts to be placed on rails.
+								if (isProtected && action == ACTION.PLACE && block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart)
+									isProtected = false;
+								
+								if (isProtected && action == ACTION.ACTIVATE) {
 									if ((block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate)
 											&& settings.isPlayerAllowed(player.username, settings.allowDoors))
-										return false;
+										isProtected = false;
 									
-									if (block instanceof BlockContainer && settings.isPlayerAllowed(player.username, settings.allowContainers))
-										return false;
+									else if (block instanceof BlockContainer && settings.isPlayerAllowed(player.username, settings.allowContainers))
+										isProtected = false;
 								}
 							
-								if (settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
-									return false;
+								if (isProtected && settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
+									isProtected = false;
 							}
-							break;
-						
-					}
+						}
+						break;
 					
+				}
+				
+				if (isProtected) {
 					if (settings.sendDebugMessages) {
 						if (itemStack != null && event instanceof PlayerBlockEvent) {
 							itemStack = ((PlayerBlockEvent)event).getItemStack();
@@ -303,10 +319,10 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 								+ " " + action
 								+ (block == null ? "" : " " + block.getBlockName())
 								+ (itemStack == null ? "" : " " + itemStack.getItemName())
-								+ " " + x + "," + y + "," + z;
+								+ " " + x + "," + y + "," + z + " by " + area.data.name + "#" + area.data.getAreaIndex(area);
 						
 						if (player == null)
-							commandManager.notifyAdmins(server, 0, message + (player == null ? "" : " by " + player.username), new Object[0]);
+							commandManager.notifyAdmins(server, 0, message + (player == null ? "" : " from " + player.username), new Object[0]);
 						else
 							player.sendChatToPlayer(message);
 					}
@@ -319,7 +335,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return false;
 	}
 	
-	public boolean isProtectedBlock(APIEvent event, ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z, int direction) {
+	protected boolean isProtectedBlock(APIEvent event, ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z, int direction) {
 		
 		switch (direction) {
 			case 0:
