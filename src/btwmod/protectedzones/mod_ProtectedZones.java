@@ -206,28 +206,32 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			ZoneSettings settings = area.data;
 			if (settings != null && settings.protectEntities != ZoneSettings.PERMISSION.OFF) {
 				
+				boolean isProtected = true;
+				
 				if (entity instanceof EntityMooshroom) {
 					if (settings.allowMooshroom)
-						return false;
+						isProtected = false;
 					
-					if (player != null && action == ACTION.USE_ENTITY) {
+					else if (player != null && action == ACTION.USE_ENTITY) {
 						ItemStack heldItem = player.getHeldItem();
 						if (heldItem != null && heldItem.getItem() == Item.bowlEmpty) {
-							return false;
+							isProtected = false;
 						}
 					}
 				}
 				else if (entity instanceof EntityVillager && settings.allowVillagers) {
-					return false;
+					isProtected = false;
 				}
 				
-				if (player != null && settings.protectEntities == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
-					return false;
+				if (isProtected && player != null && settings.protectEntities == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
+					isProtected = false;
 				
-				if (settings.sendDebugMessages)
-					commandManager.notifyAdmins(server, 0, "Protect " + entity.getEntityName() + " " + action + " " + x + "," + y + "," + z + (player == null ? "" : " by " + player.username), new Object[0]);
-				
-				return true;
+				if (isProtected) {
+					if (settings.sendDebugMessages)
+						commandManager.notifyAdmins(server, 0, "Protect " + entity.getEntityName() + " " + action + " " + x + "," + y + "," + z + (player == null ? "" : " from " + player.username + " by " + area.data.name + "#" + area.data.getAreaIndex(area)), new Object[0]);
+					
+					return true;
+				}
 			}
 		}
 		
@@ -249,75 +253,82 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			
 			if (settings != null) {
 				
+				boolean isProtected = false;
+				
 				switch (action) {
 					case EXPLODE:
-						if (!settings.protectExplosions)
-							return false;
+						if (settings.protectExplosions)
+							isProtected = true;
 						break;
 						
 					case IS_FLAMMABLE:
 					case BURN:
 					case FIRE_SPREAD_ATTEMPT:
-						if (!settings.protectBurning)
-							return false;
+						if (settings.protectBurning)
+							isProtected = true;
 						break;
 						
 					case CAN_PUSH:
 						// Protect against pistons from outside the area.
 						if (event instanceof BlockEvent) {
 							BlockEvent blockEvent = (BlockEvent)event;
-							if (area.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
-								return false;
+							
+							// Check all areas for the ZoneSettings.
+							for (Area zoneArea : area.data.areas) {
+								if (!zoneArea.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
+									isProtected = true;
+									break;
+								}
 							}
 						}
 						break;
 						
 					default:
-						if (settings.protectEdits == ZoneSettings.PERMISSION.OFF)
-							return false;
-						
-						if (action == ACTION.PLACE) {
-							// Allow minecarts to be placed on rails.
-							if (block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart) {
-								return false;
-							}
-						}
-						
-						if (player != null) {
-							if (action == ACTION.ACTIVATE) {
-								if ((block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate)
-										&& settings.isPlayerAllowed(player.username, settings.allowDoors))
-									return false;
+						if (settings.protectEdits != ZoneSettings.PERMISSION.OFF) {
+							isProtected = true;
+							
+							if (player != null) {
+								// Allow minecarts to be placed on rails.
+								if (isProtected && action == ACTION.PLACE && block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart)
+									isProtected = false;
 								
-								if (block instanceof BlockContainer && settings.isPlayerAllowed(player.username, settings.allowContainers))
-									return false;
+								if (isProtected && action == ACTION.ACTIVATE) {
+									if ((block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate)
+											&& settings.isPlayerAllowed(player.username, settings.allowDoors))
+										isProtected = false;
+									
+									else if (block instanceof BlockContainer && settings.isPlayerAllowed(player.username, settings.allowContainers))
+										isProtected = false;
+								}
+							
+								if (isProtected && settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
+									isProtected = false;
 							}
-						
-							if (settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
-								return false;
 						}
 						break;
 					
 				}
 				
-				if (settings.sendDebugMessages) {
-					if (itemStack != null && event instanceof PlayerBlockEvent) {
-						itemStack = ((PlayerBlockEvent)event).getItemStack();
+				if (isProtected) {
+					if (settings.sendDebugMessages) {
+						if (itemStack != null && event instanceof PlayerBlockEvent) {
+							itemStack = ((PlayerBlockEvent)event).getItemStack();
+						}
+						
+						String message = "Protect" 
+								+ " " + action
+								+ (block == null ? "" : " " + block.getBlockName())
+								+ (itemStack == null ? "" : " " + itemStack.getItemName())
+								+ " " + x + "," + y + "," + z + " by " + area.data.name + "#" + area.data.getAreaIndex(area);
+						
+						if (player == null)
+							commandManager.notifyAdmins(server, 0, message + (player == null ? "" : " from " + player.username), new Object[0]);
+						else
+							player.sendChatToPlayer(message);
 					}
 					
-					String message = "Protect" 
-							+ " " + action
-							+ (block == null ? "" : " " + block.getBlockName())
-							+ (itemStack == null ? "" : " " + itemStack.getItemName())
-							+ " " + x + "," + y + "," + z;
-					
-					if (player == null)
-						commandManager.notifyAdmins(server, 0, message + (player == null ? "" : " by " + player.username), new Object[0]);
-					else
-						player.sendChatToPlayer(message);
+					return true;
 				}
-				
-				return true;
 			}
 		}
 		
