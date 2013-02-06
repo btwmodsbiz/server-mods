@@ -421,6 +421,18 @@ public class ZoneSettings {
 	public List<String> playersAsList() {
 		return Arrays.asList(whitelist.toArray(new String[whitelist.size()]));
 	}
+	
+	public int getAreaIndex(Area area) {
+		if (area.data == this) {
+			for (int i = 0; i < areas.size(); i++) {
+				Area item = areas.get(i);
+				if (item.equals(area))
+					return i;
+			}
+		}
+		
+		return -1;
+	}
 
 	@Override
 	public int hashCode() {
