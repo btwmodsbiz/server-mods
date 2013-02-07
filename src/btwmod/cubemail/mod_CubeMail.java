@@ -1,18 +1,13 @@
 package btwmod.cubemail;
 
 import java.io.UnsupportedEncodingException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.minecraft.src.Block;
 import net.minecraft.src.EntityPlayerMP;
 import net.minecraft.src.Item;
-import net.minecraft.src.ItemEditableBook;
 import net.minecraft.src.ItemFood;
 import net.minecraft.src.ItemStack;
-import net.minecraft.src.NBTTagCompound;
-import net.minecraft.src.NBTTagList;
-import net.minecraft.src.NBTTagString;
 import net.minecraft.src.TileEntityChest;
 import net.minecraft.src.World;
 import btwmods.IMod;
@@ -88,7 +83,7 @@ public class mod_CubeMail implements IMod, IPlayerBlockListener {
 			ItemStack book = inventory.getStackInSlot(i);
 			//System.out.println(book == null ? "null" : book.getItemName());
 			if (book != null && book.getItem() == Item.writtenBook) {
-				BookData bookData = getBookData(book);
+				BookData bookData = BookData.fromItemStack(book);
 				if (bookData != null && sendBook(bookData)) {
 					System.out.println("Sent book: " + bookData.title + " by " + bookData.author);
 					foundValidBook = true;
@@ -98,31 +93,6 @@ public class mod_CubeMail implements IMod, IPlayerBlockListener {
 		}
 		
 		return foundValidBook;
-	}
-	
-	private static BookData getBookData(ItemStack book) {
-		NBTTagCompound tagCompound = book.getTagCompound();
-		if (ItemEditableBook.validBookTagContents(tagCompound)) {
-			NBTTagString title = (NBTTagString)tagCompound.getTag("title");
-			NBTTagString author = (NBTTagString)tagCompound.getTag("author");
-			NBTTagList pages = (NBTTagList)tagCompound.getTag("pages");
-			if (pages.tagCount() > 0) {
-				NBTTagString firstPage = (NBTTagString)pages.tagAt(0);
-				if (firstPage != null && firstPage.data != null) {
-					Matcher matcher = toLine.matcher(firstPage.data.trim());
-					if (matcher.find(0) && matcher.group(1) != null) {
-						String[] pagesArr = new String[pages.tagCount()];
-						for (int i = 0, count = pages.tagCount(); i < count; i++) {
-							pagesArr[i] = ((NBTTagString)pages.tagAt(i)).data;
-						}
-						
-						return new BookData(matcher.group(1), title.data, author.data, pagesArr);
-					}
-				}
-			}
-		}
-		
-		return null;
 	}
 	
 	private boolean sendBook(BookData bookData) {

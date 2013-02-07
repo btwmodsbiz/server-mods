@@ -1,6 +1,13 @@
 package btwmod.cubemail;
 
 import java.io.UnsupportedEncodingException;
+import java.util.regex.Matcher;
+
+import net.minecraft.src.ItemEditableBook;
+import net.minecraft.src.ItemStack;
+import net.minecraft.src.NBTTagCompound;
+import net.minecraft.src.NBTTagList;
+import net.minecraft.src.NBTTagString;
 
 import btwmods.util.Base64;
 
@@ -94,5 +101,34 @@ public class BookData {
 			throw new IllegalArgumentException("pages value was not found");
 		
 		return new BookData(to, title, author, pages);
+	}
+	
+	public static BookData fromItemStack(ItemStack itemStack) {
+		NBTTagCompound tagCompound = itemStack.getTagCompound();
+		if (ItemEditableBook.validBookTagContents(tagCompound)) {
+			
+			NBTTagString title = (NBTTagString)tagCompound.getTag("title");
+			NBTTagString author = (NBTTagString)tagCompound.getTag("author");
+			NBTTagList pages = (NBTTagList)tagCompound.getTag("pages");
+			
+			if (pages.tagCount() > 0) {
+				NBTTagString firstPage = (NBTTagString)pages.tagAt(0);
+				if (firstPage != null && firstPage.data != null) {
+					
+					Matcher matcher = mod_CubeMail.toLine.matcher(firstPage.data.trim());
+					if (matcher.find(0) && matcher.group(1) != null) {
+						
+						String[] pagesArr = new String[pages.tagCount()];
+						for (int i = 0, count = pages.tagCount(); i < count; i++) {
+							pagesArr[i] = ((NBTTagString)pages.tagAt(i)).data;
+						}
+						
+						return new BookData(matcher.group(1), title.data, author.data, pagesArr);
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 }
