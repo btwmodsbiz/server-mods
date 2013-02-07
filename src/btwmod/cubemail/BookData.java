@@ -19,11 +19,11 @@ public class BookData {
 	
 	public String serialize() throws UnsupportedEncodingException {
 		StringBuilder sb = new StringBuilder()
-			.append("to:").append(Base64.encodeToString(toUsername.getBytes("UTF-8"), false))
+			.append("to:").append(toUsername)
 			.append(";")
 			.append("title:").append(Base64.encodeToString(title.getBytes("UTF-8"), false))
 			.append(";")
-			.append("author").append(Base64.encodeToString(author.getBytes("UTF-8"), false))
+			.append("author").append(author)
 			.append(";")
 			.append("pages:");
 		
@@ -52,7 +52,11 @@ public class BookData {
 					to = pair[1];
 				}
 				else if (pair[0].equalsIgnoreCase("title")) {
-					title = pair[1];
+					try {
+						title = new String(Base64.decode(pair[1]), "UTF-8");
+					} catch (UnsupportedEncodingException e) {
+						throw new IllegalArgumentException("Invalid UTF-8 characters in title");
+					}
 				}
 				else if (pair[0].equalsIgnoreCase("author")) {
 					author = pair[1];
@@ -62,9 +66,17 @@ public class BookData {
 					
 					if (pages.length == 0)
 						throw new IllegalArgumentException("Pages has zero length");
+					
+					for (int p = 0; p < pages.length; p++) {
+						try {
+							pages[p] = new String(Base64.decode(pages[p]), "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							throw new IllegalArgumentException("Invalid UTF-8 characters in page " + (i+1));
+						}
+					}
 				}
 				else {
-					throw new IllegalArgumentException("Bad value pair name: " + pair[0]);
+					throw new IllegalArgumentException("Unknown value pair name: " + pair[0]);
 				}
 			}
 		}
