@@ -84,7 +84,7 @@ public class mod_CubeMail implements IMod, IPlayerBlockListener {
 			//System.out.println(book == null ? "null" : book.getItemName());
 			if (book != null && book.getItem() == Item.writtenBook) {
 				BookData bookData = BookData.fromItemStack(book);
-				if (bookData != null && sendBook(bookData)) {
+				if (bookData != null && isValidUsername(bookData.toUsername) && sendBook(bookData)) {
 					System.out.println("Sent book: " + bookData.title + " by " + bookData.author);
 					foundValidBook = true;
 					//inventory.setInventorySlotContents(i, null);
@@ -93,6 +93,11 @@ public class mod_CubeMail implements IMod, IPlayerBlockListener {
 		}
 		
 		return foundValidBook;
+	}
+	
+	@SuppressWarnings({ "static-method", "unused" })
+	protected boolean isValidUsername(String toUsername) {
+		return true;
 	}
 	
 	private boolean sendBook(BookData bookData) {
