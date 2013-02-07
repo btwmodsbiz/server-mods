@@ -52,7 +52,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	
 	public enum ACTION {
 		PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY,
-		CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT, CAN_PUSH
+		CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT, CAN_PUSH, TRAMPLE_FARMLAND
 	};
 
 	private Settings data;
@@ -450,6 +450,11 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		if (event.getType() == EntityEvent.TYPE.IS_ENTITY_INVULNERABLE) {
 			if (isProtectedEntity(ACTION.IS_ENTITY_INVULNERABLE, null, event.getEntity(), event.getX(), event.getY(), event.getZ())) {
 				event.markIsInvulnerable();
+			}
+		}
+		else if (event.getType() == EntityEvent.TYPE.TRAMPLE_FARMLAND_ATTEMPT) {
+			if (isProtectedBlock(event, ACTION.TRAMPLE_FARMLAND, null, Block.tilledField, event.getWorld(), event.getBlockX(), event.getBlockY(), event.getBlockZ())) {
+				event.markNotAllowed();
 			}
 		}
 		/*else if (event.getType() == EntityEvent.TYPE.EXPLODE_ATTEMPT) {
