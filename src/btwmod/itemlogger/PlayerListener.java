@@ -6,6 +6,7 @@ import java.util.Map;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.InventoryCraftResult;
 import net.minecraft.src.InventoryPlayer;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.MathHelper;
@@ -110,7 +111,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 				break;
 				
 			case REMOVE:
-				if (event.slotIsContainer()) {
+				if (event.slotIsContainer() || event.getSlot().inventory instanceof InventoryCraftResult) {
 					withdrawn = event.getHeldItems();
 					withdrawnQuantity = event.getQuantity();
 				}
