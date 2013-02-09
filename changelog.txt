@@ -1,3 +1,19 @@
+Version 4.55.0 (vMC 1.4.7 BTW 4.55)
+
+  - Added protection for farmland being trampled to Protected Zones.
+  
+  - Added helper method to ZoneSettings to determine the index of an area.
+  
+  - Changed mod_ProtectedZones so some methods are protected. Also separated
+    out some initial checks to make them easier to read. Note: Ignore
+    whitespace to see real changes.
+  
+  - Fixed Protected Zones so it does not stop checking for protection after
+    processing the first matching area.
+
+  - Fixed bug in Protected Zones where protectEntities could not be set via
+    /zone.
+
 Version 4.54.1-c (vMC 1.4.7 BTW 4.54)
 
   - Removed debug message from Protected Zones.
