@@ -161,7 +161,10 @@ public class SQLLogger implements ILogger, ITickListener {
 
 	@Override
 	public void containerClosed(ContainerEvent event, EntityPlayer player) {
-		
+		Date now = new Date();
+		mod.queueWrite(outputFile, buildStatement("containers",
+				"eventdate, eventtime, actiontype, username, container",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "close", player.username, event.getContainer().getClass().getSimpleName() }));
 	}
 
 	@Override
