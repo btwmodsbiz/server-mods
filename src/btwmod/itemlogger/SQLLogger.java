@@ -186,7 +186,7 @@ public class SQLLogger implements ILogger, ITickListener {
 					(lastContainerOpened == null ? null : lastContainerOpened.x),
 					(lastContainerOpened == null ? null : lastContainerOpened.y),
 					(lastContainerOpened == null ? null : lastContainerOpened.z),
-					mod.getFullItemStackName(withdrawn),
+					mod.getUniqueItemStackName(withdrawn),
 					withdrawnQuantity,
 					container.getClass().getSimpleName(),
 					inventory.getInvName()
@@ -208,7 +208,7 @@ public class SQLLogger implements ILogger, ITickListener {
 					(lastContainerOpened == null ? null : lastContainerOpened.x),
 					(lastContainerOpened == null ? null : lastContainerOpened.y),
 					(lastContainerOpened == null ? null : lastContainerOpened.z),
-					mod.getFullItemStackName(deposited),
+					mod.getUniqueItemStackName(deposited),
 					depositedQuantity,
 					container.getClass().getSimpleName(),
 					inventory.getInvName()
