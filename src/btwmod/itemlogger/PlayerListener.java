@@ -57,6 +57,11 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 			case REMOVED:
 				logger.containerRemoved(event, player, event.getBlock(), event.getWorld().provider.dimensionId, event.getX(), event.getY(), event.getZ());
 				break;
+				
+			case CLOSED:
+				lastContainerOpened.remove(event.getPlayer().username.toLowerCase());
+				logger.containerClosed(event, player);
+				break;
 		}
 	}
 
@@ -160,6 +165,8 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 				break;
 			case REMOVE_ATTEMPT:
 				logger.playerRemove(event, event.getPlayer(), event.getPlayer().dimension, event.getX(), event.getY(), event.getZ());
+				break;
+			case GET_ENDERCHEST_INVENTORY:
 				break;
 		}
 	}

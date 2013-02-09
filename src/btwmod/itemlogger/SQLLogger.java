@@ -160,6 +160,11 @@ public class SQLLogger implements ILogger, ITickListener {
 	}
 
 	@Override
+	public void containerClosed(ContainerEvent event, EntityPlayer player) {
+		
+	}
+
+	@Override
 	public void containerRemoved(ContainerEvent event, EntityPlayer player, Block block, int dimension, int x, int y, int z) {
 		Date now = new Date();
 		mod.queueWrite(outputFile, buildStatement("containers",
