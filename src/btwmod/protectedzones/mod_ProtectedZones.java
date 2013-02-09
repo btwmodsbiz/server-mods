@@ -21,6 +21,7 @@ import net.minecraft.src.EntityMooshroom;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityVillager;
 import net.minecraft.src.FCBlockAnvil;
+import net.minecraft.src.FCBlockBloodMoss;
 import net.minecraft.src.FCBlockInfernalEnchanter;
 import net.minecraft.src.FCEntityCanvas;
 import net.minecraft.src.Facing;
@@ -44,6 +45,7 @@ import btwmods.player.PlayerBlockEvent;
 import btwmods.player.IPlayerBlockListener;
 import btwmods.util.Area;
 import btwmods.world.BlockEvent;
+import btwmods.world.BlockEventBase;
 import btwmods.world.EntityEvent;
 import btwmods.world.IBlockListener;
 import btwmods.world.IEntityListener;
@@ -51,7 +53,7 @@ import btwmods.world.IEntityListener;
 public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener, IEntityListener {
 	
 	public enum ACTION {
-		PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY,
+		PLACE, DIG, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY,
 		CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT, CAN_PUSH, TRAMPLE_FARMLAND
 	};
 
@@ -287,7 +289,12 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						if (settings.protectEdits != ZoneSettings.PERMISSION.OFF) {
 							isProtected = true;
 							
-							if (player != null) {
+							// Allow immature bloodmoss to be destroyed.
+							if ((action == ACTION.DIG || action == ACTION.CHECK_PLAYER_EDIT) && block instanceof FCBlockBloodMoss && event instanceof BlockEventBase && (((BlockEventBase)event).getMetadata() & 7) < 7) {
+								isProtected = false;
+							}
+							
+							if (isProtected && player != null) {
 								// Allow minecarts to be placed on rails.
 								if (isProtected && action == ACTION.PLACE && block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart)
 									isProtected = false;
