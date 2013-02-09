@@ -1,3 +1,7 @@
+Version 4.55.1-b (vMC 1.4.7 BTW 4.55)
+
+  - Changed Protected Zones so immature groth is never protected.
+
 Version 4.55.1 (vMC 1.4.7 BTW 4.55)
 
   - Added missing tab completion to /chatalias
