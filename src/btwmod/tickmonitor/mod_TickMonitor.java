@@ -2,10 +2,7 @@ package btwmod.tickmonitor;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
@@ -23,24 +20,19 @@ import btwmods.PlayerAPI;
 import btwmods.StatsAPI;
 import btwmods.io.Settings;
 import btwmods.measure.Average;
-import btwmods.network.CustomPacketEvent;
-import btwmods.network.ICustomPacketListener;
 import btwmods.player.IPlayerInstanceListener;
 import btwmods.player.PlayerInstanceEvent;
 import btwmods.stats.IStatsListener;
 import btwmods.stats.StatsEvent;
-import btwmods.stats.data.BasicStats;
-import btwmods.stats.data.BasicStatsComparator;
 import btwmods.stats.data.BasicStatsMap;
 import btwmods.util.BasicFormatter;
 import btwmods.Util;
 
-public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListener, IPlayerInstanceListener {
+public class mod_TickMonitor implements IMod, IStatsListener, IPlayerInstanceListener {
 
 	private static int topNumber = 20;
 	private static boolean includeHistory = false;
 	private static String publicLink = null;
-	private static File htmlFile = null; //new File(new File("."), "stats.html");
 	private static File jsonFile = null; //new File(new File("."), "stats.txt");
     private static long tooLongWarningTime = 1000L;
     private static final long tooLongWarningTimeMin = 250L;
@@ -89,9 +81,6 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 		// Load settings
 		if (settings.hasKey("publicLink") && !(new File(settings.get("publicLink")).isDirectory())) {
 			publicLink = settings.get("publicLink");
-		}
-		if (settings.hasKey("htmlFile") && !(new File(settings.get("htmlFile")).isDirectory())) {
-			htmlFile = new File(settings.get("htmlFile"));
 		}
 		if (settings.hasKey("jsonFile") && !(new File(settings.get("jsonFile")).isDirectory())) {
 			jsonFile = new File(settings.get("jsonFile"));
@@ -159,27 +148,12 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 			// Debugging loop to ramp up CPU usage by the thread.
 			//for (int i = 0; i < 20000; i++) new String(new char[10000]).replace('\0', 'a');
 			
-			String html = null;
-			if (htmlFile != null)
-				html = createHtml(event, timeSinceLastTick);
-			
 			String json = null;
 			if (jsonFile != null)
 				json = createJson(event, timeSinceLastTick, numTicks, currentTime);
 
 			long startWriteTime = System.currentTimeMillis();
 			long startWriteNano = System.nanoTime();
-			
-			if (htmlFile != null) {
-				try {
-					FileWriter htmlWriter = new FileWriter(htmlFile);
-					htmlWriter.write(html);
-					htmlWriter.close();
-				}
-				catch (Throwable e) {
-					ModLoader.outputError(getName() + " failed to write to " + htmlFile.getPath() + ": " + e.getMessage());
-				}
-			}
 			
 			if (jsonFile != null) {
 				try {
@@ -229,249 +203,10 @@ public class mod_TickMonitor implements IMod, IStatsListener, ICustomPacketListe
 		
 		return gson.toJson(jsonObj).replace("_____JSONTIME_____", Util.DECIMAL_FORMAT_3.format((jsonTime = System.nanoTime() - jsonTime) * 1.0E-6D));
 	}
-	
-	private String createHtml(StatsEvent event, long timeSinceLastTick) {
-		StringBuilder html = new StringBuilder("<html><head><title>Minecraft Server Stats</title><meta http-equiv=\"refresh\" content=\"2\"></head><body><h1>Minecraft Server Stats</h1>");
-		
-		html.append("<table border=\"0\"><tbody>"); 
-		
-		html.append("<tr><th align=\"right\">Updated:<th><td>").append(BasicFormatter.dateFormat.format(new Date())).append("</td></tr>");
-		
-		if (event.serverStats.lastTickEnd >= 0) {
-			html.append("<tr><th align=\"right\">Last Tick:<th><td>").append(timeSinceLastTick >= 1000 ? "Over " + (timeSinceLastTick / 1000) + " seconds" : timeSinceLastTick + "ms").append(" ago.</td></tr>");
-		}
-		
-		html.append("<tr><th align=\"right\">Average StatsAPI Thread Time:<th><td>").append(Util.DECIMAL_FORMAT_3.format(event.serverStats.statsThreadTime.getAverage() * 1.0E-6D)).append(" ms</td></tr>");
-		html.append("<tr><th align=\"right\">Average StatsAPI Polled:<th><td>").append(Util.DECIMAL_FORMAT_3.format(event.serverStats.statsThreadQueueCount.getAverage())).append("</td></tr>");
-		
-		html.append("<tr><th align=\"right\">Average Tick Monitor Time:<th><td>");
-		if (statsActionTime.getTick() == 0)
-			html.append("...");
-		else
-			html.append(Util.DECIMAL_FORMAT_3.format(statsActionTime.getAverage() * 1.0E-6D)).append("ms (" + (int)(statsActionIOTime.getAverage() * 100 / statsActionTime.getAverage()) + "% IO)");
-		html.append("</td></tr>");
-		
-		html.append("<tr><td colspan=\"2\" style=\"height: 16px\"></td></tr>");
-		
-		html.append("<tr><th align=\"right\">Tick Num:<th><td>").append(event.tickCounter);
-		if (lastTickCounter >= 0) html.append(" (~").append(Util.DECIMAL_FORMAT_3.format(ticksPerSecond.getAverage() / 100D)).append("/sec)");
-		html.append("</td></tr>");
-		
-		html.append("<tr><th align=\"right\">Average Full Tick:<th><td>").append(Util.DECIMAL_FORMAT_3.format(event.serverStats.tickTime.getAverage() * 1.0E-6D)).append(" ms</td></tr>");
-		
-		html.append("<tr><td colspan=\"2\" style=\"height: 16px\"></td></tr>");
-		
-		double worldsTotal = 0;
-		for (int i = 0; i < event.worldStats.length; i++) {
-			
-			worldsTotal += event.worldStats[i].worldTickTime.getAverage();
-			
-			html.append("<tr><th align=\"right\">World ").append(i).append(" Averages:<th><td>")
-				.append(Util.DECIMAL_FORMAT_3.format(event.worldStats[i].worldTickTime.getAverage() * 1.0E-6D) + "ms");
-			
-			if (StatsAPI.detailedMeasurementsEnabled)
-				html.append(" (")
-					.append("E: ").append(Util.DECIMAL_FORMAT_3.format(event.worldStats[i].entities.getAverage() * 1.0E-6D)).append("ms")
-					.append(" + M: ").append(Util.DECIMAL_FORMAT_3.format(event.worldStats[i].mobSpawning.getAverage() * 1.0E-6D)).append("ms")
-					.append(" + B: ").append(Util.DECIMAL_FORMAT_3.format(event.worldStats[i].blockTick.getAverage() * 1.0E-6D)).append("ms")
-					.append(" + W: ").append(Util.DECIMAL_FORMAT_3.format(event.worldStats[i].weather.getAverage() * 1.0E-6D)).append("ms")
-					.append(" + T: ").append(Util.DECIMAL_FORMAT_3.format(event.worldStats[i].timeSync.getAverage() * 1.0E-6D)).append("ms")
-					.append(" + CS: ").append(Util.DECIMAL_FORMAT_3.format(event.worldStats[i].buildActiveChunkSet.getAverage() * 1.0E-6D)).append("ms")
-					.append(" + L: ").append(Util.DECIMAL_FORMAT_3.format(event.worldStats[i].checkPlayerLight.getAverage() * 1.0E-6D)).append("ms")
-					.append(")");
-			
-			html.append("</td></tr>");
-			
-			html.append("<tr><th align=\"right\">&nbsp;<th><td>")
-				.append("Chunks: ")
-				.append((int)event.worldStats[i].loadedChunks.getLatest()).append(" loaded, ")
-				.append(event.worldStats[i].id2ChunkMap).append(" cached, ")
-				.append((int)event.worldStats[i].droppedChunksSet.getAverage()).append(" dropped");
-			
-			if (StatsAPI.detailedMeasurementsEnabled)
-				html.append(" | ").append((int)event.worldStats[i].measurementQueue.getAverage()).append(" measurements per tick");
-			
-			html.append("</td></tr>");
-		}
-
-		html.append("<tr><th align=\"right\">Worlds Total:<th><td>").append(Util.DECIMAL_FORMAT_3.format(worldsTotal * 1.0E-6D)).append(" ms (" + (int)(worldsTotal / event.serverStats.tickTime.getAverage() * 100) + "% of full tick)</td></tr>");
-		
-		html.append("<tr><td colspan=\"2\" style=\"height: 16px\"></td></tr>");
-		
-		html.append("<tr><th align=\"right\">Average Received Packet Count:<th><td>").append(Util.DECIMAL_FORMAT_3.format(event.serverStats.receivedPacketCount.getAverage())).append("</td></tr>");
-		html.append("<tr><th align=\"right\">Average Sent Packet Count:<th><td>").append(Util.DECIMAL_FORMAT_3.format(event.serverStats.sentPacketCount.getAverage())).append("</td></tr>");
-		
-		html.append("<tr><td colspan=\"2\" style=\"height: 16px\"></td></tr>");
-
-		html.append("<tr><th align=\"right\">Average Received Packet Size:<th><td>").append((int)event.serverStats.receivedPacketSize.getAverage()).append(" bytes</td></tr>");
-		html.append("<tr><th align=\"right\">Average Sent Packet Size:<th><td>").append((int)event.serverStats.sentPacketSize.getAverage()).append(" bytes</td></tr>");
-		
-		html.append("</tbody></table>");
-		
-		if (StatsAPI.detailedMeasurementsEnabled) {
-			for (int i = 0; i < event.worldStats.length; i++) {
-				outputWorldDetails(event, html, i);
-			}
-		}
-
-		html.append("</body></html>");
-		
-		return html.toString();
-	}
-	
-	private void outputWorldDetails(StatsEvent event, StringBuilder html, int world) {
-		
-		List<Map.Entry<ChunkCoordIntPair, BasicStats>> chunkEntries = new ArrayList<Map.Entry<ChunkCoordIntPair, BasicStats>>(event.worldStats[world].chunkStats.entrySet());
-
-		html.append("<h2>World ").append(world).append(" Top " + topNumber + ":</h2>");
-		
-		html.append("<table border=\"0\"><thead><tr><th>Chunks By Tick Time</th><th>Chunks By Entity Count</th><th>Entities By Tick Time</th><th>Entities By Count</th><th>TileEntities By Tick Time</th></tr></thead><tbody><tr><td valign=\"top\">");
-
-		{
-			Collections.sort(chunkEntries, new BasicStatsComparator<ChunkCoordIntPair>(BasicStatsComparator.Stat.TICKTIME, true));
-			html.append("<table border=\"0\"><thead><tr><th>Chunk</th><th>Tick Time</th><th>Entities</th></tr></thead><tbody>");
-			double chunksTotal = 0;
-			int entitiesTotal = 0;
-			int displayed = 0;
-			for (int i = 0; i < chunkEntries.size(); i++) {
-				if (chunkEntries.get(i).getValue().tickTime.getTotal() != 0 && displayed <= topNumber) {
-					displayed++;
-					html.append("<tr><td>");
-					
-					if (hideChunkCoords)
-						html.append("(hidden)");
-					else
-						html.append(chunkEntries.get(i).getKey().chunkXPos).append("/").append(chunkEntries.get(i).getKey().chunkZPos);
-					
-					html.append("</td><td>").append(Util.DECIMAL_FORMAT_3.format(chunkEntries.get(i).getValue().tickTime.getAverage() * 1.0E-6D))
-						.append(" ms</td><td>").append(chunkEntries.get(i).getValue().count)
-						.append("</td></tr>");
-				}
-
-				chunksTotal += chunkEntries.get(i).getValue().tickTime.getAverage();
-				entitiesTotal += chunkEntries.get(i).getValue().count;
-			}
-
-			html.append("<tr><td>Totals</td><td>").append(Util.DECIMAL_FORMAT_3.format(chunksTotal * 1.0E-6D)).append("ms</td><td>").append(entitiesTotal).append("</td></tr>");
-			html.append("</tbody></table>");
-		}
-		
-		html.append("</td><td valign=\"top\">");
-
-		{
-			Collections.sort(chunkEntries, new BasicStatsComparator<ChunkCoordIntPair>(BasicStatsComparator.Stat.COUNT, true));
-			html.append("<table border=\"0\"><thead><tr><th>Chunk</th><th>Tick Time</th><th>Entities</th></tr></thead><tbody>");
-			double chunksTotal = 0;
-			int displayed = 0;
-			int entitiesTotal = 0;
-			for (int i = 0; i < chunkEntries.size(); i++) {
-				if (chunkEntries.get(i).getValue().tickTime.getTotal() != 0 && displayed <= topNumber) {
-					displayed++;
-					html.append("<tr><td>");
-					
-					if (hideChunkCoords)
-						html.append("(hidden)");
-					else
-						html.append(chunkEntries.get(i).getKey().chunkXPos).append("/").append(chunkEntries.get(i).getKey().chunkZPos);
-					
-					html.append("</td><td>").append(Util.DECIMAL_FORMAT_3.format(chunkEntries.get(i).getValue().tickTime.getAverage() * 1.0E-6D))
-						.append(" ms</td><td>").append(chunkEntries.get(i).getValue().count)
-						.append("</td></tr>");
-				}
-
-				chunksTotal += chunkEntries.get(i).getValue().tickTime.getAverage();
-				entitiesTotal += chunkEntries.get(i).getValue().count;
-			}
-
-			html.append("<tr><td>Totals</td><td>").append(Util.DECIMAL_FORMAT_3.format(chunksTotal * 1.0E-6D)).append("ms</td><td>").append(entitiesTotal).append("</td></tr>");
-			html.append("</tbody></table>");
-		}
-
-		List<Map.Entry<String, BasicStats>> entityEntries = new ArrayList<Map.Entry<String, BasicStats>>(event.worldStats[world].entityStats.entrySet());
-		
-		html.append("</td><td valign=\"top\">");
-
-		{
-			Collections.sort(entityEntries, new BasicStatsComparator<String>(BasicStatsComparator.Stat.TICKTIME, true));
-			html.append("<table border=\"0\"><thead><tr><th>Entity</th><th>Tick Time</th><th>Count</th></tr></thead><tbody>");
-			double entitiesTotal = 0;
-			int displayed = 0;
-			for (int i = 0; i < entityEntries.size(); i++) {
-				if (entityEntries.get(i).getValue().tickTime.getTotal() != 0 && displayed <= topNumber) {
-					displayed++;
-					html.append("<tr><td>").append(entityEntries.get(i).getKey())
-							.append("</td><td>").append(Util.DECIMAL_FORMAT_3.format(entityEntries.get(i).getValue().tickTime.getAverage() * 1.0E-6D))
-							.append(" ms</td><td>").append(entityEntries.get(i).getValue().count)
-							.append("</td></tr>");
-				}
-
-				entitiesTotal += entityEntries.get(i).getValue().tickTime.getAverage();
-			}
-
-			html.append("<tr><td>Totals</td><td colspan=\"2\">").append(Util.DECIMAL_FORMAT_3.format(entitiesTotal * 1.0E-6D)).append("ms</td></tr>");
-			html.append("</tbody></table>");
-		}
-		
-		html.append("</td><td valign=\"top\">");
-
-		{
-			Collections.sort(entityEntries, new BasicStatsComparator<String>(BasicStatsComparator.Stat.COUNT, true));
-			html.append("<table border=\"0\"><thead><tr><th>Entity</th><th>Tick Time</th><th>Count</th></tr></thead><tbody>");
-			double entitiesTotal = 0;
-			int displayed = 0;
-			for (int i = 0; i < entityEntries.size(); i++) {
-				if (entityEntries.get(i).getValue().tickTime.getTotal() != 0 && displayed <= topNumber) {
-					displayed++;
-					html.append("<tr><td>").append(entityEntries.get(i).getKey())
-							.append("</td><td>").append(Util.DECIMAL_FORMAT_3.format(entityEntries.get(i).getValue().tickTime.getAverage() * 1.0E-6D))
-							.append(" ms</td><td>").append(entityEntries.get(i).getValue().count)
-							.append("</td></tr>");
-				}
-
-				entitiesTotal += entityEntries.get(i).getValue().tickTime.getAverage();
-			}
-
-			html.append("<tr><td>Totals</td><td colspan=\"2\">").append(Util.DECIMAL_FORMAT_3.format(entitiesTotal * 1.0E-6D)).append("ms</td></tr>");
-			html.append("</tbody></table>");
-		}
-
-		List<Map.Entry<Class, BasicStats>> tileEntityEntries = new ArrayList<Map.Entry<Class, BasicStats>>(event.worldStats[world].tileEntityStats.entrySet());
-		
-		html.append("</td><td valign=\"top\">");
-
-		{
-			Collections.sort(tileEntityEntries, new BasicStatsComparator<Class>(BasicStatsComparator.Stat.TICKTIME, true));
-			html.append("<table border=\"0\"><thead><tr><th>Tile Entity</th><th>Tick Time</th><th>Count</th></tr></thead><tbody>");
-			double entitiesTotal = 0;
-			int displayed = 0;
-			for (int i = 0; i < tileEntityEntries.size(); i++) {
-				if (tileEntityEntries.get(i).getValue().tickTime.getTotal() != 0 && displayed <= topNumber) {
-					displayed++;
-					html.append("<tr><td>").append(tileEntityEntries.get(i).getKey().getSimpleName())
-							.append("</td><td>").append(Util.DECIMAL_FORMAT_3.format(tileEntityEntries.get(i).getValue().tickTime.getAverage() * 1.0E-6D))
-							.append(" ms</td><td>").append(tileEntityEntries.get(i).getValue().count)
-							.append("</td></tr>");
-				}
-
-				entitiesTotal += tileEntityEntries.get(i).getValue().tickTime.getAverage();
-			}
-
-			html.append("<tr><td>Totals</td><td colspan=\"2\">").append(Util.DECIMAL_FORMAT_3.format(entitiesTotal * 1.0E-6D)).append("ms</td></tr>");
-			html.append("</tbody></table>");
-		}
-
-		html.append("</td></tr></tbody></table>");
-	}
 
 	@Override
 	public IMod getMod() {
 		return this;
-	}
-
-	@Override
-	public void onCustomPacket(CustomPacketEvent event) {
-		// TODO: remove debug throw
-		throw new IllegalArgumentException();
 	}
 
 	@Override
