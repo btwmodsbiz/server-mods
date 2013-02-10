@@ -1,10 +1,13 @@
 package btwmod.mobcleaner;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.EntityLiving;
+import net.minecraft.src.EnumCreatureType;
 import net.minecraft.src.World;
 
 import btwmods.CommandsAPI;
@@ -14,10 +17,12 @@ import btwmods.ServerAPI;
 import btwmods.Util;
 import btwmods.WorldAPI;
 import btwmods.io.Settings;
+import btwmods.world.ISpawnLivingListener;
 import btwmods.world.IWorldTickListener;
+import btwmods.world.SpawnLivingEvent;
 import btwmods.world.WorldTickEvent;
 
-public class mod_MobCleaner implements IMod, IWorldTickListener {
+public class mod_MobCleaner implements IMod, IWorldTickListener, ISpawnLivingListener {
 	
 	public static final int MAX_ENTITIES_CHECKED = 200;
 	private static Random rnd = new Random();
@@ -116,5 +121,23 @@ public class mod_MobCleaner implements IMod, IWorldTickListener {
 		}
 		
 		return true;
+	}
+
+	@Override
+	public void onSpawnLivingAction(SpawnLivingEvent event) {
+		if (event.creatureType == EnumCreatureType.waterCreature) {
+			List<EntityLiving> alive = new ArrayList<EntityLiving>();
+			for (EntityLiving entity : event.entities)
+				if (!entity.isDead)
+					alive.add(entity);
+			
+			int maxKeep = (event.validChunks * event.creatureType.getMaxNumberOfCreature() / 256) + 10 - event.oldEntityCount;
+			if (maxKeep < alive.size()) {
+				Collections.shuffle(alive);
+				for (int i = maxKeep; i < alive.size(); i++) {	 
+					alive.get(i).setDead();
+				}
+			}
+		}
 	}
 }
