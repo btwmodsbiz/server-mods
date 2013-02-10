@@ -1,3 +1,9 @@
+Version 4.56.0 (vMC 1.4.7 BTW 4.56)
+
+  - Changed /clearentities so it also clears bats and squid.
+  
+  - Removed old code from Tick Monitor.
+
 Version 4.55.2 (vMC 1.4.7 BTW 4.55)
 
   - Changed Mod Cleaner to destroy water creatures if too many spawned.
