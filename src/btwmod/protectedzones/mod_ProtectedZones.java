@@ -311,6 +311,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 									else if (block instanceof BlockContainer && settings.isPlayerAllowed(player.username, settings.allowContainers))
 										isProtected = false;
 								}
+								
+								if (isProtected && settings.allowOps && isOp(player.username))
+									isProtected = false;
 							
 								if (isProtected && settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
 									isProtected = false;
