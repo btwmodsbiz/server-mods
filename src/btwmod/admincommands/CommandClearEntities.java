@@ -10,8 +10,10 @@ import java.util.Set;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.CommandBase;
 import net.minecraft.src.Entity;
+import net.minecraft.src.EntityBat;
 import net.minecraft.src.EntityGhast;
 import net.minecraft.src.EntityMob;
+import net.minecraft.src.EntitySquid;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.World;
 import net.minecraft.src.WrongUsageException;
@@ -56,7 +58,7 @@ public class CommandClearEntities extends CommandBase {
 		Iterator iterator = world.loadedEntityList.iterator();
 		while (iterator.hasNext()) {
 			Object obj = iterator.next();
-			if (obj instanceof EntityMob || obj instanceof EntityGhast) {
+			if (obj instanceof EntityMob || obj instanceof EntityGhast || obj instanceof EntitySquid || obj instanceof EntityBat) {
 				toRemove.add((Entity)obj);
 				count++;
 			}
