@@ -131,11 +131,16 @@ public class mod_MobCleaner implements IMod, IWorldTickListener, ISpawnLivingLis
 				if (!entity.isDead)
 					alive.add(entity);
 			
-			int maxKeep = (event.validChunks * event.creatureType.getMaxNumberOfCreature() / 256) + 10 - event.oldEntityCount;
+			int limit = event.validChunks * event.creatureType.getMaxNumberOfCreature() / 256;
+			int maxKeep = limit + 10 - event.oldEntityCount;
 			if (maxKeep < alive.size()) {
 				Collections.shuffle(alive);
 				for (int i = maxKeep; i < alive.size(); i++) {	 
 					alive.get(i).setDead();
+				}
+				
+				if (debugLogging) {
+					ModLoader.outputInfo("Killed " + maxKeep + " to " + alive.size() + " spawned water creatures to fit in limit " + limit + " (+10).");
 				}
 			}
 		}
