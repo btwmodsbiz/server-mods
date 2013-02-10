@@ -191,8 +191,12 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return false;
 	}
 	
+	public boolean isOp(String username) {
+		return ops.contains(username.trim().toLowerCase());
+	}
+	
 	public boolean isPlayerGloballyAllowed(String username) {
-		return alwaysAllowOps && ops.contains(username.trim().toLowerCase());
+		return alwaysAllowOps && isOp(username);
 	}
 	
 	protected boolean isProtectedEntity(ACTION action, EntityPlayer player, Entity entity, int x, int y, int z) {
