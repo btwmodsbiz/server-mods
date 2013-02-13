@@ -1,3 +1,9 @@
+Version 4.56.1 (vMC 1.4.7 BTW 4.56)
+
+  - Added isOp method to mod_ProtectedZones.
+  
+  - Fixed Protected Zones so that the allowOps setting works.
+
 Version 4.56.0 (vMC 1.4.7 BTW 4.56)
 
   - Changed /clearentities so it also clears bats and squid.
