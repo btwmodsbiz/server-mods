@@ -18,6 +18,7 @@ import net.minecraft.src.ItemStack;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.ServerAPI;
+import btwmods.entity.EntityEvent;
 import btwmods.io.Settings;
 import btwmods.player.ContainerEvent;
 import btwmods.player.DropEvent;
@@ -356,5 +357,20 @@ public class SQLLogger implements ILogger, ITickListener {
 		if (event.getType() == TickEvent.TYPE.START && event.getTickCounter() % 5 == 0) {
 			checkOutputFile();
 		}
+	}
+
+	@Override
+	public void entityAttacked(EntityEvent event, EntityLiving entity, int dimension, int x, int y, int z, EntityLiving attackingEntity, int attackingX, int attackingY, int attackingZ) {
+		Date now = new Date();
+		StringBuilder extra = new StringBuilder();
+		
+		if (entity.isDead) {
+			if (extra.length() > 0) extra.append(", ");
+			extra.append("died");
+		}
+		
+		mod.queueWrite(outputFile, buildStatement("entityattacked",
+			"eventdate, eventtime, entity, dimension, x, y, z, entity, entityX, entityY, entityZ, extra",
+			new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), entity.getEntityName(), entity.dimension, x, y, z, attackingEntity.getEntityName(), attackingX, attackingY, attackingZ, extra.toString() }));
 	}
 }

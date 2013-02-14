@@ -3,10 +3,12 @@ package btwmod.itemlogger;
 import net.minecraft.src.Block;
 import net.minecraft.src.Container;
 import net.minecraft.src.Entity;
+import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.IInventory;
 import net.minecraft.src.InventoryPlayer;
 import net.minecraft.src.ItemStack;
+import btwmods.entity.EntityEvent;
 import btwmods.io.Settings;
 import btwmods.player.ContainerEvent;
 import btwmods.player.DropEvent;
@@ -35,4 +37,5 @@ public interface ILogger {
 	public void playerPickupItem(DropEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack);
 	public void playerUseEntity(PlayerActionEvent event, EntityPlayer player, int dimension, int x, int y, int z, Entity entity, int entityX, int entityY, int entityZ, boolean isAttack);
 	public void playerUseItem(PlayerActionEvent event, EntityPlayer player, int dimension, int x, int y, int z, ItemStack itemStack);
+	public void entityAttacked(EntityEvent event, EntityLiving entity, int dimension, int x, int y, int z, EntityLiving attackingEntity, int attackingX, int attackingY, int attackingZ);
 }
