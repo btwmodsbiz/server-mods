@@ -11,15 +11,16 @@ import net.minecraft.src.EnumCreatureType;
 import net.minecraft.src.World;
 
 import btwmods.CommandsAPI;
+import btwmods.EntityAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.ServerAPI;
 import btwmods.Util;
 import btwmods.WorldAPI;
+import btwmods.entity.ISpawnLivingListener;
+import btwmods.entity.SpawnLivingEvent;
 import btwmods.io.Settings;
-import btwmods.world.ISpawnLivingListener;
 import btwmods.world.IWorldTickListener;
-import btwmods.world.SpawnLivingEvent;
 import btwmods.world.WorldTickEvent;
 
 public class mod_MobCleaner implements IMod, IWorldTickListener, ISpawnLivingListener {
@@ -48,12 +49,14 @@ public class mod_MobCleaner implements IMod, IWorldTickListener, ISpawnLivingLis
 		checkFrequency = Math.max(1, settings.getInt("checkFrequency", checkFrequency));
 		
 		WorldAPI.addListener(this);
+		EntityAPI.addListener(this);
 		CommandsAPI.registerCommand(commandMobCleaner = new CommandMobCleaner(this), this);
 	}
 
 	@Override
 	public void unload() throws Exception {
 		WorldAPI.removeListener(this);
+		EntityAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandMobCleaner);
 	}
 

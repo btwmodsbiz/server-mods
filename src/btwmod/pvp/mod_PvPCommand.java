@@ -12,11 +12,11 @@ import net.minecraft.src.EntityPlayerMP;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.WrongUsageException;
 import btwmods.CommandsAPI;
+import btwmods.EntityAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.PlayerAPI;
 import btwmods.ServerAPI;
-import btwmods.WorldAPI;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerActionListener;
 import btwmods.player.IPlayerInstanceListener;
@@ -130,7 +130,7 @@ public class mod_PvPCommand extends CommandBase implements IMod, IPlayerInstance
 				
 				else {
 					playerTimers.put(username, getCurrentTimeSeconds() + seconds);
-					WorldAPI.sendEntityEquipmentUpdate(target);
+					EntityAPI.sendEntityEquipmentUpdate(target);
 					sender.sendChatToPlayer((target.equals(sender) ? "You" : username) + " will be PvP flagged for " + formatTime(seconds) + ".");
 					
 					if (!target.equals(sender))

@@ -20,11 +20,11 @@ import net.minecraft.src.Packet5PlayerInventory;
 import net.minecraft.src.WorldServer;
 import net.minecraft.src.WrongUsageException;
 import btwmods.CommandsAPI;
+import btwmods.EntityAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.NetworkAPI;
 import btwmods.PlayerAPI;
-import btwmods.WorldAPI;
 import btwmods.io.Settings;
 import btwmods.network.IPacketHandlerListener;
 import btwmods.network.PacketHandlerEvent;
@@ -124,7 +124,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 	@Override
 	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
 		if (event.getType() == TYPE.METADATA_CHANGED && event.getMetadata() == METADATA.IS_PVP) {
-			WorldAPI.sendEntityEquipmentUpdate(event.getPlayerInstance());
+			EntityAPI.sendEntityEquipmentUpdate(event.getPlayerInstance());
 		}
 		else if (event.getType() == TYPE.LOGIN) {
 			String username = event.getPlayerInstance().username;
@@ -240,7 +240,7 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 					ModLoader.outputError(e, "Failed (" + e.getClass().getSimpleName() + ") to save data file for " + getClass().getSimpleName() + ": " + e.getMessage());
 				}
 				
-				WorldAPI.sendEntityEquipmentUpdate(player);
+				EntityAPI.sendEntityEquipmentUpdate(player);
 			}
 			else {
 				throw new WrongUsageException(getCommandUsage(sender), new Object[0]);

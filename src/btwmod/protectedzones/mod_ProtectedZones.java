@@ -32,11 +32,14 @@ import net.minecraft.src.MathHelper;
 import net.minecraft.src.ServerCommandManager;
 import net.minecraft.src.World;
 import btwmods.CommandsAPI;
+import btwmods.EntityAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.PlayerAPI;
 import btwmods.Util;
 import btwmods.WorldAPI;
+import btwmods.entity.EntityEvent;
+import btwmods.entity.IEntityListener;
 import btwmods.events.APIEvent;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerActionListener;
@@ -46,9 +49,7 @@ import btwmods.player.IPlayerBlockListener;
 import btwmods.util.Area;
 import btwmods.world.BlockEvent;
 import btwmods.world.BlockEventBase;
-import btwmods.world.EntityEvent;
 import btwmods.world.IBlockListener;
-import btwmods.world.IEntityListener;
 
 public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener, IEntityListener {
 	
@@ -79,6 +80,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		PlayerAPI.addListener(this);
 		WorldAPI.addListener(this);
+		EntityAPI.addListener(this);
 		CommandsAPI.registerCommand(commandZone = new CommandZone(this), this);
 		
 		alwaysAllowOps = settings.getBoolean("alwaysAllowOps", alwaysAllowOps);
@@ -104,6 +106,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	public void unload() throws Exception {
 		PlayerAPI.removeListener(this);
 		WorldAPI.removeListener(this);
+		EntityAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandZone);
 	}
 
