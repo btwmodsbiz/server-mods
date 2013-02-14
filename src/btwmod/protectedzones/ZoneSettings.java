@@ -229,7 +229,7 @@ public class ZoneSettings {
 		}
 		
 		else if (name.equalsIgnoreCase("protectEntities") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
-			protectEntities = Settings.getEnumValue(PERMISSION.class, value, protectEntities);
+			protectEntities = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), protectEntities);
 		}
 		else if (name.equalsIgnoreCase("allowMooshroom") && Settings.isBooleanValue(value)) {
 			allowMooshroom = Settings.getBooleanValue(value, allowMooshroom);
