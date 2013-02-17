@@ -10,9 +10,13 @@ import net.minecraft.src.Block;
 import net.minecraft.src.Container;
 import net.minecraft.src.DamageSource;
 import net.minecraft.src.Entity;
+import net.minecraft.src.EntityBat;
+import net.minecraft.src.EntityGhast;
 import net.minecraft.src.EntityItemFrame;
 import net.minecraft.src.EntityLiving;
+import net.minecraft.src.EntityMob;
 import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.EntitySlime;
 import net.minecraft.src.FCDamageSourceCustom;
 import net.minecraft.src.IInventory;
 import net.minecraft.src.InventoryPlayer;
@@ -363,7 +367,7 @@ public class SQLLogger implements ILogger, ITickListener {
 
 	@Override
 	public void entityAttacked(EntityEvent event, EntityLiving entity, int dimension, int x, int y, int z, DamageSource source) {
-		if (entity.getHealth() <= 0 && !(source instanceof FCDamageSourceCustom)) {
+		if (entity.getHealth() <= 0 && !(source instanceof FCDamageSourceCustom) && !(entity instanceof EntitySlime || entity instanceof EntityMob || entity instanceof EntityGhast || entity instanceof EntityBat)) {
 			Date now = new Date();
 			StringBuilder info = new StringBuilder();
 			
