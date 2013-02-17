@@ -13,6 +13,7 @@ import net.minecraft.src.Entity;
 import net.minecraft.src.EntityItemFrame;
 import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.FCDamageSourceCustom;
 import net.minecraft.src.IInventory;
 import net.minecraft.src.InventoryPlayer;
 import net.minecraft.src.ItemStack;
@@ -362,7 +363,7 @@ public class SQLLogger implements ILogger, ITickListener {
 
 	@Override
 	public void entityAttacked(EntityEvent event, EntityLiving entity, int dimension, int x, int y, int z, DamageSource source) {
-		if (entity.getHealth() <= 0) {
+		if (entity.getHealth() <= 0 && !(source instanceof FCDamageSourceCustom)) {
 			Date now = new Date();
 			StringBuilder info = new StringBuilder();
 			
