@@ -374,7 +374,7 @@ public class SQLLogger implements ILogger, ITickListener {
 			info.append(" died");
 		
 		mod.queueWrite(outputFile, buildStatement("entityattacked",
-			"eventdate, eventtime, entity, dimension, x, y, z, source, sourceEntity, extra",
+			"eventdate, eventtime, entity, dimension, x, y, z, info",
 			new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), entity.getEntityName(), entity.dimension, x, y, z, info.toString() }));
 	}
 }
