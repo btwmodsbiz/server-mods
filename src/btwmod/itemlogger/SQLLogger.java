@@ -8,6 +8,7 @@ import java.util.Map;
 
 import net.minecraft.src.Block;
 import net.minecraft.src.Container;
+import net.minecraft.src.DamageSource;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityItemFrame;
 import net.minecraft.src.EntityLiving;
@@ -360,17 +361,20 @@ public class SQLLogger implements ILogger, ITickListener {
 	}
 
 	@Override
-	public void entityAttacked(EntityEvent event, EntityLiving entity, int dimension, int x, int y, int z, EntityLiving attackingEntity, int attackingX, int attackingY, int attackingZ) {
+	public void entityAttacked(EntityEvent event, EntityLiving entity, int dimension, int x, int y, int z, DamageSource source) {
 		Date now = new Date();
-		StringBuilder extra = new StringBuilder();
+		StringBuilder info = new StringBuilder();
 		
-		if (entity.isDead) {
-			if (extra.length() > 0) extra.append(", ");
-			extra.append("died");
-		}
+		info.append(source.getDamageType());
+		
+		if (source.getEntity() != null)
+			info.append(source.getEntity().getEntityName());
+		
+		if (entity.getHealth() <= 0)
+			info.append(" died");
 		
 		mod.queueWrite(outputFile, buildStatement("entityattacked",
-			"eventdate, eventtime, entity, dimension, x, y, z, entity, entityX, entityY, entityZ, extra",
-			new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), entity.getEntityName(), entity.dimension, x, y, z, attackingEntity.getEntityName(), attackingX, attackingY, attackingZ, extra.toString() }));
+			"eventdate, eventtime, entity, dimension, x, y, z, source, sourceEntity, extra",
+			new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), entity.getEntityName(), entity.dimension, x, y, z, info.toString() }));
 	}
 }

@@ -1,6 +1,7 @@
 package btwmod.itemlogger;
 
 import net.minecraft.src.BlockChest;
+import net.minecraft.src.DamageSource;
 import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityVillager;
 import net.minecraft.src.ItemStack;
@@ -43,7 +44,8 @@ public class WorldListener implements IBlockListener, IEntityListener {
 	@Override
 	public void onEntityAction(EntityEvent event) {
 		if (event.getType() == EntityEvent.TYPE.ATTACKED) {
-			if (event.getEntity() instanceof EntityVillager) {
+			DamageSource source;
+			if (event.getEntity() instanceof EntityVillager && (source = event.getDamageSource()) != null) {
 				logger.entityAttacked(
 					event,
 					(EntityLiving)event.getEntity(),
@@ -51,10 +53,7 @@ public class WorldListener implements IBlockListener, IEntityListener {
 					MathHelper.floor_double(event.getEntity().posX), 
 					MathHelper.floor_double(event.getEntity().posY),
 					MathHelper.floor_double(event.getEntity().posZ),
-					event.getAttackingEntity(),
-					MathHelper.floor_double(event.getAttackingEntity().posX), 
-					MathHelper.floor_double(event.getAttackingEntity().posY),
-					MathHelper.floor_double(event.getAttackingEntity().posZ)
+					source
 				);
 			}
 		}
