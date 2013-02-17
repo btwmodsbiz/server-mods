@@ -362,19 +362,18 @@ public class SQLLogger implements ILogger, ITickListener {
 
 	@Override
 	public void entityAttacked(EntityEvent event, EntityLiving entity, int dimension, int x, int y, int z, DamageSource source) {
-		Date now = new Date();
-		StringBuilder info = new StringBuilder();
-		
-		info.append(source.getDamageType());
-		
-		if (source.getEntity() != null)
-			info.append(source.getEntity().getEntityName());
-		
-		if (entity.getHealth() <= 0)
-			info.append(" died");
-		
-		mod.queueWrite(outputFile, buildStatement("entityattacked",
-			"eventdate, eventtime, entity, dimension, x, y, z, info",
-			new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), entity.getEntityName(), entity.dimension, x, y, z, info.toString() }));
+		if (entity.getHealth() <= 0) {
+			Date now = new Date();
+			StringBuilder info = new StringBuilder();
+			
+			info.append(source.getDamageType());
+			
+			if (source.getEntity() != null)
+				info.append(source.getEntity().getEntityName());
+			
+			mod.queueWrite(outputFile, buildStatement("entitykilled",
+				"eventdate, eventtime, entity, dimension, x, y, z, source",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), entity.getEntityName(), entity.dimension, x, y, z, info.toString() }));
+		}
 	}
 }
