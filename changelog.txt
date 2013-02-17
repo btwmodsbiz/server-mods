@@ -1,3 +1,12 @@
+Version 4.56.3 (vMC 1.4.7 BTW 4.56)
+
+  - Added logging for EntityLiving deaths to Item Logger.
+
+  - Changed mods to point to the new EntityAPI version of Entity hooks.
+  
+  - Fixed bug in ZoneSettings where enum value was not converted to
+    uppercase.
+
 Version 4.56.2 (vMC 1.4.7 BTW 4.56)
 
   - Added /haspendingio command to Admin Commands that checks if the
