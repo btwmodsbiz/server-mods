@@ -265,7 +265,10 @@ public class MapImage {
 	protected void save() throws Exception {
 		if (ImageIO.write(colorImage, "png", mapLayer.map.mod.tempSave)) {
 			if (!colorImageFile.exists() || colorImageFile.delete()) {
-				if (!mapLayer.map.mod.tempSave.renameTo(colorImageFile)) {
+				if (mapLayer.map.mod.tempSave.renameTo(colorImageFile)) {
+					colorImageFile.setReadable(true, false);
+				}
+				else {
 					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + colorImageFile.getPath());
 				}
 			}
@@ -278,7 +281,10 @@ public class MapImage {
 		}
 		if (ImageIO.write(heightImage, "png", mapLayer.map.mod.tempSave)) {
 			if (!heightImageFile.exists() || heightImageFile.delete()) {
-				if (!mapLayer.map.mod.tempSave.renameTo(heightImageFile)) {
+				if (mapLayer.map.mod.tempSave.renameTo(heightImageFile)) {
+					heightImageFile.setReadable(true, false);
+				}
+				else {
 					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + heightImageFile.getPath());
 				}
 			}
