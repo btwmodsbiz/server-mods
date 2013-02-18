@@ -1,3 +1,13 @@
+Version 4.56.3-c (vMC 1.4.7 BTW 4.56)
+
+  - Changed MapImage so it makes sure the saved files are world readable.
+  
+  - Changed Admin Commands so it only checks received packets and also
+	checks for Packet7UseEntity and Packet16BlockItemSwitch.
+  
+  - Fixed Admin Commands so it does not consider Packet12PlayerLook packets
+    as non-AFK signals and also properly registers itself with PlayerAPI.
+
 Version 4.56.3-b (vMC 1.4.7 BTW 4.56)
 
   - Changed Admin Commands so it watches for logins and no longer watches

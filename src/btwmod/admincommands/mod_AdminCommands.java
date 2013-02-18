@@ -11,13 +11,16 @@ import net.minecraft.src.Packet;
 import net.minecraft.src.Packet102WindowClick;
 import net.minecraft.src.Packet14BlockDig;
 import net.minecraft.src.Packet15Place;
+import net.minecraft.src.Packet16BlockItemSwitch;
 import net.minecraft.src.Packet3Chat;
+import net.minecraft.src.Packet7UseEntity;
 import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.NetworkAPI;
 import btwmods.PlayerAPI;
 import btwmods.io.Settings;
 import btwmods.network.IPacketListener;
+import btwmods.network.NetworkType;
 import btwmods.network.PacketEvent;
 import btwmods.player.IPlayerInstanceListener;
 import btwmods.player.PlayerInstanceEvent;
@@ -67,12 +70,17 @@ public class mod_AdminCommands implements IMod, IPacketListener, IPlayerInstance
 
 	@Override
 	public void onPacket(PacketEvent event) {
-		Packet packet = event.getPacket();
-		if (packet instanceof Packet102WindowClick
-				|| packet instanceof Packet14BlockDig
-				|| packet instanceof Packet15Place
-				|| packet instanceof Packet3Chat) {
-			markPlayerActed(event.getPlayer().username);
+		if (event.getType() == NetworkType.RECEIVED) {
+			Packet packet = event.getPacket();
+			
+			if (packet instanceof Packet102WindowClick
+					|| packet instanceof Packet14BlockDig
+					|| packet instanceof Packet15Place
+					|| packet instanceof Packet3Chat
+					|| packet instanceof Packet7UseEntity
+					|| packet instanceof Packet16BlockItemSwitch) {
+				markPlayerActed(event.getPlayer().username);
+			}
 		}
 	}
 	
