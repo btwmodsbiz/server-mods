@@ -1,3 +1,10 @@
+Version 4.56.3-b (vMC 1.4.7 BTW 4.56)
+
+  - Changed Admin Commands so it watches for logins and no longer watches
+    for Packet13PlayerLookMove when detecting AFK players.
+
+  - Changed Live Map so it handles corrupted images better.
+
 Version 4.56.3 (vMC 1.4.7 BTW 4.56)
 
   - Added logging for EntityLiving deaths to Item Logger.
