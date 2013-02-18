@@ -9,13 +9,13 @@ import net.minecraft.src.EntityPlayerMP;
 import net.minecraft.src.ICommand;
 import net.minecraft.src.Packet;
 import net.minecraft.src.Packet102WindowClick;
-import net.minecraft.src.Packet12PlayerLook;
 import net.minecraft.src.Packet14BlockDig;
 import net.minecraft.src.Packet15Place;
 import net.minecraft.src.Packet3Chat;
 import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.NetworkAPI;
+import btwmods.PlayerAPI;
 import btwmods.io.Settings;
 import btwmods.network.IPacketListener;
 import btwmods.network.PacketEvent;
@@ -45,6 +45,7 @@ public class mod_AdminCommands implements IMod, IPacketListener, IPlayerInstance
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
 		NetworkAPI.addListener(this);
+		PlayerAPI.addListener(this);
 		registerCommand(new CommandWho(this));
 		//registerCommand(new DumpTrackedCommand());
 		registerCommand(new CommandReliableUpdates());
@@ -59,6 +60,7 @@ public class mod_AdminCommands implements IMod, IPacketListener, IPlayerInstance
 
 	@Override
 	public void unload() throws Exception {
+		PlayerAPI.removeListener(this);
 		NetworkAPI.removeListener(this);
 		unregisterCommands();
 	}
@@ -66,8 +68,7 @@ public class mod_AdminCommands implements IMod, IPacketListener, IPlayerInstance
 	@Override
 	public void onPacket(PacketEvent event) {
 		Packet packet = event.getPacket();
-		if (packet instanceof Packet12PlayerLook
-				|| packet instanceof Packet102WindowClick
+		if (packet instanceof Packet102WindowClick
 				|| packet instanceof Packet14BlockDig
 				|| packet instanceof Packet15Place
 				|| packet instanceof Packet3Chat) {
