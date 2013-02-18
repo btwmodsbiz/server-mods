@@ -1,3 +1,56 @@
+Version 4.56.3-b (vMC 1.4.7 BTW 4.56)
+
+  - Changed Admin Commands so it watches for logins and no longer watches
+    for Packet13PlayerLookMove when detecting AFK players.
+
+  - Changed Live Map so it handles corrupted images better.
+
+Version 4.56.3 (vMC 1.4.7 BTW 4.56)
+
+  - Added logging for EntityLiving deaths to Item Logger.
+
+  - Changed mods to point to the new EntityAPI version of Entity hooks.
+  
+  - Fixed bug in ZoneSettings where enum value was not converted to
+    uppercase.
+
+Version 4.56.2 (vMC 1.4.7 BTW 4.56)
+
+  - Added /haspendingio command to Admin Commands that checks if the
+    AnvilChunkLoader has pending chunks to be saved.
+
+Version 4.56.1 (vMC 1.4.7 BTW 4.56)
+
+  - Added isOp method to mod_ProtectedZones.
+  
+  - Fixed Protected Zones so that the allowOps setting works.
+
+Version 4.56.0 (vMC 1.4.7 BTW 4.56)
+
+  - Changed /clearentities so it also clears bats and squid.
+  
+  - Removed old code from Tick Monitor.
+
+Version 4.55.2 (vMC 1.4.7 BTW 4.55)
+
+  - Changed Mod Cleaner to destroy water creatures if too many spawned.
+
+Version 4.55.1-b (vMC 1.4.7 BTW 4.55)
+
+  - Changed Protected Zones so immature groth is never protected.
+
+Version 4.55.1 (vMC 1.4.7 BTW 4.55)
+
+  - Added missing tab completion to /chatalias
+  
+  - Changed Item Logger so it detects containers being closed to set the
+    last container opened to null.
+    
+  - Changed SQLLogger so it does not log the quantity of item withdrawn,
+    deposited twice.
+    
+  - Fixed PlayerListener in Item Logger so it always logs items crafted.
+
 Version 4.55.0 (vMC 1.4.7 BTW 4.55)
 
   - Added protection for farmland being trampled to Protected Zones.

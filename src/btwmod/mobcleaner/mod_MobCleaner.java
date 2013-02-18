@@ -1,23 +1,29 @@
 package btwmod.mobcleaner;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.EntityLiving;
+import net.minecraft.src.EnumCreatureType;
 import net.minecraft.src.World;
 
 import btwmods.CommandsAPI;
+import btwmods.EntityAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.ServerAPI;
 import btwmods.Util;
 import btwmods.WorldAPI;
+import btwmods.entity.ISpawnLivingListener;
+import btwmods.entity.SpawnLivingEvent;
 import btwmods.io.Settings;
 import btwmods.world.IWorldTickListener;
 import btwmods.world.WorldTickEvent;
 
-public class mod_MobCleaner implements IMod, IWorldTickListener {
+public class mod_MobCleaner implements IMod, IWorldTickListener, ISpawnLivingListener {
 	
 	public static final int MAX_ENTITIES_CHECKED = 200;
 	private static Random rnd = new Random();
@@ -43,12 +49,14 @@ public class mod_MobCleaner implements IMod, IWorldTickListener {
 		checkFrequency = Math.max(1, settings.getInt("checkFrequency", checkFrequency));
 		
 		WorldAPI.addListener(this);
+		EntityAPI.addListener(this);
 		CommandsAPI.registerCommand(commandMobCleaner = new CommandMobCleaner(this), this);
 	}
 
 	@Override
 	public void unload() throws Exception {
 		WorldAPI.removeListener(this);
+		EntityAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandMobCleaner);
 	}
 
@@ -116,5 +124,28 @@ public class mod_MobCleaner implements IMod, IWorldTickListener {
 		}
 		
 		return true;
+	}
+
+	@Override
+	public void onSpawnLivingAction(SpawnLivingEvent event) {
+		if (event.creatureType == EnumCreatureType.waterCreature) {
+			List<EntityLiving> alive = new ArrayList<EntityLiving>();
+			for (EntityLiving entity : event.entities)
+				if (!entity.isDead)
+					alive.add(entity);
+			
+			int limit = event.validChunks * event.creatureType.getMaxNumberOfCreature() / 256;
+			int maxKeep = limit + 10 - event.oldEntityCount;
+			if (maxKeep < alive.size()) {
+				Collections.shuffle(alive);
+				for (int i = maxKeep; i < alive.size(); i++) {	 
+					alive.get(i).setDead();
+				}
+				
+				if (debugLogging) {
+					ModLoader.outputInfo("Killed " + maxKeep + " to " + alive.size() + " spawned water creatures to fit in limit " + limit + " (+10).");
+				}
+			}
+		}
 	}
 }

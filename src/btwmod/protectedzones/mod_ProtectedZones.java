@@ -21,6 +21,7 @@ import net.minecraft.src.EntityMooshroom;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityVillager;
 import net.minecraft.src.FCBlockAnvil;
+import net.minecraft.src.FCBlockBloodMoss;
 import net.minecraft.src.FCBlockInfernalEnchanter;
 import net.minecraft.src.FCEntityCanvas;
 import net.minecraft.src.Facing;
@@ -31,11 +32,14 @@ import net.minecraft.src.MathHelper;
 import net.minecraft.src.ServerCommandManager;
 import net.minecraft.src.World;
 import btwmods.CommandsAPI;
+import btwmods.EntityAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.PlayerAPI;
 import btwmods.Util;
 import btwmods.WorldAPI;
+import btwmods.entity.EntityEvent;
+import btwmods.entity.IEntityListener;
 import btwmods.events.APIEvent;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerActionListener;
@@ -44,14 +48,13 @@ import btwmods.player.PlayerBlockEvent;
 import btwmods.player.IPlayerBlockListener;
 import btwmods.util.Area;
 import btwmods.world.BlockEvent;
-import btwmods.world.EntityEvent;
+import btwmods.world.BlockEventBase;
 import btwmods.world.IBlockListener;
-import btwmods.world.IEntityListener;
 
 public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener, IEntityListener {
 	
 	public enum ACTION {
-		PLACE, DIG, BROKEN, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY,
+		PLACE, DIG, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY,
 		CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT, CAN_PUSH, TRAMPLE_FARMLAND
 	};
 
@@ -77,6 +80,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		PlayerAPI.addListener(this);
 		WorldAPI.addListener(this);
+		EntityAPI.addListener(this);
 		CommandsAPI.registerCommand(commandZone = new CommandZone(this), this);
 		
 		alwaysAllowOps = settings.getBoolean("alwaysAllowOps", alwaysAllowOps);
@@ -102,6 +106,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 	public void unload() throws Exception {
 		PlayerAPI.removeListener(this);
 		WorldAPI.removeListener(this);
+		EntityAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandZone);
 	}
 
@@ -189,8 +194,12 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return false;
 	}
 	
+	public boolean isOp(String username) {
+		return ops.contains(username.trim().toLowerCase());
+	}
+	
 	public boolean isPlayerGloballyAllowed(String username) {
-		return alwaysAllowOps && ops.contains(username.trim().toLowerCase());
+		return alwaysAllowOps && isOp(username);
 	}
 	
 	protected boolean isProtectedEntity(ACTION action, EntityPlayer player, Entity entity, int x, int y, int z) {
@@ -287,7 +296,12 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						if (settings.protectEdits != ZoneSettings.PERMISSION.OFF) {
 							isProtected = true;
 							
-							if (player != null) {
+							// Allow immature bloodmoss to be destroyed.
+							if ((action == ACTION.DIG || action == ACTION.CHECK_PLAYER_EDIT) && block instanceof FCBlockBloodMoss && event instanceof BlockEventBase && (((BlockEventBase)event).getMetadata() & 7) < 7) {
+								isProtected = false;
+							}
+							
+							if (isProtected && player != null) {
 								// Allow minecarts to be placed on rails.
 								if (isProtected && action == ACTION.PLACE && block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart)
 									isProtected = false;
@@ -300,6 +314,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 									else if (block instanceof BlockContainer && settings.isPlayerAllowed(player.username, settings.allowContainers))
 										isProtected = false;
 								}
+								
+								if (isProtected && settings.allowOps && isOp(player.username))
+									isProtected = false;
 							
 								if (isProtected && settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
 									isProtected = false;

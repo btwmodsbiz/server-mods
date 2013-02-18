@@ -17,8 +17,8 @@ public class MapImage {
 	public final int chunkZ;
 	public final String chunkKey;
 	
-	private BufferedImage colorImage;
-	private BufferedImage heightImage;
+	private BufferedImage colorImage = null;
+	private BufferedImage heightImage = null;
 	
 	public final File colorImageFile;
 	public final File heightImageFile;
@@ -33,28 +33,52 @@ public class MapImage {
 		colorImageFile = new File(mapLayer.layerDirectory, chunkKey + ".png");
 		heightImageFile = new File(mapLayer.layerDirectory, chunkKey + "h.png");
 		
-		loadImages();
+		setBlankImages();
 	}
 	
 	public int getHeightAt(int x, int z) {
 		return heightImage.getRGB(x, z) & 0xFF;
 	}
 	
-	public void loadImages() throws Exception {
-		if (colorImageFile.exists()) {
-			colorImage = ImageIO.read(colorImageFile);
-		} else {
-			colorImage = new BufferedImage(mapLayer.map.imageSize, mapLayer.map.imageSize, BufferedImage.TYPE_INT_ARGB);
+	public boolean loadImages() throws Exception {
+		boolean success = true;
+		
+		colorImage = heightImage = null;
+		
+		if (colorImageFile.exists() && (colorImage = ImageIO.read(colorImageFile)) == null) {
+			success = false;
 		}
-
-		if (heightImageFile.exists()) {
-			heightImage = ImageIO.read(heightImageFile);
-		} else {
-			heightImage = new BufferedImage(mapLayer.map.imageSize, mapLayer.map.imageSize, BufferedImage.TYPE_INT_ARGB);
+		
+		if (heightImageFile.exists() && (heightImage = ImageIO.read(heightImageFile)) == null) {
+			success = false;
 		}
+		
+		if (colorImage == null)
+			colorImage = createBlank();
+		
+		if (heightImage == null)
+			heightImage = createBlank();
+		
+		return success;
+	}
+	
+	public void setBlankImages() {
+		colorImage = createBlank();
+		heightImage = createBlank();
+	}
+	
+	private BufferedImage createBlank() {
+		return new BufferedImage(mapLayer.map.imageSize, mapLayer.map.imageSize, BufferedImage.TYPE_INT_ARGB);
+	}
+	
+	public boolean isLoaded() {
+		return colorImage != null && heightImage != null;
 	}
 	
 	public void drawPixels(int x, int z, PixelColor colorPixel, PixelColor heightPixel) {
+		if (!isLoaded())
+			return;
+		
 		for (int iX = 0; iX < mapLayer.pixelSize; iX++) {
 			for (int iZ = 0; iZ < mapLayer.pixelSize; iZ++) {
 				colorImage.setRGB(x + iX, z + iZ, colorPixel.asColor().getRGB());
@@ -64,6 +88,9 @@ public class MapImage {
 	}
 
 	public void renderChunk(Chunk chunk) {
+		if (!isLoaded())
+			return;
+		
 		MapPos pos = new MapPos(chunk, mapLayer);
 		
 		int increment = (int)Math.max(1.0F, 1.0F / mapLayer.pixelSize);
@@ -238,7 +265,10 @@ public class MapImage {
 	protected void save() throws Exception {
 		if (ImageIO.write(colorImage, "png", mapLayer.map.mod.tempSave)) {
 			if (!colorImageFile.exists() || colorImageFile.delete()) {
-				if (!mapLayer.map.mod.tempSave.renameTo(colorImageFile)) {
+				if (mapLayer.map.mod.tempSave.renameTo(colorImageFile)) {
+					colorImageFile.setReadable(true, false);
+				}
+				else {
 					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + colorImageFile.getPath());
 				}
 			}
@@ -251,7 +281,10 @@ public class MapImage {
 		}
 		if (ImageIO.write(heightImage, "png", mapLayer.map.mod.tempSave)) {
 			if (!heightImageFile.exists() || heightImageFile.delete()) {
-				if (!mapLayer.map.mod.tempSave.renameTo(heightImageFile)) {
+				if (mapLayer.map.mod.tempSave.renameTo(heightImageFile)) {
+					heightImageFile.setReadable(true, false);
+				}
+				else {
 					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + heightImageFile.getPath());
 				}
 			}

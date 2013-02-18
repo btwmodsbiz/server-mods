@@ -13,6 +13,7 @@ import net.minecraft.src.EnchantmentHelper;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ItemStack;
 import btwmods.CommandsAPI;
+import btwmods.EntityAPI;
 import btwmods.IMod;
 import btwmods.PlayerAPI;
 import btwmods.ServerAPI;
@@ -66,6 +67,7 @@ public class mod_ItemLogger implements IMod {
 			PlayerAPI.addListener(playerListener = new PlayerListener(this, logger));
 			ServerAPI.addListener(playerListener);
 			WorldAPI.addListener(worldListener = new WorldListener(this, logger));
+			EntityAPI.addListener(worldListener);
 		}
 	}
 
@@ -76,6 +78,7 @@ public class mod_ItemLogger implements IMod {
 			ServerAPI.removeListener(playerListener);
 			PlayerAPI.removeListener(playerListener);
 			WorldAPI.removeListener(worldListener);
+			EntityAPI.removeListener(worldListener);
 		}
 	}
 

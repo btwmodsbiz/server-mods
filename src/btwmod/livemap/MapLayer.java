@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import btwmods.ModLoader;
+
 import net.minecraft.src.Chunk;
 import net.minecraft.src.MathHelper;
 
@@ -36,6 +38,11 @@ public class MapLayer {
 		MapImage image = images.get(fileName);
 		if (image == null) {
 			images.put(fileName, image = new MapImage(this, chunkX, chunkZ));
+			
+			if (!image.loadImages()) {
+				// TODO: Queue up the images for the chunks if failed.
+				ModLoader.outputError("Failed to load image: " + image.colorImageFile.getPath());
+			}
 		}
 		return image;
 	}

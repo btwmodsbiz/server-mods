@@ -8,16 +8,23 @@ import java.util.Map;
 
 import net.minecraft.src.Block;
 import net.minecraft.src.Container;
+import net.minecraft.src.DamageSource;
 import net.minecraft.src.Entity;
+import net.minecraft.src.EntityBat;
+import net.minecraft.src.EntityGhast;
 import net.minecraft.src.EntityItemFrame;
 import net.minecraft.src.EntityLiving;
+import net.minecraft.src.EntityMob;
 import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.EntitySlime;
+import net.minecraft.src.FCDamageSourceCustom;
 import net.minecraft.src.IInventory;
 import net.minecraft.src.InventoryPlayer;
 import net.minecraft.src.ItemStack;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.ServerAPI;
+import btwmods.entity.EntityEvent;
 import btwmods.io.Settings;
 import btwmods.player.ContainerEvent;
 import btwmods.player.DropEvent;
@@ -160,6 +167,14 @@ public class SQLLogger implements ILogger, ITickListener {
 	}
 
 	@Override
+	public void containerClosed(ContainerEvent event, EntityPlayer player) {
+		Date now = new Date();
+		mod.queueWrite(outputFile, buildStatement("containers",
+				"eventdate, eventtime, actiontype, username, container",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "close", player.username, event.getContainer().getClass().getSimpleName() }));
+	}
+
+	@Override
 	public void containerRemoved(ContainerEvent event, EntityPlayer player, Block block, int dimension, int x, int y, int z) {
 		Date now = new Date();
 		mod.queueWrite(outputFile, buildStatement("containers",
@@ -181,7 +196,7 @@ public class SQLLogger implements ILogger, ITickListener {
 					(lastContainerOpened == null ? null : lastContainerOpened.x),
 					(lastContainerOpened == null ? null : lastContainerOpened.y),
 					(lastContainerOpened == null ? null : lastContainerOpened.z),
-					mod.getFullItemStackName(withdrawn),
+					mod.getUniqueItemStackName(withdrawn),
 					withdrawnQuantity,
 					container.getClass().getSimpleName(),
 					inventory.getInvName()
@@ -203,7 +218,7 @@ public class SQLLogger implements ILogger, ITickListener {
 					(lastContainerOpened == null ? null : lastContainerOpened.x),
 					(lastContainerOpened == null ? null : lastContainerOpened.y),
 					(lastContainerOpened == null ? null : lastContainerOpened.z),
-					mod.getFullItemStackName(deposited),
+					mod.getUniqueItemStackName(deposited),
 					depositedQuantity,
 					container.getClass().getSimpleName(),
 					inventory.getInvName()
@@ -347,6 +362,23 @@ public class SQLLogger implements ILogger, ITickListener {
 	public void onTick(TickEvent event) {
 		if (event.getType() == TickEvent.TYPE.START && event.getTickCounter() % 5 == 0) {
 			checkOutputFile();
+		}
+	}
+
+	@Override
+	public void entityAttacked(EntityEvent event, EntityLiving entity, int dimension, int x, int y, int z, DamageSource source) {
+		if (entity.getHealth() <= 0 && !(source instanceof FCDamageSourceCustom) && !(entity instanceof EntitySlime || entity instanceof EntityMob || entity instanceof EntityGhast || entity instanceof EntityBat)) {
+			Date now = new Date();
+			StringBuilder info = new StringBuilder();
+			
+			info.append(source.getDamageType());
+			
+			if (source.getEntity() != null)
+				info.append(source.getEntity().getEntityName());
+			
+			mod.queueWrite(outputFile, buildStatement("entitykilled",
+				"eventdate, eventtime, entity, dimension, x, y, z, source",
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), entity.getEntityName(), entity.dimension, x, y, z, info.toString() }));
 		}
 	}
 }

@@ -1,13 +1,18 @@
 package btwmod.itemlogger;
 
 import net.minecraft.src.BlockChest;
+import net.minecraft.src.DamageSource;
+import net.minecraft.src.EntityLiving;
 import net.minecraft.src.ItemStack;
+import net.minecraft.src.MathHelper;
 
 import btwmods.IMod;
+import btwmods.entity.EntityEvent;
+import btwmods.entity.IEntityListener;
 import btwmods.world.BlockEvent;
 import btwmods.world.IBlockListener;
 
-public class WorldListener implements IBlockListener {
+public class WorldListener implements IBlockListener, IEntityListener {
 
 	private mod_ItemLogger mod;
 	private ILogger logger;
@@ -31,6 +36,24 @@ public class WorldListener implements IBlockListener {
 			ItemStack[] contents = event.getContents();
 			if (contents != null) {
 				logger.containerBroken(event, event.getWorld().provider.dimensionId, event.getX(), event.getY(), event.getZ(), event.getContents());
+			}
+		}
+	}
+
+	@Override
+	public void onEntityAction(EntityEvent event) {
+		if (event.getType() == EntityEvent.TYPE.ATTACKED) {
+			DamageSource source = event.getDamageSource();
+			if (source != null) {
+				logger.entityAttacked(
+					event,
+					(EntityLiving)event.getEntity(),
+					event.getEntity().dimension,
+					MathHelper.floor_double(event.getEntity().posX), 
+					MathHelper.floor_double(event.getEntity().posY),
+					MathHelper.floor_double(event.getEntity().posZ),
+					source
+				);
 			}
 		}
 	}
