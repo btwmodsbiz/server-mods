@@ -36,7 +36,7 @@ import btwmods.world.WorldTickEvent;
 
 public class mod_MapData implements IMod, IWorldTickListener {
 	
-	public boolean enabled = true;
+	public boolean enabled = false;
 	public boolean minimal = true;
 	
 	public int playerSaveTicks = 20;
