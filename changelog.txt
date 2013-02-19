@@ -1,3 +1,8 @@
+Version 4.56.4 (vMC 1.4.7 BTW 4.56)
+
+  - Added Map Data mod to allow live map to plot player/entity locations and
+    loaded chunks.
+
 Version 4.56.3-c (vMC 1.4.7 BTW 4.56)
 
   - Changed MapImage so it makes sure the saved files are world readable.
