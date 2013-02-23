@@ -173,21 +173,20 @@ public class mod_MapData implements IMod, IWorldTickListener {
 				
 				if (entity instanceof EntityLiving) {
 					EntityLiving entityLiving = (EntityLiving)entity;
-					//entityJson.addProperty("isLiving", true);
 					entityJson.addProperty("age", entityLiving.getAge());
 					entityJson.addProperty("hp", entityLiving.getHealth());
 
 					if (entityLiving.isPersistenceRequired())
 						entityJson.addProperty("persistenceRequired", true);
 					
-					if (entity instanceof EntityPlayer)
-						entityJson.addProperty("iP", 1);
-					
-					else if (entity instanceof EntityAnimal)
+					if (entity instanceof EntityAnimal)
 						entityJson.addProperty("iA", 1);
 					
 					else if (entity instanceof EntityMob || entity instanceof EntityGhast || entity instanceof EntitySlime)
 						entityJson.addProperty("iM", 1);
+					
+					else if (entity instanceof EntityPlayer)
+						entityJson.addProperty("iP", 1);
 					
 					entitiesLivingJson.add(entityJson);
 				}
