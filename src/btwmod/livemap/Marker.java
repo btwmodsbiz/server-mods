@@ -60,7 +60,9 @@ public class Marker {
 		data.setInt(section, index + "y", y);
 		data.setInt(section, index + "z", z);
 		
-		if (description != null)
+		if (description == null)
+			data.removeKey(section, index + "description");
+		else
 			data.set(section, index + "description", description);
 	}
 	
