@@ -165,8 +165,9 @@ public class mod_MapData implements IMod, IWorldTickListener {
 			if (!entity.isDead) {
 				JsonObject entityJson = new JsonObject();
 				entityJson.addProperty("i", entity.entityId);
-				entityJson.addProperty("n", entity.getEntityName());
-				entityJson.addProperty("c", entity.getClass().getSimpleName());
+				//entityJson.addProperty("n", entity.getEntityName());
+				//entityJson.addProperty("c", entity.getClass().getSimpleName());
+				entityJson.add("c", new JsonClassName(entity));
 				entityJson.addProperty("x", MathHelper.floor_double(entity.posX));
 				entityJson.addProperty("y", MathHelper.floor_double(entity.posY));
 				entityJson.addProperty("z", MathHelper.floor_double(entity.posZ));
