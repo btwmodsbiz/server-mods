@@ -1,12 +1,16 @@
 package btwmod.admincommands;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import btwmods.Util;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.CommandBase;
 import net.minecraft.src.EntityPlayerMP;
 import net.minecraft.src.ICommandSender;
+import net.minecraft.src.Packet3Chat;
 import net.minecraft.src.WrongUsageException;
 
 public class CommandWho extends CommandBase {
@@ -36,22 +40,23 @@ public class CommandWho extends CommandBase {
 				throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
 
 			List players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
-			StringBuilder sb = new StringBuilder();
+			List<String> playerStrings = new ArrayList<String>();
 			
 			Iterator playerIterator = players.iterator();
 			while (playerIterator.hasNext()) {
 				EntityPlayerMP player = (EntityPlayerMP)playerIterator.next();
-				if (sb.length() > 0)
-					sb.append(", ");
-				
-				sb.append(player.username);
 
 				long seconds = mod.getTimeSinceLastPlayerAction(player);
 				if (seconds >= mod.getSecondsForAFK())
-					sb.append(" (AFK ").append(formatSeconds(seconds)).append(")");
+					playerStrings.add(player.username + " (AFK " + formatSeconds(seconds) + ")");
+				else
+					playerStrings.add(player.username);
 			}
 			
-			sender.sendChatToPlayer("Players: " + sb.toString());
+			List<String> messages = Util.combineIntoMaxLengthMessages(playerStrings, Packet3Chat.maxChatLength, ", ", true);
+			for (String message : messages) {
+				sender.sendChatToPlayer(message);
+			}
 		}
 		else if (args.length == 0) {
 			List players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
