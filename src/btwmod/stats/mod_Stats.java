@@ -21,6 +21,7 @@ import btwmods.io.QueuedWrite;
 import btwmods.io.QueuedWriteString;
 import btwmods.io.Settings;
 import btwmods.measure.Average;
+import btwmods.measure.Measurement;
 import btwmods.stats.IStatsListener;
 import btwmods.stats.StatsEvent;
 import btwmods.stats.data.WorldStats;
@@ -28,8 +29,9 @@ import btwmods.stats.data.WorldStats;
 public class mod_Stats implements IMod, IStatsListener {
 	
     private final static long reportingDelayMin = 50L;
-	
-	private File directory = null;
+
+	private File publicDirectory = null;
+	private File privateDirectory = null;
     private long reportingDelay = 1000L;
 	
 	private Gson gson;
@@ -46,19 +48,31 @@ public class mod_Stats implements IMod, IStatsListener {
 
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
-		
 		reportingDelay = Math.max(reportingDelayMin, settings.getLong("reportingDelay", reportingDelay));
 		
-		if (settings.hasKey("directory")) {
-			directory = new File(settings.get("directory"));
+		if (settings.hasKey("publicDirectory")) {
+			publicDirectory = new File(settings.get("publicDirectory"));
 		}
 		
-		if (directory == null) {
-			ModLoader.outputError(getName() + "'s directory setting is not set.", Level.SEVERE);
+		if (publicDirectory == null) {
+			ModLoader.outputError(getName() + "'s publicDirectory setting is not set.", Level.SEVERE);
 			return;
 		}
-		else if (!directory.isDirectory()) {
-			ModLoader.outputError(getName() + "'s directory setting does not point to a directory.", Level.SEVERE);
+		else if (!publicDirectory.isDirectory()) {
+			ModLoader.outputError(getName() + "'s publicDirectory setting does not point to a directory.", Level.SEVERE);
+			return;
+		}
+		
+		if (settings.hasKey("privateDirectory")) {
+			privateDirectory = new File(settings.get("privateDirectory"));
+		}
+		
+		if (privateDirectory == null) {
+			ModLoader.outputError(getName() + "'s privateDirectory setting is not set.", Level.SEVERE);
+			return;
+		}
+		else if (!privateDirectory.isDirectory()) {
+			ModLoader.outputError(getName() + "'s privateDirectory setting does not point to a directory.", Level.SEVERE);
 			return;
 		}
 		
@@ -98,10 +112,10 @@ public class mod_Stats implements IMod, IStatsListener {
 			
 		int numTicks = event.tickCounter - lastTickCounter;
 		long timeElapsed = currentTime - lastStatsTime;
-		long timeSinceLastTick = currentTime - event.serverStats.lastTickEnd;
 		ticksPerSecond.record((long)((double)numTicks / (double)timeElapsed * 100000D));
 		
 		writeBasic(event);
+		writeEntities(event);
 	
 		lastTickCounter = event.tickCounter;
 		lastStatsTime = System.currentTimeMillis();
@@ -126,7 +140,7 @@ public class mod_Stats implements IMod, IStatsListener {
 			worldStats.add("entities", averageToJson(event.worldStats[i].averages.get(Stat.WORLD_LOADED_ENTITIES), false, false));
 			worldStats.add("tileEntities", averageToJson(event.worldStats[i].averages.get(Stat.WORLD_LOADED_TILE_ENTITIES), false, false));
 			
-			worldStats.add("tickByEntity", getClassByTime(Stat.ENTITY_UPDATE, event.worldStats[i]));
+			//worldStats.add("tickByEntity", getClassByTime(Stat.ENTITY_UPDATE, event.worldStats[i]));
 			
 			worlds.add(worldStats);
 		}
@@ -135,7 +149,18 @@ public class mod_Stats implements IMod, IStatsListener {
 		
 		basicStats.addProperty("execTime", Util.DECIMAL_FORMAT_3.format((System.nanoTime() - start) * 1.0E-6D));
 		
-		fileWriter.queueWrite(new QueuedWriteString(new File(directory, "public.txt"), gson.toJson(basicStats), QueuedWrite.TYPE.OVERWRITE_SAFE));
+		fileWriter.queueWrite(new QueuedWriteString(new File(publicDirectory, "public.txt"), gson.toJson(basicStats), QueuedWrite.TYPE.OVERWRITE_SAFE));
+	}
+	
+	private void writeEntities(StatsEvent event) {
+		for (int i = 0; i < event.worldStats.length; i++) {
+			//Map<Class, Set<Integer>>
+			for (Measurement measurement : event.worldStats[0].measurements) {
+				if (measurement.identifier == Stat.ENTITY_UPDATE) {
+					
+				}
+			}
+		}
 	}
 	
 	private static JsonElement getClassByTime(Stat stat, WorldStats worldStats) {
