@@ -2,6 +2,7 @@ package btwmod.stats;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,6 +41,18 @@ public class mod_Stats implements IMod, IStatsListener {
 	
     private final static long reportingDelayMin = 50L;
     private final static double nanoScale = 1.0E-6D;
+	
+	private static final Comparator<Double> comparatorDouble = new Comparator<Double>() {
+		@Override
+		public int compare(Double o1, Double o2) {
+			if (o1 < o2)
+				return 1;
+			else if (o1 > o2)
+				return -1;
+			else
+				return 0;
+		}
+	};
 
 	private File publicDirectory = null;
 	private File privateDirectory = null;
@@ -301,7 +314,7 @@ public class mod_Stats implements IMod, IStatsListener {
 	}
 	
 	private static JsonArray timeByClassToJson(Stat stat, WorldStats worldStats, Map<Class, List<StatPositionedClass>> uniqueEntitiesByClass) {
-		Map<Double, JsonElement> sorted = new TreeMap<Double, JsonElement>();
+		Map<Double, JsonElement> sorted = new TreeMap<Double, JsonElement>(comparatorDouble);
 		
 		for (Entry<Class, Average> entry : worldStats.timeByClass.get(stat).entrySet()) {
 			JsonObject json = averageToJson(entry.getValue(), stat.scale, false);
