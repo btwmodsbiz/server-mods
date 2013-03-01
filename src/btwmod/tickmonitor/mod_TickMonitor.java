@@ -186,7 +186,7 @@ public class mod_TickMonitor implements IMod, IStatsListener, IPlayerInstanceLis
 		jsonObj.addProperty("timeSinceLastTick", timeSinceLastTick);
 		jsonObj.addProperty("ticksSinceLastStatsAction", numTicks);
 		jsonObj.addProperty("time", BasicFormatter.dateFormat.format(new Date(currentTime)));
-		jsonObj.addProperty("detailedMeasurements", StatsAPI.detailedMeasurementsEnabled);
+		jsonObj.addProperty("statProfile", StatsAPI.statProfile);
 		
 		jsonObj.add("statsActionTime", gson.toJsonTree(statsActionTime));
 		jsonObj.add("statsActionIOTime", gson.toJsonTree(statsActionIOTime));
