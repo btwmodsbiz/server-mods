@@ -104,10 +104,16 @@ public class mod_Stats implements IMod, IStatsListener {
 			return;
 		}
 		
-		gson = new GsonBuilder()
-			.setPrettyPrinting()
-			.create();
-
+		if (settings.getBoolean("prettyPrinting", false)) {
+			gson = new GsonBuilder()
+				.setPrettyPrinting()
+				.create();
+		}
+		else {
+			gson = new GsonBuilder()
+				.create();
+		}
+		
 		lastStatsTime = System.currentTimeMillis();
 		fileWriter = new AsynchronousFileWriter(getClass().getSimpleName());
 		
