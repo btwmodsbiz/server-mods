@@ -160,16 +160,16 @@ public class mod_Stats implements IMod, IStatsListener {
 		JsonArray worlds = new JsonArray();
 		for (int i = 0, l = event.worldStats.length; i < l; i++) {
 			JsonObject worldStats = new JsonObject();
-			worldStats.add("tick", averageToJson(event.worldStats[i].averages.get(Stat.WORLD_TICK), nanoScale, false));
+			worldStats.add(Stat.WORLD_TICK.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.WORLD_TICK), nanoScale, false));
 
-			worldStats.add("tickEntities", averageToJson(event.worldStats[i].averages.get(Stat.ENTITY_UPDATE), nanoScale, false));
-			worldStats.add("tickTile", averageToJson(event.worldStats[i].averages.get(Stat.TILE_ENTITY_UPDATE), nanoScale, false));
-			worldStats.add("tickBlock", averageToJson(event.worldStats[i].averages.get(Stat.BLOCK_UPDATE), nanoScale, false));
+			worldStats.add(Stat.ENTITY_UPDATE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.ENTITY_UPDATE), nanoScale, false));
+			worldStats.add(Stat.TILE_ENTITY_UPDATE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.TILE_ENTITY_UPDATE), nanoScale, false));
+			worldStats.add(Stat.BLOCK_UPDATE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.BLOCK_UPDATE), nanoScale, false));
 			
-			worldStats.add("entities", averageToJson(event.worldStats[i].averages.get(Stat.WORLD_LOADED_ENTITIES), 1.0D, false));
-			worldStats.add("tileEntities", averageToJson(event.worldStats[i].averages.get(Stat.WORLD_LOADED_TILE_ENTITIES), 1.0D, false));
+			worldStats.add(Stat.WORLD_LOADED_ENTITIES.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.WORLD_LOADED_ENTITIES), 1.0D, false));
+			worldStats.add(Stat.WORLD_LOADED_TILE_ENTITIES.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.WORLD_LOADED_TILE_ENTITIES), 1.0D, false));
 			
-			worldStats.add("measurements", averageToJson(event.worldStats[i].measurementQueue, 1.0D, false));
+			worldStats.add("measurements", averageToJson(event.worldStats[i].measurementsQueued, 1.0D, false));
 			
 			worlds.add(worldStats);
 		}
