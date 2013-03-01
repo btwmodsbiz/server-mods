@@ -1,3 +1,18 @@
+Version 4.57.1 (vMC 1.4.7 BTW 4.57)
+
+  - Added Stats mod to eventually replace MapData and TickMonitor.
+
+  - Changed /who so it properly sends separate messages when it gets too
+    long.
+    
+  - Changed Map Data mod so it no longer gets the entity's name and also
+    shifts getting the class name to the writer thread.
+    
+  - Changed Map Data so it is disabled by default.
+    
+  - Fixed issue where marker descriptions could copy to markers that do not
+    have a description.
+
 Version 4.56.4 (vMC 1.4.7 BTW 4.56)
 
   - Added Map Data mod to allow live map to plot player/entity locations and
