@@ -184,8 +184,10 @@ public class mod_Stats implements IMod, IStatsListener {
 			
 			Map<Class, List<StatPositionedClass>> uniqueEntitiesByClass = uniqueByClass(Stat.ENTITY_UPDATE, event.worldStats[i]);
 			Map<Class, List<StatPositionedClass>> uniqueBlocksByClass = uniqueByClass(Stat.BLOCK_UPDATE, event.worldStats[i]);
+			Map<Class, List<StatPositionedClass>> uniqueTileEntitiesByClass = uniqueByClass(Stat.TILE_ENTITY_UPDATE, event.worldStats[i]);
 			
 			String timeByEntity = gson.toJson(timeByClassToJson(Stat.ENTITY_UPDATE, event.worldStats[i], uniqueEntitiesByClass));
+			String timeByTileEntity = gson.toJson(timeByClassToJson(Stat.TILE_ENTITY_UPDATE, event.worldStats[i], uniqueTileEntitiesByClass));
 			String timeByBlock = gson.toJson(timeByClassToJson(Stat.BLOCK_UPDATE, event.worldStats[i], uniqueBlocksByClass));
 			String timeByRegion = gson.toJson(timeByRegionToJson(event.worldStats[i]));
 			String timeByChunk = gson.toJson(timeByChunkToJson(event.worldStats[i]));
@@ -208,6 +210,15 @@ public class mod_Stats implements IMod, IStatsListener {
 				new QueuedWriteString(
 					new File(privateDirectory, "world" + i + "_byblock.txt"),
 					timeByBlock,
+					QueuedWrite.TYPE.OVERWRITE_SAFE
+				)
+			);
+			
+			// Write time by block.
+			fileWriter.queueWrite(
+				new QueuedWriteString(
+					new File(privateDirectory, "world" + i + "_bytileentity.txt"),
+					timeByTileEntity,
 					QueuedWrite.TYPE.OVERWRITE_SAFE
 				)
 			);
