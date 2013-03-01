@@ -191,6 +191,11 @@ public class mod_Stats implements IMod, IStatsListener {
 			worldStats.addProperty("execTime", execPlaceholder);
 			worldStats.addProperty("tickNumber", event.tickCounter);
 			
+			JsonObject measurementsByStatJson = new JsonObject();
+			for (Entry<Stat, Average> entry : event.worldStats[i].measurementsQueuedByStat.entrySet()) {
+				measurementsByStatJson.add(entry.getKey().nameAsCamelCase(), averageToJson(entry.getValue(), 1.0D, false));
+			}
+			
 			for (Entry<Stat, Average> entry : event.worldStats[i].averages.entrySet()) {
 				worldStats.add(entry.getKey().nameAsCamelCase(), averageToJson(entry.getValue(), entry.getKey().scale, false));
 			}
@@ -199,6 +204,7 @@ public class mod_Stats implements IMod, IStatsListener {
 			Map<Class, List<StatPositionedClass>> uniqueBlocksByClass = uniqueByClass(Stat.BLOCK_UPDATE, event.worldStats[i]);
 			Map<Class, List<StatPositionedClass>> uniqueTileEntitiesByClass = uniqueByClass(Stat.TILE_ENTITY_UPDATE, event.worldStats[i]);
 			
+			String measurementsByStat = gson.toJson(measurementsByStatJson);
 			String timeByEntity = gson.toJson(timeByClassToJson(Stat.ENTITY_UPDATE, event.worldStats[i], uniqueEntitiesByClass));
 			String timeByTileEntity = gson.toJson(timeByClassToJson(Stat.TILE_ENTITY_UPDATE, event.worldStats[i], uniqueTileEntitiesByClass));
 			String timeByBlock = gson.toJson(timeByClassToJson(Stat.BLOCK_UPDATE, event.worldStats[i], uniqueBlocksByClass));
@@ -208,6 +214,15 @@ public class mod_Stats implements IMod, IStatsListener {
 			String worldJson = gson.toJson(worldStats);
 			
 			worldJson = worldJson.replace(execPlaceholder, Util.DECIMAL_FORMAT_3.format((System.nanoTime() - start) * 1.0E-6D));
+			
+			// Measurements by stat.
+			fileWriter.queueWrite(
+				new QueuedWriteString(
+					new File(privateDirectory, "world" + i + "_measurements.txt"),
+					measurementsByStat,
+					QueuedWrite.TYPE.OVERWRITE_SAFE
+				)
+			);
 			
 			// Write time by entity.
 			fileWriter.queueWrite(
