@@ -64,6 +64,9 @@ public class mod_Stats implements IMod, IStatsListener {
 	private long lastStatsTime = 0;
 	private int lastTickCounter = -1;
 	private Average ticksPerSecond = new Average(10);
+	
+	private String profile = null;
+	private JsonObject profileJson = null;
 
 	@Override
 	public String getName() {
@@ -146,6 +149,14 @@ public class mod_Stats implements IMod, IStatsListener {
 		long timeElapsed = currentTime - lastStatsTime;
 		ticksPerSecond.record((long)((double)numTicks / (double)timeElapsed * 100000D));
 		
+		if (!event.statsProfile.equals(profile)) {
+			Map<Stat, Boolean> profile = StatsAPI.getStatsProfile(event.statsProfile);
+			profileJson = new JsonObject();
+			for (Stat stat : Stat.values()) {
+				profileJson.addProperty(stat.nameAsCamelCase(), profile.containsKey(stat) ? profile.get(stat) : stat.defaultEnabled);
+			}
+		}
+		
 		writeBasic(event);
 		writeWorlds(event);
 	
@@ -162,6 +173,7 @@ public class mod_Stats implements IMod, IStatsListener {
 		basicStats.addProperty("tickNumber", event.tickCounter);
 		basicStats.add("tick", averageToJson(event.serverStats.tickTime, nanoScale, false));
 		basicStats.add("tickSec", averageToJson(ticksPerSecond, 0.01D, false));
+		basicStats.add("profile", profileJson);
 		
 		JsonArray worlds = new JsonArray();
 		for (int i = 0, l = event.worldStats.length; i < l; i++) {
@@ -196,6 +208,7 @@ public class mod_Stats implements IMod, IStatsListener {
 			
 			worldStats.addProperty("execTime", execPlaceholder);
 			worldStats.addProperty("tickNumber", event.tickCounter);
+			worldStats.add("profile", profileJson);
 			
 			JsonObject measurementsByStatJson = new JsonObject();
 			for (Entry<Stat, Average> entry : event.worldStats[i].measurementsQueuedByStat.entrySet()) {
