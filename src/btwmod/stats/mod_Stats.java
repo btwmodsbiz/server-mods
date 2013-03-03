@@ -41,6 +41,7 @@ import btwmods.measure.Measurement;
 import btwmods.stats.IStatsListener;
 import btwmods.stats.StatsEvent;
 import btwmods.stats.data.WorldStats;
+import btwmods.stats.measurements.PlayerPosition;
 import btwmods.stats.measurements.StatPositionedClass;
 
 public class mod_Stats implements IMod, IStatsListener {
@@ -240,6 +241,7 @@ public class mod_Stats implements IMod, IStatsListener {
 			String timeByChunk = gson.toJson(timeByChunkToJson(event.worldStats[i]));
 			String entitiesLiving = gson.toJson(uniqueByClassToJson(uniqueEntitiesByClass, true, EntityLiving.class, false));
 			String entitiesNonLiving = gson.toJson(uniqueByClassToJson(uniqueEntitiesByClass, false, EntityLiving.class, true));
+			String players = gson.toJson(playerPositionsToJson(event.worldStats[i]));
 			String worldJson = gson.toJson(worldStats);
 			
 			worldJson = worldJson.replace(execPlaceholder, Util.DECIMAL_FORMAT_3.format((System.nanoTime() - start) * 1.0E-6D));
@@ -316,6 +318,15 @@ public class mod_Stats implements IMod, IStatsListener {
 				)
 			);
 			
+			// Write player positions.
+			fileWriter.queueWrite(
+				new QueuedWriteString(
+					new File(privateDirectory, "world" + i + "_players.txt"),
+					players,
+					QueuedWrite.TYPE.OVERWRITE_SAFE
+				)
+			);
+			
 			// Write the overall world stats.
 			fileWriter.queueWrite(
 				new QueuedWriteString(
@@ -325,6 +336,18 @@ public class mod_Stats implements IMod, IStatsListener {
 				)
 			);
 		}
+	}
+	
+	private static JsonObject playerPositionsToJson(WorldStats worldStats) {
+		JsonObject players = new JsonObject();
+		for (PlayerPosition playerPosition : worldStats.playerPositions) {
+			JsonObject player = new JsonObject();
+			player.addProperty("x", Math.floor(playerPosition.x * 100D) / 100D);
+			player.addProperty("y", Math.floor(playerPosition.y * 100D) / 100D);
+			player.addProperty("z", Math.floor(playerPosition.z * 100D) / 100D);
+			players.add(playerPosition.identifier, player);
+		}
+		return players;
 	}
 	
 	private static Map<Class, List<StatPositionedClass>> uniqueByClass(Stat stat, WorldStats worldStats) {
