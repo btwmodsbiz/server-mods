@@ -13,6 +13,12 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import net.minecraft.src.ChunkCoordIntPair;
+import net.minecraft.src.EntityAnimal;
+import net.minecraft.src.EntityGhast;
+import net.minecraft.src.EntityLiving;
+import net.minecraft.src.EntityMob;
+import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.EntitySlime;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -180,6 +186,9 @@ public class mod_Stats implements IMod, IStatsListener {
 			JsonObject worldStats = new JsonObject();
 			worldStats.add(Stat.WORLD_TICK.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.WORLD_TICK), nanoScale, false));
 
+			worldStats.add(Stat.ENTITIES_REGULAR.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.ENTITIES_REGULAR), nanoScale, false));
+			worldStats.add(Stat.ENTITIES_TILE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.TILE_ENTITY_UPDATE), nanoScale, false));
+			
 			worldStats.add(Stat.ENTITY_UPDATE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.ENTITY_UPDATE), nanoScale, false));
 			worldStats.add(Stat.TILE_ENTITY_UPDATE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.TILE_ENTITY_UPDATE), nanoScale, false));
 			worldStats.add(Stat.BLOCK_UPDATE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.BLOCK_UPDATE), nanoScale, false));
@@ -229,7 +238,8 @@ public class mod_Stats implements IMod, IStatsListener {
 			String timeByBlock = gson.toJson(timeByClassToJson(Stat.BLOCK_UPDATE, event.worldStats[i], uniqueBlocksByClass));
 			String timeByRegion = gson.toJson(timeByRegionToJson(event.worldStats[i]));
 			String timeByChunk = gson.toJson(timeByChunkToJson(event.worldStats[i]));
-			String entities = gson.toJson(uniqueByClassToJson(uniqueEntitiesByClass));
+			String entitiesLiving = gson.toJson(uniqueByClassToJson(uniqueEntitiesByClass, true, EntityLiving.class, false));
+			String entitiesNonLiving = gson.toJson(uniqueByClassToJson(uniqueEntitiesByClass, false, EntityLiving.class, true));
 			String worldJson = gson.toJson(worldStats);
 			
 			worldJson = worldJson.replace(execPlaceholder, Util.DECIMAL_FORMAT_3.format((System.nanoTime() - start) * 1.0E-6D));
@@ -291,8 +301,17 @@ public class mod_Stats implements IMod, IStatsListener {
 			// Write unique entities.
 			fileWriter.queueWrite(
 				new QueuedWriteString(
+					new File(privateDirectory, "world" + i + "_entitiesliving.txt"),
+					entitiesLiving,
+					QueuedWrite.TYPE.OVERWRITE_SAFE
+				)
+			);
+			
+			// Write unique entities.
+			fileWriter.queueWrite(
+				new QueuedWriteString(
 					new File(privateDirectory, "world" + i + "_entities.txt"),
-					entities,
+					entitiesNonLiving,
 					QueuedWrite.TYPE.OVERWRITE_SAFE
 				)
 			);
@@ -327,21 +346,54 @@ public class mod_Stats implements IMod, IStatsListener {
 		return list;
 	}
 	
-	private static JsonObject uniqueByClassToJson(Map<Class, List<StatPositionedClass>> uniqueByClass) {
+	private static JsonObject uniqueByClassToJson(Map<Class, List<StatPositionedClass>> uniqueByClass, boolean useGroups, Class classFilter, boolean isExcludeFilter) {
 		JsonObject ret = new JsonObject();
 		
+		JsonObject animals = useGroups ? new JsonObject() : null;
+		JsonObject mobs = useGroups ? new JsonObject() : null;
+		JsonObject players = useGroups ? new JsonObject() : null;
+		JsonObject other = useGroups ? new JsonObject() : ret;
+		
 		for (Entry<Class, List<StatPositionedClass>> entry : uniqueByClass.entrySet()) {
-			JsonObject classList = new JsonObject();
+			Class clazz = entry.getKey();
 			
-			for (StatPositionedClass entityMeasurement : entry.getValue()) {
-				JsonObject entity = new JsonObject();
-				entity.addProperty("x", Math.floor(entityMeasurement.xDouble * 100D) / 100D);
-				entity.addProperty("y", Math.floor(entityMeasurement.yDouble * 100D) / 100D);
-				entity.addProperty("z", Math.floor(entityMeasurement.zDouble * 100D) / 100D);
-				classList.add(Integer.toString(entityMeasurement.id), entity);
+			if (classFilter == null || (
+					(!isExcludeFilter && classFilter.isAssignableFrom(clazz))
+					|| (isExcludeFilter && !classFilter.isAssignableFrom(clazz))
+				)) {
+				
+				JsonObject classGroup = other;
+				if (useGroups) {
+					if (EntityAnimal.class.isAssignableFrom(clazz)) {
+						classGroup = animals;
+					}
+					else if (EntityMob.class.isAssignableFrom(clazz) || EntityGhast.class.isAssignableFrom(clazz) || EntitySlime.class.isAssignableFrom(clazz)) {
+						classGroup = mobs;
+					}
+					else if (EntityPlayer.class.isAssignableFrom(clazz)) {
+						classGroup = players;
+					}
+				}
+				
+				JsonObject classList = new JsonObject();
+				
+				for (StatPositionedClass entityMeasurement : entry.getValue()) {
+					JsonObject entity = new JsonObject();
+					entity.addProperty("x", Math.floor(entityMeasurement.xDouble * 100D) / 100D);
+					entity.addProperty("y", Math.floor(entityMeasurement.yDouble * 100D) / 100D);
+					entity.addProperty("z", Math.floor(entityMeasurement.zDouble * 100D) / 100D);
+					classList.add(Integer.toString(entityMeasurement.id), entity);
+				}
+				
+				classGroup.add(clazz.getSimpleName(), classList);
 			}
-			
-			ret.add(entry.getKey().getSimpleName(), classList);
+		}
+		
+		if (useGroups) {
+			ret.add("isAnimal", animals);
+			ret.add("isMonster", mobs);
+			ret.add("isPlayer", players);
+			ret.add("isOther", other);
 		}
 		
 		return ret;
