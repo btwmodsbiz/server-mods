@@ -188,7 +188,7 @@ public class mod_Stats implements IMod, IStatsListener {
 			worldStats.add(Stat.WORLD_TICK.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.WORLD_TICK), nanoScale, false));
 
 			worldStats.add(Stat.ENTITIES_REGULAR.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.ENTITIES_REGULAR), nanoScale, false));
-			worldStats.add(Stat.ENTITIES_TILE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.TILE_ENTITY_UPDATE), nanoScale, false));
+			worldStats.add(Stat.ENTITIES_TILE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.ENTITIES_TILE), nanoScale, false));
 			
 			worldStats.add(Stat.ENTITY_UPDATE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.ENTITY_UPDATE), nanoScale, false));
 			worldStats.add(Stat.TILE_ENTITY_UPDATE.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.TILE_ENTITY_UPDATE), nanoScale, false));
