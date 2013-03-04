@@ -159,9 +159,9 @@ public class mod_Stats implements IMod, IStatsListener {
 		if (!event.statsProfile.equals(profile)) {
 			Map<Stat, Boolean> profile = StatsAPI.getStatsProfile(event.statsProfile);
 			profileJson = new JsonObject();
-			for (Stat stat : Stat.values()) {
-				profileJson.addProperty(stat.nameAsCamelCase(), profile.containsKey(stat) ? profile.get(stat) : stat.defaultEnabled);
-			}
+			for (Stat stat : Stat.values())
+				if (profile.containsKey(stat) ? profile.get(stat) : stat.defaultEnabled)
+					profileJson.addProperty(stat.nameAsCamelCase(), true);
 		}
 		
 		writeBasic(event);
