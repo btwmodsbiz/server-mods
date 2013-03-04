@@ -1,3 +1,16 @@
+Version 4.57.2 (vMC 1.4.7 BTW 4.57)
+
+  - Added settings config to Stats mod to toggle JSON pretty printing.
+  
+  - Added stat profile information to basic.txt and world#.txt in mod_Stats.
+    
+  - Added player positions to mod_Stats.
+  
+  - Changed mod_Stats so it separates living and non-living entity list output
+    and added additional grouping to the living output.
+  
+  - Fixed incorrect value for stat in mod_Stats.
+
 Version 4.57.1 (vMC 1.4.7 BTW 4.57)
 
   - Added Stats mod to eventually replace MapData and TickMonitor.
