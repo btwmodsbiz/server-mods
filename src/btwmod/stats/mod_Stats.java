@@ -375,7 +375,7 @@ public class mod_Stats implements IMod, IStatsListener {
 		JsonObject animals = useGroups ? new JsonObject() : null;
 		JsonObject mobs = useGroups ? new JsonObject() : null;
 		JsonObject players = useGroups ? new JsonObject() : null;
-		JsonObject other = useGroups ? new JsonObject() : ret;
+		JsonObject other = new JsonObject();
 		
 		for (Entry<Class, List<StatPositionedClass>> entry : uniqueByClass.entrySet()) {
 			Class clazz = entry.getKey();
@@ -416,8 +416,9 @@ public class mod_Stats implements IMod, IStatsListener {
 			ret.add("isAnimal", animals);
 			ret.add("isMonster", mobs);
 			ret.add("isPlayer", players);
-			ret.add("isOther", other);
 		}
+		
+		ret.add("isOther", other);
 		
 		return ret;
 	}
