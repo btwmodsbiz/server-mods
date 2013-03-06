@@ -12,6 +12,7 @@ import net.minecraft.src.CommandBase;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityBat;
 import net.minecraft.src.EntityGhast;
+import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityMob;
 import net.minecraft.src.EntitySquid;
 import net.minecraft.src.ICommandSender;
@@ -59,8 +60,10 @@ public class CommandClearEntities extends CommandBase {
 		while (iterator.hasNext()) {
 			Object obj = iterator.next();
 			if (obj instanceof EntityMob || obj instanceof EntityGhast || obj instanceof EntitySquid || obj instanceof EntityBat) {
-				toRemove.add((Entity)obj);
-				count++;
+				if (!((EntityLiving)obj).isPersistenceRequired()) {
+					toRemove.add((Entity)obj);
+					count++;
+				}
 			}
 		}
 		
