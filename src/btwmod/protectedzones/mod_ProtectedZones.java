@@ -279,13 +279,14 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						
 					case CAN_PUSH:
 						// Protect against pistons from outside the area.
-						if (event instanceof BlockEvent) {
+						if (event instanceof BlockEvent && settings.protectEdits != ZoneSettings.PERMISSION.OFF) {
 							BlockEvent blockEvent = (BlockEvent)event;
+							isProtected = true;
 							
 							// Check all areas for the ZoneSettings.
 							for (Area zoneArea : area.data.areas) {
-								if (!zoneArea.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
-									isProtected = true;
+								if (zoneArea.isWithin(blockEvent.getPistonX(), blockEvent.getPistonY(), blockEvent.getPistonZ())) {
+									isProtected = false;
 									break;
 								}
 							}
