@@ -68,7 +68,7 @@ public class mod_TinyUrl implements IMod, IPlayerChatListener {
 	@Override
 	public void onPlayerChatAction(PlayerChatEvent event) {
 		String message = event.getMessage();
-		if (!message.startsWith("/")) {
+		if (event.type == PlayerChatEvent.TYPE.AUTO_COMPLETE && !message.startsWith("/")) {
 			String[] split = message.split(" ", -1);
 			String last = split[split.length - 1];
 			if (last.length() >= url.length() && (last.startsWith("http://") || last.startsWith("https://")) && !last.startsWith(url)) {
