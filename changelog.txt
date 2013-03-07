@@ -1,3 +1,7 @@
+Version 4.59.1 (vMC 1.4.7 BTW 4.59)
+
+  - Added Tiny URL mod to provide URL shortening by pressing TAB.
+
 Version 4.59.0-b (vMC 1.4.7 BTW 4.59)
 
   - Changed CommandClearEntities so it does not clear living entities that
