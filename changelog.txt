@@ -1,3 +1,11 @@
+Version 4.59.0-b (vMC 1.4.7 BTW 4.59)
+
+  - Changed CommandClearEntities so it does not clear living entities that
+    should persist.
+    
+  - Fixed mod_ProtectedZones issue where it improperly prevented pistons
+    pushes within zones with more than one area.
+
 Version 4.57.2 (vMC 1.4.7 BTW 4.57)
 
   - Added settings config to Stats mod to toggle JSON pretty printing.
