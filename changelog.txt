@@ -1,3 +1,10 @@
+Version 4.59.1-b (vMC 1.4.7 BTW 4.59)
+
+  - Changed Tiny URL so the URLs are smaller and more random.
+
+  - Fixed bug in Tiny URL where it was improperly handling normal chat that
+    contained a URL.
+
 Version 4.59.1 (vMC 1.4.7 BTW 4.59)
 
   - Added Tiny URL mod to provide URL shortening by pressing TAB.
