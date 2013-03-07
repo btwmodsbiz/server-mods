@@ -3,7 +3,6 @@ package btwmod.tinyurl;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -22,7 +21,7 @@ public class mod_TinyUrl implements IMod, IPlayerChatListener {
 		+ "<script>location.replace(\"@@@\");</script></head>"
 		+ "<body><p>Redirecting to <a href=\"###\">###</a></p></body></html>";
 	
-	private int index = new Random().nextInt(100000) + 100000;
+	private Random rand = new Random();
 	private String url = null;
 	private File redirectDirectory = null;
 
@@ -73,8 +72,11 @@ public class mod_TinyUrl implements IMod, IPlayerChatListener {
 			String last = split[split.length - 1];
 			if (last.length() >= url.length() && (last.startsWith("http://") || last.startsWith("https://")) && !last.startsWith(url)) {
 				try {
-					File redirectFile = new File(redirectDirectory,
-						Base64.encodeToString(ByteBuffer.allocate(4).putInt(index++).array(), false).replaceAll("=+$", "").replace("/", "_").replace("+", "-"));
+					File redirectFile;
+					do {
+						redirectFile = new File(redirectDirectory, getRandHash());
+					} while (redirectFile.exists());
+					
 					BufferedWriter bw = new BufferedWriter(new FileWriter(redirectFile));
 					bw.write(redirectHTML
 						.replace("@@@", last.replace("'", "\\'").replace("\"", "\\\"").replace("\0", "\\0"))
@@ -88,6 +90,20 @@ public class mod_TinyUrl implements IMod, IPlayerChatListener {
 				}
 			}
 		}
+	}
+	
+	private String getRandHash() {
+		String hash = null;
+		byte[] bytes = new byte[3];
+		do {
+			rand.nextBytes(bytes);
+			hash = Base64.encodeToString(bytes, false);
+			
+			if (hash.indexOf("/") >= 0 || hash.indexOf("+") >= 0)
+				System.out.println(hash);
+		} while (hash.indexOf("/") >= 0 || hash.indexOf("+") >= 0);
+		
+		return hash.replace("=", "");
 	}
 
 }
