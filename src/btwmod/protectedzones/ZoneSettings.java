@@ -24,6 +24,7 @@ public class ZoneSettings {
 	public PERMISSION protectEdits = PERMISSION.OFF;
 	public PERMISSION allowDoors = PERMISSION.ON;
 	public PERMISSION allowContainers = PERMISSION.OFF;
+	public PERMISSION allowHeads = PERMISSION.OFF;
 	public boolean allowOps = false;
 	
 	public PERMISSION protectEntities = PERMISSION.OFF;
@@ -43,6 +44,7 @@ public class ZoneSettings {
 		"protectEdits",
 		"allowDoors",
 		"allowContainers",
+		"allowHeads",
 		"allowOps",
 		
 		"protectEntities",
@@ -120,6 +122,7 @@ public class ZoneSettings {
 		allowOps = settings.getBoolean("allowOps", allowOps);
 		allowDoors = settings.getEnum(PERMISSION.class, "allowDoors", allowDoors);
 		allowContainers = settings.getEnum(PERMISSION.class, "allowContainers", allowContainers);
+		allowHeads = settings.getEnum(PERMISSION.class, "allowHeads", allowHeads);
 		
 		protectEntities = settings.getEnum(PERMISSION.class, "protectEntities", protectEntities);
 		allowMooshroom = settings.getBoolean("allowMooshroom", allowMooshroom);
@@ -227,6 +230,9 @@ public class ZoneSettings {
 		else if (name.equalsIgnoreCase("allowContainers") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
 			allowContainers = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), allowContainers);
 		}
+		else if (name.equalsIgnoreCase("allowHeads") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
+			allowHeads = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), allowHeads);
+		}
 		
 		else if (name.equalsIgnoreCase("protectEntities") && Settings.isEnumValue(PERMISSION.class, value.toUpperCase())) {
 			protectEntities = Settings.getEnumValue(PERMISSION.class, value.toUpperCase(), protectEntities);
@@ -269,6 +275,9 @@ public class ZoneSettings {
 		else if (name.equalsIgnoreCase("allowContainers")) {
 			return allowContainers.toString().toLowerCase();
 		}
+		else if (name.equalsIgnoreCase("allowHeads")) {
+			return allowHeads.toString().toLowerCase();
+		}
 		
 		else if (name.equalsIgnoreCase("protectEntities")) {
 			return protectEntities.toString().toLowerCase();
@@ -306,6 +315,7 @@ public class ZoneSettings {
 		strings.add("allowOps(" + (allowOps ? "on" : "off") + ")");
 		strings.add("allowDoors(" + (allowDoors.toString().toLowerCase()) + ")");
 		strings.add("allowContainers(" + (allowContainers.toString().toLowerCase()) + ")");
+		strings.add("allowHeads(" + (allowHeads.toString().toLowerCase()) + ")");
 		
 		strings.add("protectEntities(" + (protectEntities.toString().toLowerCase()) + ")");
 		strings.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
@@ -381,6 +391,7 @@ public class ZoneSettings {
 		settings.setBoolean(section, "allowOps", allowOps);
 		settings.set(section, "allowDoors", allowDoors.toString());
 		settings.set(section, "allowContainers", allowContainers.toString());
+		settings.set(section, "allowHeads", allowHeads.toString());
 		
 		settings.set(section, "protectEntities", protectEntities.toString());
 		settings.setBoolean(section, "allowMooshroom", allowMooshroom);
@@ -404,6 +415,7 @@ public class ZoneSettings {
 		list.add("allowOps(" + (allowOps ? "on" : "off") + ")");
 		list.add("allowDoors(" + allowDoors.toString().toLowerCase() + ")");
 		list.add("allowContainers(" + allowContainers.toString().toLowerCase() + ")");
+		list.add("allowHeads(" + allowHeads.toString().toLowerCase() + ")");
 		
 		list.add("protectEntities(" + (protectEntities.toString().toLowerCase()) + ")");
 		list.add("allowMooshroom(" + (allowMooshroom ? "on" : "off") + ")");
