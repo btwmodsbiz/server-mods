@@ -6,31 +6,24 @@ import java.util.Set;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.Block;
-import net.minecraft.src.BlockBed;
 import net.minecraft.src.BlockButton;
 import net.minecraft.src.BlockContainer;
-import net.minecraft.src.BlockEnchantmentTable;
-import net.minecraft.src.BlockEnderChest;
-import net.minecraft.src.BlockLever;
 import net.minecraft.src.BlockRail;
-import net.minecraft.src.BlockWorkbench;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityHanging;
 import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityMooshroom;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityVillager;
-import net.minecraft.src.FCBlockAnvil;
 import net.minecraft.src.FCBlockBloodMoss;
-import net.minecraft.src.FCBlockInfernalEnchanter;
 import net.minecraft.src.FCEntityCanvas;
 import net.minecraft.src.Facing;
 import net.minecraft.src.Item;
-import net.minecraft.src.ItemMinecart;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.MathHelper;
 import net.minecraft.src.ServerCommandManager;
 import net.minecraft.src.World;
+import net.minecraft.src.mod_FCBetterThanWolves;
 import btwmods.CommandsAPI;
 import btwmods.EntityAPI;
 import btwmods.IMod;
@@ -148,28 +141,28 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			if (block instanceof BlockRail)
 				return false;
 			
-			if (block instanceof BlockWorkbench)
+			if (block == Block.workbench)
 				return false;
 			
-			if (block instanceof FCBlockAnvil)
+			if (block == mod_FCBetterThanWolves.fcAnvil)
 				return false;
 			
-			if (block instanceof BlockLever)
+			if (block == Block.lever)
 				return false;
 			
 			if (block instanceof BlockButton)
 				return false;
 			
-			if (block instanceof BlockEnderChest)
+			if (block == Block.enderChest)
 				return false;
 			
-			if (block instanceof BlockEnchantmentTable)
+			if (block == Block.enchantmentTable)
 				return false;
 			
-			if (block instanceof BlockBed)
+			if (block == Block.bed)
 				return false;
 			
-			if (block instanceof FCBlockInfernalEnchanter)
+			if (block == mod_FCBetterThanWolves.fcInfernalEnchanter)
 				return false;
 		}
 		
