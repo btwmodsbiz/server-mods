@@ -91,7 +91,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		int zoneCount = data.getInt("count", 0);
 		for (int i = 1; i <= zoneCount; i++) {
-			if (data.hasSection("zone" + i) && !add(new ZoneSettings(data.getSectionAsSettings("zone" + i)))) {
+			if (data.hasSection("zone" + i) && !add(new Zone(data, "zone" + i))) {
 				ModLoader.outputError(getName() + " failed to load zone " + i + " as it has a duplicate name or has invalid dimensions.");
 			}
 		}
@@ -110,19 +110,19 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		return this;
 	}
 	
-	public boolean add(ZoneSettings zoneSettings) {
-		return zoneSettings != null && zonesByDimension[Util.getWorldIndexFromDimension(zoneSettings.dimension)].add(zoneSettings);
+	public boolean add(Zone zone) {
+		return zone != null && zonesByDimension[Util.getWorldIndexFromDimension(zone.dimension)].add(zone);
 	}
 	
 	public boolean remove(int dimension, String name) {
 		return name != null && zonesByDimension[Util.getWorldIndexFromDimension(dimension)].removeZone(name);
 	}
 	
-	public boolean remove(ZoneSettings zoneSettings) {
-		return zoneSettings != null && remove(zoneSettings.dimension, zoneSettings.name);
+	public boolean remove(Zone zone) {
+		return zone != null && remove(zone.dimension, zone.name);
 	}
 	
-	public ZoneSettings get(int dimension, String name) {
+	public Zone get(int dimension, String name) {
 		return zonesByDimension[Util.getWorldIndexFromDimension(dimension)].getZone(name);
 	}
 	
@@ -166,9 +166,6 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			
 			if (block == mod_FCBetterThanWolves.fcInfernalEnchanter)
 				return false;
-			
-			if (block == Block.skull)
-				return false;
 		}
 		
 		return true;
@@ -207,16 +204,16 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		if (player != null && isPlayerGloballyAllowed(player.username))
 			return false;
 		
-		List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(entity.worldObj.provider.dimensionId)].get(x, y, z);
+		List<Area<Zone>> areas = zonesByDimension[Util.getWorldIndexFromDimension(entity.worldObj.provider.dimensionId)].get(x, y, z);
 		
-		for (Area<ZoneSettings> area : areas) {
-			ZoneSettings settings = area.data;
-			if (settings != null && settings.protectEntities != ZoneSettings.PERMISSION.OFF) {
+		for (Area<Zone> area : areas) {
+			Zone zone = area.data;
+			if (zone != null && zone.permissions.protectEntities != Permission.OFF) {
 				
 				boolean isProtected = true;
 				
 				if (entity instanceof EntityMooshroom) {
-					if (settings.allowMooshroom)
+					if (zone.permissions.allowMooshroom)
 						isProtected = false;
 					
 					else if (player != null && action == ACTION.USE_ENTITY) {
@@ -226,15 +223,15 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						}
 					}
 				}
-				else if (entity instanceof EntityVillager && settings.allowVillagers) {
+				else if (entity instanceof EntityVillager && zone.permissions.allowVillagers) {
 					isProtected = false;
 				}
 				
-				if (isProtected && player != null && settings.protectEntities == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
+				if (isProtected && player != null && zone.permissions.protectEntities == Permission.WHITELIST && zone.whitelist.contains(player.username))
 					isProtected = false;
 				
 				if (isProtected) {
-					if (settings.sendDebugMessages)
+					if (zone.permissions.sendDebugMessages)
 						commandManager.notifyAdmins(server, 0, "Protect " + entity.getEntityName() + " " + action + " " + x + "," + y + "," + z + (player == null ? "" : " from " + player.username + " by " + area.data.name + "#" + area.data.getAreaIndex(area)), new Object[0]);
 					
 					return true;
@@ -252,32 +249,32 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		if (player != null && isPlayerGloballyAllowed(player.username))
 			return true;
 		
-		List<Area<ZoneSettings>> areas = zonesByDimension[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
+		List<Area<Zone>> areas = zonesByDimension[Util.getWorldIndexFromDimension(world.provider.dimensionId)].get(x, y, z);
 		
-		for (Area<ZoneSettings> area : areas) {
-			ZoneSettings settings = area.data;
+		for (Area<Zone> area : areas) {
+			Zone zone = area.data;
 			ItemStack itemStack = null;
 			
-			if (settings != null) {
+			if (zone != null) {
 				
 				boolean isProtected = false;
 				
 				switch (action) {
 					case EXPLODE:
-						if (settings.protectExplosions)
+						if (zone.permissions.protectExplosions)
 							isProtected = true;
 						break;
 						
 					case IS_FLAMMABLE:
 					case BURN:
 					case FIRE_SPREAD_ATTEMPT:
-						if (settings.protectBurning)
+						if (zone.permissions.protectBurning)
 							isProtected = true;
 						break;
 						
 					case CAN_PUSH:
 						// Protect against pistons from outside the area.
-						if (event instanceof BlockEvent && settings.protectEdits != ZoneSettings.PERMISSION.OFF) {
+						if (event instanceof BlockEvent && zone.permissions.protectEdits != Permission.OFF) {
 							BlockEvent blockEvent = (BlockEvent)event;
 							isProtected = true;
 							
@@ -292,7 +289,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						break;
 						
 					default:
-						if (settings.protectEdits != ZoneSettings.PERMISSION.OFF) {
+						if (zone.permissions.protectEdits != Permission.OFF) {
 							isProtected = true;
 							
 							// Allow immature bloodmoss to be destroyed.
@@ -303,17 +300,17 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 							if (isProtected && player != null) {
 								if (isProtected && action == ACTION.ACTIVATE) {
 									if ((block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate)
-											&& settings.isPlayerAllowed(player.username, settings.allowDoors))
+											&& zone.isPlayerAllowed(player.username, zone.permissions.allowDoors))
 										isProtected = false;
 									
-									else if (block instanceof BlockContainer && settings.isPlayerAllowed(player.username, settings.allowContainers))
+									else if (block instanceof BlockContainer && zone.isPlayerAllowed(player.username, zone.permissions.allowContainers))
 										isProtected = false;
 								}
 								
-								if (isProtected && settings.allowOps && isOp(player.username))
+								if (isProtected && zone.permissions.allowOps && isOp(player.username))
 									isProtected = false;
 							
-								if (isProtected && action == ACTION.DIG && block == Block.skull && settings.isPlayerAllowed(player.username, settings.allowHeads)) {
+								if (isProtected && action == ACTION.DIG && block == Block.skull && zone.isPlayerAllowed(player.username, zone.permissions.allowHeads)) {
 									TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
 									if (tileEntity instanceof TileEntitySkull) {
 										TileEntitySkull tileEntitySkull = (TileEntitySkull)tileEntity;
@@ -340,7 +337,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 									}
 								}
 							
-								if (isProtected && settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
+								if (isProtected && zone.permissions.protectEdits == Permission.WHITELIST && zone.whitelist.contains(player.username))
 									isProtected = false;
 							}
 						}
@@ -349,7 +346,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				}
 				
 				if (isProtected) {
-					if (settings.sendDebugMessages) {
+					if (zone.permissions.sendDebugMessages) {
 						if (itemStack == null && event instanceof PlayerBlockEvent) {
 							itemStack = ((PlayerBlockEvent)event).getItemStack();
 						}
@@ -480,8 +477,8 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		int count = 1;
 		for (ProtectedZones zones : zonesByDimension) {
-			for (ZoneSettings zoneSettings : zones.getZones()) {
-				zoneSettings.saveToSettings(data, "zone" + count);
+			for (Zone zone : zones.getZones()) {
+				zone.saveToSettings(data, "zone" + count);
 				count++;
 			}
 		}

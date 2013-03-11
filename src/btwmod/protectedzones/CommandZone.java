@@ -29,6 +29,9 @@ public class CommandZone extends CommandBaseExtended {
 		if (isStringMatch(args, 0, "create")) {
 			processCommandCreate(sender, args);
 		}
+		else if (isStringMatch(args, 0, "copy")) {
+			processCommandCopy(sender, args);
+		}
 		else if (isStringMatch(args, 0, "destroy")) {
 			processCommandDestroy(sender, args);
 		}
@@ -66,8 +69,8 @@ public class CommandZone extends CommandBaseExtended {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 
-			ZoneSettings zone = null;
-			if (!ZoneSettings.isValidName(args[2])) {
+			Zone zone = null;
+			if (!Zone.isValidName(args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "The zone name specified is invalid.");
 			}
 			else if (mod.get(dimension, args[2]) != null) {
@@ -75,7 +78,7 @@ public class CommandZone extends CommandBaseExtended {
 			}
 			else {
 				try {
-					zone = new ZoneSettings(args[2], dimension);
+					zone = new Zone(args[2], dimension);
 				}
 				catch (IllegalArgumentException e) {
 					
@@ -85,7 +88,7 @@ public class CommandZone extends CommandBaseExtended {
 					sender.sendChatToPlayer(Util.COLOR_RED + "Invalid zone parameters.");
 				}
 				else if (mod.add(zone)) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Created new zone: " + Util.COLOR_WHITE + args[2]);
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Created new zone " + Util.COLOR_WHITE + args[2]);
 					mod.saveAreas();
 				}
 				else {
@@ -98,19 +101,60 @@ public class CommandZone extends CommandBaseExtended {
 		}
 	}
 	
+	public void processCommandCopy(ICommandSender sender, String[] args) {
+		if (args.length == 4 && isWorldName(args, 1)) {
+			
+			int dimension = Util.getWorldDimensionFromName(args[1]);
+
+			Zone zone = null;
+			Zone oldZone = null;
+			if (!Zone.isValidName(args[3])) {
+				sender.sendChatToPlayer(Util.COLOR_RED + "The zone name " + args[3] + " is invalid.");
+			}
+			else if (mod.get(dimension, args[3]) != null) {
+				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with the name " + args[3] + " already exists.");
+			}
+			else if ((oldZone = mod.get(dimension, args[2])) == null) {
+				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with the name " + args[2] + " does not exist.");
+			}
+			else {
+				try {
+					zone = new Zone(oldZone, args[3]);
+				}
+				catch (IllegalArgumentException e) {
+					
+				}
+				
+				if (zone == null) {
+					sender.sendChatToPlayer(Util.COLOR_RED + "Invalid zone parameters.");
+				}
+				else if (mod.add(zone)) {
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Created zone " + Util.COLOR_WHITE + args[3] + Util.COLOR_YELLOW + " as copy of " + Util.COLOR_WHITE + oldZone.name);
+					mod.saveAreas();
+				}
+				else {
+					sender.sendChatToPlayer(Util.COLOR_RED + "Failed to add new zone.");
+				}
+			}
+		}
+		else {
+			throw new WrongUsageException(getCommandUsage("copy"), new Object[0]);
+		}
+	}
+	
 	public void processCommandDestroy(ICommandSender sender, String[] args) {
 		if (args.length == 3 && isWorldName(args, 1)) {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
-			if (!ZoneSettings.isValidName(args[2])) {
+			if (!Zone.isValidName(args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "The zone name specified is invalid.");
 			}
 			else if (!mod.remove(dimension, args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with that name does not exist.");
 			}
 			else {
-				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed zone: " + Util.COLOR_WHITE + args[2]);
+				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed zone " + Util.COLOR_WHITE + args[2]);
 				mod.saveAreas();
 			}
 		}
@@ -124,15 +168,15 @@ public class CommandZone extends CommandBaseExtended {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
-			ZoneSettings settings = null;
-			if (!ZoneSettings.isValidName(args[2])) {
+			Zone zone = null;
+			if (!Zone.isValidName(args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "The zone name specified is invalid.");
 			}
-			else if ((settings = mod.get(dimension, args[2])) == null) {
+			else if ((zone = mod.get(dimension, args[2])) == null) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with that name does not exist.");
 			}
-			else if (settings.setSetting(args[3], args[4])) {
-				String newValue = settings.getSetting(args[3]);
+			else if (zone.permissions.set(args[3], args[4])) {
+				String newValue = zone.permissions.get(args[3]);
 				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Setting '" + args[3] + "' set to " + (newValue == null ? "null" : newValue) + ".");
 				mod.saveAreas();
 			}
@@ -150,11 +194,11 @@ public class CommandZone extends CommandBaseExtended {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
-			ZoneSettings settings = null;
-			if (!ZoneSettings.isValidName(args[2])) {
+			Zone zone = null;
+			if (!Zone.isValidName(args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "The zone name specified is invalid.");
 			}
-			else if ((settings = mod.get(dimension, args[2])) == null) {
+			else if ((zone = mod.get(dimension, args[2])) == null) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with that name does not exist.");
 			}
 			else if (args.length == 7) {
@@ -163,10 +207,10 @@ public class CommandZone extends CommandBaseExtended {
 				int x2 = parseInt(sender, args[5]);
 				int z2 = parseInt(sender, args[6]);
 				
-				Area area = settings.addArea(x1, z1, x2, z2);
+				Area area = zone.addArea(x1, z1, x2, z2);
 				
 				if (area != null) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added area to " + settings.name + ": " + area.toString());
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added area to " + zone.name + ": " + area.toString());
 					mod.saveAreas();
 				}
 				else {
@@ -181,10 +225,10 @@ public class CommandZone extends CommandBaseExtended {
 				int y2 = parseIntBounded(sender, args[7], 0, 256);
 				int z2 = parseInt(sender, args[8]);
 				
-				Cube cube = settings.addCube(x1, y1, z1, x2, y2, z2);
+				Cube cube = zone.addCube(x1, y1, z1, x2, y2, z2);
 				
 				if (cube != null) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added cube to zone " + settings.name + ": " + cube.toString());
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Added cube to zone " + zone.name + ": " + cube.toString());
 					mod.saveAreas();
 				}
 				else {
@@ -202,22 +246,22 @@ public class CommandZone extends CommandBaseExtended {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
-			ZoneSettings settings = null;
-			if (!ZoneSettings.isValidName(args[2])) {
+			Zone zone = null;
+			if (!Zone.isValidName(args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "The zone name specified is invalid.");
 			}
-			else if ((settings = mod.get(dimension, args[2])) == null) {
+			else if ((zone = mod.get(dimension, args[2])) == null) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with that name does not exist.");
 			}
 			else {
 				int areaNum = parseIntWithMin(sender, args[3], 1);
-				Area removed = settings.removeArea(areaNum - 1);
+				Area removed = zone.removeArea(areaNum - 1);
 				if (removed != null) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed area #" + areaNum + " (" + removed.toString() + ") from zone " + settings.name + ".");
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed area #" + areaNum + " (" + removed.toString() + ") from zone " + zone.name + ".");
 					mod.saveAreas();
 				}
 				else {
-					sender.sendChatToPlayer(Util.COLOR_RED + "Zone " + settings.name + " does not have an area #" + areaNum + ".");
+					sender.sendChatToPlayer(Util.COLOR_RED + "Zone " + zone.name + " does not have an area #" + areaNum + ".");
 				}
 			}
 		}
@@ -231,25 +275,25 @@ public class CommandZone extends CommandBaseExtended {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
-			ZoneSettings settings;
-			if (!ZoneSettings.isValidName(args[2])) {
+			Zone zone;
+			if (!Zone.isValidName(args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "The zone name specified is invalid.");
 			}
-			else if ((settings = mod.get(dimension, args[2])) == null) {
+			else if ((zone = mod.get(dimension, args[2])) == null) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with that name does not exist.");
 			}
 			else {
-				sender.sendChatToPlayer(Util.COLOR_RED + "=== Zone " + settings.name + " in " + Util.getWorldNameFromDimension(settings.dimension) + " ===");
+				sender.sendChatToPlayer(Util.COLOR_RED + "=== Zone " + zone.name + " in " + Util.getWorldNameFromDimension(zone.dimension) + " ===");
 				
-				for (int i = 1; i <= settings.areas.size(); i++) {
-					Area area = settings.areas.get(i - 1);
+				for (int i = 1; i <= zone.areas.size(); i++) {
+					Area area = zone.areas.get(i - 1);
 					sender.sendChatToPlayer(Util.COLOR_AQUA + "<Area #" + i + ">" + Util.COLOR_WHITE + " " + area.toString());
 				}
 				
 				String settingsHeader = Util.COLOR_AQUA + "<Settings>" + Util.COLOR_WHITE + " ";
 				String playersHeader = Util.COLOR_AQUA + "<Whitelist>" + Util.COLOR_WHITE + " ";
 				
-				List<String> settingMessages = Util.combineIntoMaxLengthMessages(settings.settingsAsList(), Packet3Chat.maxChatLength, ", ", true);
+				List<String> settingMessages = Util.combineIntoMaxLengthMessages(zone.permissions.asList(), Packet3Chat.maxChatLength, ", ", true);
 				if (settingMessages.size() == 1 && (settingsHeader.length() + settingMessages.get(0).length()) <= Packet3Chat.maxChatLength) {
 					sender.sendChatToPlayer(settingsHeader + settingMessages.get(0));
 				}
@@ -260,7 +304,7 @@ public class CommandZone extends CommandBaseExtended {
 					}
 				}
 				
-				List<String> playerMessages = Util.combineIntoMaxLengthMessages(settings.playersAsList(), Packet3Chat.maxChatLength, ", ", true);
+				List<String> playerMessages = Util.combineIntoMaxLengthMessages(zone.whitelist.asList(), Packet3Chat.maxChatLength, ", ", true);
 				if (playerMessages.size() == 1 && (playersHeader.length() + playerMessages.get(0).length()) <= Packet3Chat.maxChatLength) {
 					sender.sendChatToPlayer(playersHeader + playerMessages.get(0));
 				}
@@ -278,7 +322,7 @@ public class CommandZone extends CommandBaseExtended {
 	}
 	
 	public void processCommandList(ICommandSender sender, String[] args) {
-		if (args.length > 2 || !isWorldName(args, 1))
+		if (args.length > 3 || !isWorldName(args, 1))
 			throw new WrongUsageException(getCommandUsage("list"), new Object[0]);
 		
 		int dimension = Util.getWorldDimensionFromName(args[1]);
@@ -308,30 +352,30 @@ public class CommandZone extends CommandBaseExtended {
 			
 			int dimension = Util.getWorldDimensionFromName(args[1]);
 			
-			ZoneSettings settings;
-			if (!ZoneSettings.isValidName(args[2])) {
+			Zone zone;
+			if (!Zone.isValidName(args[2])) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "The zone name specified is invalid.");
 			}
-			else if ((settings = mod.get(dimension, args[2])) == null) {
+			else if ((zone = mod.get(dimension, args[2])) == null) {
 				sender.sendChatToPlayer(Util.COLOR_RED + "A zone with that name does not exist.");
 			}
 			
 			else if (args[0].equalsIgnoreCase("grant")) {
-				if (settings.grantPlayer(args[3])) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Whitelisted player " + args[3] + " for zone " + settings.name + ".");
+				if (zone.whitelist.add(args[3])) {
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Whitelisted player " + args[3] + " for zone " + zone.name + ".");
 					mod.saveAreas();
 				}
 				else
-					sender.sendChatToPlayer(Util.COLOR_RED + "Player " + args[3] + " is already whitelisted for zone " + settings.name + ".");
+					sender.sendChatToPlayer(Util.COLOR_RED + "Player " + args[3] + " is already whitelisted for zone " + zone.name + ".");
 			}
 			
 			else if (args[0].equalsIgnoreCase("revoke")) {
-				if (settings.revokePlayer(args[3])) {
-					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed player " + args[3] + " from zone " + settings.name + "'s whitelist.");
+				if (zone.whitelist.remove(args[3])) {
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed player " + args[3] + " from zone " + zone.name + "'s whitelist.");
 					mod.saveAreas();
 				}
 				else
-					sender.sendChatToPlayer(Util.COLOR_RED + "Player " + args[3] + " was not whitelisted for zone " + settings.name + ".");
+					sender.sendChatToPlayer(Util.COLOR_RED + "Player " + args[3] + " was not whitelisted for zone " + zone.name + ".");
 			}
 		}
 		else {
@@ -343,6 +387,9 @@ public class CommandZone extends CommandBaseExtended {
 		if (subCommand != null) {
 			if (subCommand.equalsIgnoreCase("create"))
 				return "/" + getCommandName() + " create <dimension> <zonename>";
+			
+			else if (subCommand.equalsIgnoreCase("copy"))
+				return "/" + getCommandName() + " copy <dimension> <zonename> <zonecopyname>";
 			
 			else if (subCommand.equalsIgnoreCase("destroy"))
 				return "/" + getCommandName() + " destroy <dimension> <zonename>";
@@ -380,26 +427,26 @@ public class CommandZone extends CommandBaseExtended {
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
 		if (args.length == 1)
-			return getListOfStringsMatchingLastWord(args, new String[] { "help", "create", "destroy", "set", "add", "remove", "info", "list", "grant", "revoke" });
+			return getListOfStringsMatchingLastWord(args, new String[] { "help", "create", "copy", "destroy", "set", "add", "remove", "info", "list", "grant", "revoke" });
 		
 		else if (args.length == 2 && isStringMatch(args, 0, "help")) {
-			return getListOfStringsMatchingLastWord(args, new String[] { "create", "destroy", "set", "add", "remove", "info", "list", "grant", "revoke" });
+			return getListOfStringsMatchingLastWord(args, new String[] { "create", "copy", "destroy", "set", "add", "remove", "info", "list", "grant", "revoke" });
 		}
 		
 		// <dimension>
-		else if (args.length == 2 && isStringMatch(args, 0, new String[] { "create", "destroy", "set", "add", "remove", "info", "list", "grant", "revoke" })) {
+		else if (args.length == 2 && isStringMatch(args, 0, new String[] { "create", "copy", "destroy", "set", "add", "remove", "info", "list", "grant", "revoke" })) {
 			return getListOfStringsMatchingLastWord(args, new String[] { "Overworld", "Nether", "TheEnd" });
 		}
 		
 		// <zonename>
-		else if (args.length == 3 && isWorldName(args, 1) && (isStringMatch(args, 0, new String[] { "destroy", "set", "add", "remove", "info", "grant", "revoke" }))) {
+		else if (args.length == 3 && isWorldName(args, 1) && (isStringMatch(args, 0, new String[] { "copy", "destroy", "set", "add", "remove", "info", "grant", "revoke" }))) {
 			List names = mod.getZoneNames(Util.getWorldDimensionFromName(args[1]));
 			return getListOfStringsMatchingLastWord(args, (String[])names.toArray(new String[names.size()]));
 		}
 		
 		// <setting>
 		else if (args.length == 4 && isStringMatch(args, 0, "set")) {
-			return getListOfStringsMatchingLastWord(args, ZoneSettings.settings);
+			return getListOfStringsMatchingLastWord(args, ZonePermissions.settings);
 		}
 		
 		// <value>
@@ -421,11 +468,11 @@ public class CommandZone extends CommandBaseExtended {
 				return super.addTabCompletionOptions(sender, args);
 			}
 			
-			ZoneSettings settings = mod.get(dimension, args[2]);
-			if (settings == null)
+			Zone zone = mod.get(dimension, args[2]);
+			if (zone == null)
 				return super.addTabCompletionOptions(sender, args);
 			
-			return getListOfStringsFromIterableMatchingLastWord(args, settings.playersAsList());
+			return getListOfStringsFromIterableMatchingLastWord(args, zone.whitelist.asList());
 		}
 		
 		return super.addTabCompletionOptions(sender, args);

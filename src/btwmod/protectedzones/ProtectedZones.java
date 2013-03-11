@@ -9,40 +9,40 @@ import java.util.Map.Entry;
 import btwmods.util.Area;
 import btwmods.util.Zones;
 
-public class ProtectedZones extends Zones<ZoneSettings> {
+public class ProtectedZones extends Zones<Zone> {
 
-	private Map<String, ZoneSettings> byName = new LinkedHashMap<String, ZoneSettings>();
+	private Map<String, Zone> byName = new LinkedHashMap<String, Zone>();
 	
 	public boolean containsZone(String name) {
 		return byName.containsKey(name.toLowerCase());
 	}
 	
-	public boolean containsZone(ZoneSettings zone) {
+	public boolean containsZone(Zone zone) {
 		return byName.containsKey(zone.name.toLowerCase());
 	}
 
-	public ZoneSettings getZone(String name) {
+	public Zone getZone(String name) {
 		return byName.get(name.toLowerCase());
 	}
 	
 	public List<String> getZoneNames() {
 		List<String> list = new ArrayList<String>();
-		for (Entry<String, ZoneSettings> entry : byName.entrySet()) {
+		for (Entry<String, Zone> entry : byName.entrySet()) {
 			list.add(entry.getValue().name);
 		}
 		return list;
 	}
 	
-	public List<ZoneSettings> getZones() {
-		List<ZoneSettings> list = new ArrayList<ZoneSettings>();
-		for (Entry<String, ZoneSettings> entry : byName.entrySet()) {
+	public List<Zone> getZones() {
+		List<Zone> list = new ArrayList<Zone>();
+		for (Entry<String, Zone> entry : byName.entrySet()) {
 			list.add(entry.getValue());
 		}
 		return list;
 	}
 
 	@Override
-	public boolean add(Area<ZoneSettings> area) {
+	public boolean add(Area<Zone> area) {
 		if (containsZone(area.data) && super.add(area)) {
 			return true;
 		}
@@ -50,7 +50,7 @@ public class ProtectedZones extends Zones<ZoneSettings> {
 		return false;
 	}
 	
-	public boolean add(ZoneSettings zone) {
+	public boolean add(Zone zone) {
 		if (!containsZone(zone)) {
 			zone.setProtectedZones(this);
 			byName.put(zone.name.toLowerCase(), zone);
@@ -61,12 +61,12 @@ public class ProtectedZones extends Zones<ZoneSettings> {
 		return false;
 	}
 	
-	public boolean removeZone(ZoneSettings zone) {
+	public boolean removeZone(Zone zone) {
 		return zone != null && removeZone(zone.name);
 	}
 	
 	public boolean removeZone(String name) {
-		ZoneSettings removed;
+		Zone removed;
 		if (name != null && (removed = byName.remove(name.toLowerCase())) != null) {
 			removed.setProtectedZones(null);
 			removeAll(removed.areas);
@@ -79,7 +79,7 @@ public class ProtectedZones extends Zones<ZoneSettings> {
 	@Override
 	public void clear() {
 		super.clear();
-		for (Entry<String, ZoneSettings> entry : byName.entrySet()) {
+		for (Entry<String, Zone> entry : byName.entrySet()) {
 			entry.getValue().setProtectedZones(null);
 		}
 		byName.clear();
