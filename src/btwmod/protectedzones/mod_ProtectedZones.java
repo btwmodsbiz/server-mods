@@ -318,7 +318,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				
 				if (isProtected) {
 					if (settings.sendDebugMessages) {
-						if (itemStack != null && event instanceof PlayerBlockEvent) {
+						if (itemStack == null && event instanceof PlayerBlockEvent) {
 							itemStack = ((PlayerBlockEvent)event).getItemStack();
 						}
 						
