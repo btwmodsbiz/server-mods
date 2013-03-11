@@ -155,16 +155,20 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 	@Override
 	public void onPlayerBlockAction(PlayerBlockEvent event) {
 		switch (event.getType()) {
-			case ACTIVATED:
-				break;
 			case ACTIVATION_ATTEMPT:
 				break;
-			case CHECK_PLAYEREDIT:
+			case ACTIVATED:
+				break;
+			case ITEM_USE_ATTEMPT:
+				break;
+			case ITEM_USE_CHECK_EDIT:
+				break;
+			case ITEM_USED:
 				logger.playerEdit(event, event.getPlayer(), event.getDirection(), event.getPlayer().dimension, event.getX(), event.getY(), event.getZ(), event.getItemStack());
 				break;
-			case PLACE_ATTEMPT:
-				break;
 			case REMOVE_ATTEMPT:
+				break;
+			case REMOVED:
 				logger.playerRemove(event, event.getPlayer(), event.getPlayer().dimension, event.getX(), event.getY(), event.getZ());
 				break;
 			case GET_ENDERCHEST_INVENTORY:
