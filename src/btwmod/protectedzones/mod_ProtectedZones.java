@@ -47,8 +47,8 @@ import btwmods.world.IBlockListener;
 public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockListener, IPlayerActionListener, IEntityListener {
 	
 	public enum ACTION {
-		PLACE, DIG, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY,
-		CHECK_PLAYER_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT, CAN_PUSH, TRAMPLE_FARMLAND
+		DIG, ACTIVATE, EXPLODE, ATTACK_ENTITY, USE_ENTITY,
+		ITEM_USE_CHECK_EDIT, IS_ENTITY_INVULNERABLE, BURN, IS_FLAMMABLE, FIRE_SPREAD_ATTEMPT, CAN_PUSH, TRAMPLE_FARMLAND
 	};
 
 	private Settings data;
@@ -291,15 +291,11 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 							isProtected = true;
 							
 							// Allow immature bloodmoss to be destroyed.
-							if ((action == ACTION.DIG || action == ACTION.CHECK_PLAYER_EDIT) && block instanceof FCBlockBloodMoss && event instanceof BlockEventBase && (((BlockEventBase)event).getMetadata() & 7) < 7) {
+							if ((action == ACTION.DIG) && block instanceof FCBlockBloodMoss && event instanceof BlockEventBase && (((BlockEventBase)event).getMetadata() & 7) < 7) {
 								isProtected = false;
 							}
 							
 							if (isProtected && player != null) {
-								// Allow minecarts to be placed on rails.
-								if (isProtected && action == ACTION.PLACE && block instanceof BlockRail && event instanceof PlayerBlockEvent && (itemStack = ((PlayerBlockEvent)event).getItemStack()) != null && itemStack.getItem() instanceof ItemMinecart)
-									isProtected = false;
-								
 								if (isProtected && action == ACTION.ACTIVATE) {
 									if ((block == Block.doorWood || block == Block.trapdoor || block == Block.fenceGate)
 											&& settings.isPlayerAllowed(player.username, settings.allowDoors))
@@ -345,62 +341,34 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 		
 		return false;
 	}
-	
-	protected boolean isProtectedBlock(APIEvent event, ACTION action, EntityPlayer player, Block block, World world, int x, int y, int z, int direction) {
-		
-		switch (direction) {
-			case 0:
-				y--;
-				break;
-			case 1:
-				y++;
-				break;
-			case 2:
-				z--;
-				break;
-			case 3:
-				z++;
-				break;
-			case 4:
-				x--;
-			case 5:
-				x++;
-				break;
-		}
-		
-		return isProtectedBlock(event, action, player, block, world, x, y, z);
-	}
 
 	@Override
 	public void onPlayerBlockAction(PlayerBlockEvent event) {
 		ACTION action = null;
-		boolean checkDirectionAdjusted = false;
 		
 		switch (event.getType()) {
-			case ACTIVATED:
-				break;
 			case ACTIVATION_ATTEMPT:
 				action = ACTION.ACTIVATE;
+				break;
+			case ACTIVATED:
 				break;
 			case REMOVE_ATTEMPT:
 				action = ACTION.DIG;
 				break;
-			case PLACE_ATTEMPT:
-				action = ACTION.PLACE;
-				checkDirectionAdjusted = true;
+			case REMOVED:
 				break;
-			case CHECK_PLAYEREDIT:
-				action = ACTION.CHECK_PLAYER_EDIT;
+			case ITEM_USE_ATTEMPT:
+				break;
+			case ITEM_USE_CHECK_EDIT:
+				action = ACTION.ITEM_USE_CHECK_EDIT;
+				break;
+			case ITEM_USED:
 				break;
 			case GET_ENDERCHEST_INVENTORY:
 				break;
 		}
 		
-		if (action != null && (
-				isProtectedBlock(event, action, event.getPlayer(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())
-				|| (checkDirectionAdjusted && isProtectedBlock(event, action, event.getPlayer(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getDirection()))
-			)) {
-			
+		if (action != null && isProtectedBlock(event, action, event.getPlayer(), event.getBlock(), event.getWorld(), event.getX(), event.getY(), event.getZ())) {
 			if (event.getType() == PlayerBlockEvent.TYPE.ACTIVATION_ATTEMPT)
 				event.markHandled();
 			else
