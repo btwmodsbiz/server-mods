@@ -1,3 +1,17 @@
+Version 4.59.2 (vMC 1.4.7 BTW 4.59)
+
+  - Added allowHeads permission to the Protected Zones mod to allow players
+    to place/remove their own skulls.
+    
+  - Refactored ZoneSettings so it stores its permissions and whitelist in
+    separate classes. Also added allowHeads permission.
+    
+  - Changed Item Logger to use the new PlayerBlockEvent TYPE values.
+  
+  - Changed Protected Zones mod for the changes to PlayerAPI and related classes.
+
+  - Fixed small bug with Protected Zone's debug output.
+
 Version 4.59.1-b (vMC 1.4.7 BTW 4.59)
 
   - Changed Tiny URL so the URLs are smaller and more random.
