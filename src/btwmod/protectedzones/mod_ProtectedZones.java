@@ -22,6 +22,8 @@ import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.MathHelper;
 import net.minecraft.src.ServerCommandManager;
+import net.minecraft.src.TileEntity;
+import net.minecraft.src.TileEntitySkull;
 import net.minecraft.src.World;
 import net.minecraft.src.mod_FCBetterThanWolves;
 import btwmods.CommandsAPI;
@@ -163,6 +165,9 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				return false;
 			
 			if (block == mod_FCBetterThanWolves.fcInfernalEnchanter)
+				return false;
+			
+			if (block == Block.skull)
 				return false;
 		}
 		
@@ -307,6 +312,33 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 								
 								if (isProtected && settings.allowOps && isOp(player.username))
 									isProtected = false;
+							
+								if (isProtected && action == ACTION.DIG && block == Block.skull && settings.isPlayerAllowed(player.username, settings.allowHeads)) {
+									TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
+									if (tileEntity instanceof TileEntitySkull) {
+										TileEntitySkull tileEntitySkull = (TileEntitySkull)tileEntity;
+										if (tileEntitySkull.getSkullType() == 3 && player.username.equalsIgnoreCase(tileEntitySkull.getExtraType())) {
+											isProtected = false;
+										}
+									}
+								}
+								
+								if (isProtected && action == ACTION.ITEM_USE_CHECK_EDIT) {
+									PlayerBlockEvent playerBlockEvent = (PlayerBlockEvent)event;
+									if ((itemStack = playerBlockEvent.getItemStack()) != null
+											&& playerBlockEvent.getDirection() == 1
+											&& itemStack.getItem() == Item.skull
+											&& itemStack.getItemDamage() == 3
+											&& itemStack.hasTagCompound()
+											&& itemStack.getTagCompound().hasKey("SkullOwner")
+											&& player.username.equalsIgnoreCase(itemStack.getTagCompound().getString("SkullOwner"))
+											&& playerBlockEvent.getBlockId() == 0
+											&& playerBlockEvent.getY() > 1
+											&& playerBlockEvent.getWorld().getBlockId(playerBlockEvent.getX(), playerBlockEvent.getY() - 1, playerBlockEvent.getZ()) != 0) {
+										
+										isProtected = false;
+									}
+								}
 							
 								if (isProtected && settings.protectEdits == ZoneSettings.PERMISSION.WHITELIST && settings.isPlayerWhitelisted(player.username))
 									isProtected = false;
