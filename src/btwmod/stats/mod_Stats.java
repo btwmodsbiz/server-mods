@@ -197,6 +197,9 @@ public class mod_Stats implements IMod, IStatsListener {
 			worldStats.add(Stat.WORLD_LOADED_ENTITIES.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.WORLD_LOADED_ENTITIES), 1.0D, false));
 			worldStats.add(Stat.WORLD_LOADED_TILE_ENTITIES.nameAsCamelCase(), averageToJson(event.worldStats[i].averages.get(Stat.WORLD_LOADED_TILE_ENTITIES), 1.0D, false));
 			
+			if (event.serverStats.players.length > 2)
+				worldStats.add("byEntity", listToJsonArray(timeByClass(Stat.ENTITY_UPDATE, event.worldStats[i], null, 10)));
+			
 			worldStats.add("measurements", averageToJson(event.worldStats[i].measurementsQueued, 1.0D, false));
 			
 			worlds.add(worldStats);
@@ -234,9 +237,9 @@ public class mod_Stats implements IMod, IStatsListener {
 			Map<Class, List<StatPositionedClass>> uniqueTileEntitiesByClass = uniqueByClass(Stat.TILE_ENTITY_UPDATE, event.worldStats[i]);
 			
 			String measurementsByStat = gson.toJson(measurementsByStatJson);
-			String timeByEntity = gson.toJson(timeByClassToJson(Stat.ENTITY_UPDATE, event.worldStats[i], uniqueEntitiesByClass));
-			String timeByTileEntity = gson.toJson(timeByClassToJson(Stat.TILE_ENTITY_UPDATE, event.worldStats[i], uniqueTileEntitiesByClass));
-			String timeByBlock = gson.toJson(timeByClassToJson(Stat.BLOCK_UPDATE, event.worldStats[i], uniqueBlocksByClass));
+			String timeByEntity = gson.toJson(listToJsonArray(timeByClass(Stat.ENTITY_UPDATE, event.worldStats[i], uniqueEntitiesByClass, 0)));
+			String timeByTileEntity = gson.toJson(listToJsonArray(timeByClass(Stat.TILE_ENTITY_UPDATE, event.worldStats[i], uniqueTileEntitiesByClass, 0)));
+			String timeByBlock = gson.toJson(listToJsonArray(timeByClass(Stat.BLOCK_UPDATE, event.worldStats[i], uniqueBlocksByClass, 0)));
 			String timeByRegion = gson.toJson(timeByRegionToJson(event.worldStats[i]));
 			String timeByChunk = gson.toJson(timeByChunkToJson(event.worldStats[i]));
 			String entitiesLiving = gson.toJson(uniqueByClassToJson(uniqueEntitiesByClass, true, EntityLiving.class, false));
@@ -423,7 +426,7 @@ public class mod_Stats implements IMod, IStatsListener {
 		return ret;
 	}
 	
-	private static JsonArray timeByClassToJson(Stat stat, WorldStats worldStats, Map<Class, List<StatPositionedClass>> uniqueEntitiesByClass) {
+	private static List<JsonElement> timeByClass(Stat stat, WorldStats worldStats, Map<Class, List<StatPositionedClass>> uniqueEntitiesByClass, int max) {
 		Map<Double, JsonElement> sorted = new TreeMap<Double, JsonElement>(comparatorDouble);
 		
 		for (Entry<Class, Average> entry : worldStats.timeByClass.get(stat).entrySet()) {
@@ -438,12 +441,22 @@ public class mod_Stats implements IMod, IStatsListener {
 			sorted.put(entry.getValue().getAverage(), json);
 		}
 		
-		JsonArray list = new JsonArray();
+		List<JsonElement> list = new ArrayList<JsonElement>();
 		for (Entry<Double, JsonElement> entry : sorted.entrySet()) {
 			list.add(entry.getValue());
+			if (max > 0 && list.size() == max)
+				break;
 		}
 		
 		return list;
+	}
+	
+	private static JsonArray listToJsonArray(List<JsonElement> list) {
+		JsonArray json = new JsonArray();
+		for (JsonElement elem : list) {
+			json.add(elem);
+		}
+		return json;
 	}
 	
 	private static JsonObject timeByChunkToJson(WorldStats worldStats) {
