@@ -1,3 +1,10 @@
+Version 4.59.2-b (vMC 1.4.7 BTW 4.59)
+
+  - Changed the Stats mod so basic.txt includes the top 10 entities using tick
+    time, but only if there are more than 2 players online.
+    
+  - Changed the Stats mod so basic.txt includes the online player count.
+
 Version 4.59.2 (vMC 1.4.7 BTW 4.59)
 
   - Added allowHeads permission to the Protected Zones mod to allow players
