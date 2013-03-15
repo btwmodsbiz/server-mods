@@ -181,6 +181,7 @@ public class mod_Stats implements IMod, IStatsListener {
 		basicStats.add("tick", averageToJson(event.serverStats.tickTime, nanoScale, false));
 		basicStats.add("tickSec", averageToJson(ticksPerSecond, 0.01D, false));
 		basicStats.add("profile", profileJson);
+		basicStats.addProperty("players", event.serverStats.players.length);
 		
 		JsonArray worlds = new JsonArray();
 		for (int i = 0, l = event.worldStats.length; i < l; i++) {
