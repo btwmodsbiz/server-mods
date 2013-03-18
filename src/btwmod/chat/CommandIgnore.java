@@ -2,10 +2,10 @@ package btwmod.chat;
 
 import java.util.List;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.WrongUsageException;
+import btwmods.ChatAPI;
 import btwmods.Util;
 import btwmods.commands.CommandBaseExtended;
 
@@ -53,7 +53,7 @@ public class CommandIgnore extends CommandBaseExtended {
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
 		if (args.length == 1)
-			return getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames());
+			return getListOfStringsMatchingLastWord(args, ChatAPI.getAllUsernamesAliased());
 		else
 			return super.addTabCompletionOptions(sender, args);
 	}
