@@ -13,14 +13,15 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.Packet3Chat;
 
+import btwmods.ChatAPI;
 import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.PlayerAPI;
 import btwmods.Util;
+import btwmods.chat.IPlayerChatListener;
+import btwmods.chat.PlayerChatEvent;
 import btwmods.io.Settings;
-import btwmods.player.IPlayerChatListener;
 import btwmods.player.IPlayerInstanceListener;
-import btwmods.player.PlayerChatEvent;
 import btwmods.player.PlayerInstanceEvent;
 import btwmods.util.CaselessKey;
 import btwmods.util.ValuePair;
@@ -91,6 +92,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		addColor("yellow", Util.COLOR_YELLOW);
 		addColor("white", Util.COLOR_WHITE);
 		
+		ChatAPI.addListener(this);
 		PlayerAPI.addListener(this);
 		CommandsAPI.registerCommand(commandChatColor = new CommandChatColor(this), this);
 		CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
@@ -106,6 +108,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 
 	@Override
 	public void unload() throws Exception {
+		ChatAPI.removeListener(this);
 		PlayerAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandChatColor);
 		CommandsAPI.unregisterCommand(commandChatAlias);
