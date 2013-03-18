@@ -18,7 +18,9 @@ import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.PlayerAPI;
 import btwmods.Util;
+import btwmods.chat.IPlayerAliasListener;
 import btwmods.chat.IPlayerChatListener;
+import btwmods.chat.PlayerAliasEvent;
 import btwmods.chat.PlayerChatEvent;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerInstanceListener;
@@ -26,7 +28,7 @@ import btwmods.player.PlayerInstanceEvent;
 import btwmods.util.CaselessKey;
 import btwmods.util.ValuePair;
 
-public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListener {
+public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListener, IPlayerAliasListener {
 
 	public String globalMessageFormat = "<%1$s> %2$s";
 	public String emoteMessageFormat = "* %1$s %2$s";
@@ -179,6 +181,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		MinecraftServer.getServer().logger.info("Set alias for " + username + " to " + alias);
 		data.set(username.toLowerCase().trim(), "alias", alias);
 		data.saveSettings(this);
+		ChatAPI.setAlias(username, alias);
 		return true;
 	}
 	
@@ -186,6 +189,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		if (data.removeKey(username.toLowerCase().trim(), "alias")) {
 			MinecraftServer.getServer().logger.info("Removed alias for " + username);
 			data.saveSettings(this);
+			ChatAPI.removeAlias(username);
 			return true;
 		}
 		
@@ -325,5 +329,12 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		else if (event.getType() == PlayerInstanceEvent.TYPE.LOGOUT) {
 			logoutTime.put(event.getPlayerInstance().username.toLowerCase(), new Long(System.currentTimeMillis()));
 		}
+	}
+
+	@Override
+	public void onPlayerAliasAction(PlayerAliasEvent event) {
+		String alias = getAlias(event.username);
+		if (alias != null)
+			event.alias = alias;
 	}
 }
