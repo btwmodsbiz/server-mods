@@ -6,12 +6,13 @@ import java.io.FileWriter;
 import java.util.Random;
 import java.util.logging.Level;
 
+import btwmods.ChatAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.PlayerAPI;
+import btwmods.chat.IPlayerChatListener;
+import btwmods.chat.PlayerChatEvent;
 import btwmods.io.Settings;
-import btwmods.player.IPlayerChatListener;
-import btwmods.player.PlayerChatEvent;
 import btwmods.util.Base64;
 
 public class mod_TinyUrl implements IMod, IPlayerChatListener {
@@ -51,11 +52,13 @@ public class mod_TinyUrl implements IMod, IPlayerChatListener {
 			return;
 		}
 		
+		ChatAPI.addListener(this);
 		PlayerAPI.addListener(this);
 	}
 
 	@Override
 	public void unload() throws Exception {
+		ChatAPI.removeListener(this);
 		PlayerAPI.removeListener(this);
 	}
 
