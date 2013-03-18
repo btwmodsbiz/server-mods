@@ -1,3 +1,7 @@
+Version 4.61.1 (vMC 1.4.7 BTW 4.61)
+
+  - Changed mods to use ChatAPI.
+
 Version 4.59.2-b (vMC 1.4.7 BTW 4.59)
 
   - Changed the Stats mod so basic.txt includes the top 10 entities using tick
