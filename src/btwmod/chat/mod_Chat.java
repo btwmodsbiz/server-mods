@@ -296,7 +296,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 				chatRestoreBuffer.pollFirst();
 		}
 		else if (event.type == PlayerChatEvent.TYPE.SEND_TO_PLAYER_ATTEMPT) {
-			if (isIgnoring(event.getTargetPlayer().username, event.player.username)) {
+			if (isIgnoring(event.getTargetPlayer().username, event.player.username) || isIgnoring(event.getTargetPlayer().username, ChatAPI.getUsernameAliased(event.player.username))) {
 				event.markNotAllowed();
 			}
 		}
