@@ -1,9 +1,13 @@
 package btwmod.admincommands;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
+import btwmods.ChatAPI;
 import btwmods.Util;
 
 import net.minecraft.server.MinecraftServer;
@@ -88,7 +92,8 @@ public class CommandWho extends CommandBase {
 
 	private String getPlayerResult(EntityPlayerMP player) {
 		long seconds = mod.getTimeSinceLastPlayerAction(player);
-		return player.username + " in " + player.worldObj.provider.getDimensionName() + " at " + (long)player.posX + " " + (long)player.posY + " "
+		String alias = ChatAPI.getUsernameAliased(player.username);
+		return player.username + (player.username.equals(alias) ? "" : " \"" + alias + "\"") + " in " + player.worldObj.provider.getDimensionName() + " at " + (long)player.posX + " " + (long)player.posY + " "
 				+ (long)player.posZ + (seconds >= mod.getSecondsForAFK() ? " (AFK " + formatSeconds(seconds) + ")" : "");
 	}
 
@@ -99,8 +104,12 @@ public class CommandWho extends CommandBase {
 
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
-		if (isFullUsageAllowed(sender))
-			return getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames());
+		if (isFullUsageAllowed(sender)) {
+			Set<String> usernames = new HashSet<String>();
+			usernames.addAll(Arrays.asList(ChatAPI.getAllUsernamesAliased()));
+			usernames.addAll(Arrays.asList(MinecraftServer.getServer().getAllUsernames()));
+			return getListOfStringsFromIterableMatchingLastWord(args, usernames);
+		}
 		else
 			return super.addTabCompletionOptions(sender, args);
 	}
