@@ -49,12 +49,14 @@ public class CommandWho extends CommandBase {
 			Iterator playerIterator = players.iterator();
 			while (playerIterator.hasNext()) {
 				EntityPlayerMP player = (EntityPlayerMP)playerIterator.next();
+				String alias = ChatAPI.getUsernameAliased(player.username);
+				String username = player.username + (alias.equalsIgnoreCase(player.username) ? "" : " \"" + alias + "\"");
 
 				long seconds = mod.getTimeSinceLastPlayerAction(player);
 				if (seconds >= mod.getSecondsForAFK())
-					playerStrings.add(player.username + " (AFK " + formatSeconds(seconds) + ")");
+					playerStrings.add(username + " (AFK " + formatSeconds(seconds) + ")");
 				else
-					playerStrings.add(player.username);
+					playerStrings.add(username);
 			}
 			
 			List<String> messages = Util.combineIntoMaxLengthMessages(playerStrings, Packet3Chat.maxChatLength, ", ", true);
@@ -77,7 +79,7 @@ public class CommandWho extends CommandBase {
 			}
 		} else {
 			for (int i = 0; i < args.length; i++) {
-				sender.sendChatToPlayer(getPlayerResult(args[i]));
+				sender.sendChatToPlayer(getPlayerResult(ChatAPI.getUsernameForAlias(args[i])));
 			}
 		}
 	}
@@ -93,7 +95,7 @@ public class CommandWho extends CommandBase {
 	private String getPlayerResult(EntityPlayerMP player) {
 		long seconds = mod.getTimeSinceLastPlayerAction(player);
 		String alias = ChatAPI.getUsernameAliased(player.username);
-		return player.username + (player.username.equals(alias) ? "" : " \"" + alias + "\"") + " in " + player.worldObj.provider.getDimensionName() + " at " + (long)player.posX + " " + (long)player.posY + " "
+		return player.username + (player.username.equalsIgnoreCase(alias) ? "" : " \"" + alias + "\"") + " in " + player.worldObj.provider.getDimensionName() + " at " + (long)player.posX + " " + (long)player.posY + " "
 				+ (long)player.posZ + (seconds >= mod.getSecondsForAFK() ? " (AFK " + formatSeconds(seconds) + ")" : "");
 	}
 
