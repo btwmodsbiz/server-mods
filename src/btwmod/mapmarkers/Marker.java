@@ -51,49 +51,49 @@ public class Marker {
 		this.z = z;
 	}
 	
-	public void toSettings(Settings data, String section, int index) {
-		data.set(section, index + "username", username);
-		data.setInt(section, index + "markerIndex", markerIndex);
-		data.set(section, index + "type", type.toString());
-		data.setInt(section, index + "dimension", dimension);
-		data.setInt(section, index + "x", x);
-		data.setInt(section, index + "y", y);
-		data.setInt(section, index + "z", z);
+	public void toSettings(Settings data, String section) {
+		data.set(section, "username", username);
+		data.setInt(section, "markerIndex", markerIndex);
+		data.set(section, "type", type.toString());
+		data.setInt(section, "dimension", dimension);
+		data.setInt(section, "x", x);
+		data.setInt(section, "y", y);
+		data.setInt(section, "z", z);
 		
 		if (description == null)
-			data.removeKey(section, index + "description");
+			data.removeKey(section, "description");
 		else
-			data.set(section, index + "description", description);
+			data.set(section, "description", description);
 	}
 	
-	public static Marker fromSettings(Settings data, String section, int index) {
-		String username = data.get(section, index + "username");
+	public static Marker fromSettings(Settings data, String section) {
+		String username = data.get(section, "username");
 		
 		if (username != null && username.trim().length() != 0
-			&& data.hasKey(section, index + "type")
-			&& data.isInt(section, index + "markerIndex")
-			&& data.isInt(section, index + "dimension")
-			&& data.isInt(section, index + "x")
-			&& data.isInt(section, index + "z")) {
+			&& data.hasKey(section, "type")
+			&& data.isInt(section, "markerIndex")
+			&& data.isInt(section, "dimension")
+			&& data.isInt(section, "x")
+			&& data.isInt(section, "z")) {
 			
 			TYPE type;
 			try {
-				type = TYPE.valueOf(data.get(section, index + "type"));
+				type = TYPE.valueOf(data.get(section, "type"));
 			}
 			catch (IllegalArgumentException e) {
 				return null;
 			}
 			
-			int markerIndex = data.getInt(section, index + "markerIndex", 0);
-			int dimension = data.getInt(section, index + "dimension", 0);
+			int markerIndex = data.getInt(section, "markerIndex", 0);
+			int dimension = data.getInt(section, "dimension", 0);
 			
 			if (markerIndex >= 0 && Util.getWorldNameFromDimension(dimension) != null) {
-				int x = data.getInt(section, index + "x", 0);
-				int y = Math.max(-1, data.getInt(section, index + "y", -1));
-				int z = data.getInt(section, index + "z", 0);
+				int x = data.getInt(section, "x", 0);
+				int y = Math.max(-1, data.getInt(section, "y", -1));
+				int z = data.getInt(section, "z", 0);
 				
 				Marker newMarker = new Marker(username, markerIndex, type, dimension, x, y, z);
-				newMarker.setDescription(data.get(section, index + "description"));
+				newMarker.setDescription(data.get(section, "description"));
 				
 				return newMarker;
 			}

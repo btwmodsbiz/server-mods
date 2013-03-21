@@ -46,7 +46,6 @@ public class mod_MapMarkers implements IMod {
 			.enableComplexMapKeySerialization()
 			.create();
 
-
 		if (settings.hasKey("markerFile")) {
 			markerFile = new File(settings.get("markerFile"));
 		}
@@ -78,7 +77,7 @@ public class mod_MapMarkers implements IMod {
 			mapMarkers.put(marker.username.toLowerCase() + "_" + marker.dimension + "_" + marker.markerIndex, marker);
 			
 			if (setCooldown)
-				data.setLong("markers", "lastset_" + marker.username.toLowerCase(), System.currentTimeMillis() / 1000L);
+				data.setLong("lastset", marker.username.toLowerCase(), System.currentTimeMillis() / 1000L);
 		}
 	}
 	
@@ -87,9 +86,9 @@ public class mod_MapMarkers implements IMod {
 	}
 	
 	private void loadMarkers(Settings data) {
-		int count = data.getInt("markers", "count", 0);
+		int count = data.getInt("count", 0);
 		for (int i = 0; i < count; i++) {
-			setMarker(Marker.fromSettings(data, "markers", i), false);
+			setMarker(Marker.fromSettings(data, "marker" + i), false);
 		}
 	}
 	
@@ -114,7 +113,7 @@ public class mod_MapMarkers implements IMod {
 		if (markerCooldownMinutes <= 0)
 			return 0L;
 		
-		long lastMarkerSet = data.getLong("markers", "lastset_" + username.toLowerCase(), -1L) * 1000L;
+		long lastMarkerSet = data.getLong("lastset", username.toLowerCase(), -1L) * 1000L;
 		long now = System.currentTimeMillis();
 
 		return now < lastMarkerSet ? 0L : MathHelper.ceiling_double_int((double)Math.max(0L, (markerCooldownMinutes * 60000L) - (System.currentTimeMillis() - lastMarkerSet)) / 1000D);
@@ -126,11 +125,12 @@ public class mod_MapMarkers implements IMod {
 	
 	public void saveMarkers(boolean saveData) {
 		if (saveData) {
-			data.setInt("markers", "count", mapMarkers.size());
+			data.setInt("count", mapMarkers.size());
 			
 			int i = 0;
 			for (Marker marker : mapMarkers.values()) {
-				marker.toSettings(data, "markers", i++);
+				marker.toSettings(data, "marker" + i);
+				i++;
 			}
 			
 			try {
