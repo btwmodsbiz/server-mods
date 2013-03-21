@@ -110,45 +110,54 @@ public class MapImage {
 				
 				// Adjust brightness for height.
 				//if (blockId != Block.lavaMoving.blockID && blockId != Block.lavaStill.blockID && blockId != Block.waterMoving.blockID && blockId != Block.waterStill.blockID)
-				colorPixel.scale((Math.min(1.25F, Math.max(0.75F, getBlockHeight(heightPixel) / .65F / 100.0F))) / 8 * 8);
+				depthBrightness(colorPixel, heightPixel);
 				
-				float darken = 0.85F;
-				float lighten = 1.06F;
-				
-				if (mapLayer.pixelSize < 1)
-					darken = 0.91F;
-				
-				// Compare to northern block
-				int northPosZ = zOffset - 1;
-				if (northPosZ >= 0) {
-					//if (mapLayer.pixelSize < 1)
-					//	colorPixel.composite(new Color(colorImage.getRGB(posX, northPosZ)), 0.25F);
-					
-					int northHeight = getHeightAt(chunk, xOffset, northPosZ);
-					//int x = heightImage.getRGB(pixelX, pixelZ - 1);
-					//if (x > 0)
-					//	Integer.toString(x);
-					if (northHeight > getBlockHeight(heightPixel))
-						colorPixel.scale(darken);
-					else if (northHeight < getBlockHeight(heightPixel))
-						colorPixel.scale(lighten);
-				}
-				
-				// Compare to eastern block
-				int eastPosX = xOffset - 1;
-				if (eastPosX >= 0) {
-					int eastHeight = getHeightAt(chunk, eastPosX, zOffset);
-					if (eastHeight > getBlockHeight(heightPixel))
-						colorPixel.scale(darken);
-					else if (eastHeight < getBlockHeight(heightPixel))
-						colorPixel.scale(lighten);
-				}
+				heightUndulate(chunk, colorPixel, heightPixel, xOffset, zOffset);
 				
 				drawPixels(pixelX, pixelZ, colorPixel, heightPixel);
 				
 				colorPixel.clear();
 				heightPixel.clear();
 			}
+		}
+	}
+	
+	@SuppressWarnings("static-method")
+	protected void depthBrightness(PixelColor colorPixel, PixelColor heightPixel) {
+		colorPixel.scale((Math.min(1.25F, Math.max(0.75F, getBlockHeight(heightPixel) / .65F / 100.0F))) / 8 * 8);
+	}
+	
+	protected void heightUndulate(Chunk chunk, PixelColor colorPixel, PixelColor heightPixel, int xOffset, int zOffset) {
+		float darken = 0.85F;
+		float lighten = 1.06F;
+		
+		if (mapLayer.pixelSize < 1)
+			darken = 0.91F;
+		
+		// Compare to northern block
+		int northPosZ = zOffset - 1;
+		if (northPosZ >= 0) {
+			//if (mapLayer.pixelSize < 1)
+			//	colorPixel.composite(new Color(colorImage.getRGB(posX, northPosZ)), 0.25F);
+			
+			int northHeight = getHeightAt(chunk, xOffset, northPosZ);
+			//int x = heightImage.getRGB(pixelX, pixelZ - 1);
+			//if (x > 0)
+			//	Integer.toString(x);
+			if (northHeight > getBlockHeight(heightPixel))
+				colorPixel.scale(darken);
+			else if (northHeight < getBlockHeight(heightPixel))
+				colorPixel.scale(lighten);
+		}
+		
+		// Compare to eastern block
+		int eastPosX = xOffset - 1;
+		if (eastPosX >= 0) {
+			int eastHeight = getHeightAt(chunk, eastPosX, zOffset);
+			if (eastHeight > getBlockHeight(heightPixel))
+				colorPixel.scale(darken);
+			else if (eastHeight < getBlockHeight(heightPixel))
+				colorPixel.scale(lighten);
 		}
 	}
 	
