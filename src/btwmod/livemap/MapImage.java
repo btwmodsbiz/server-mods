@@ -113,7 +113,7 @@ public class MapImage {
 				colorPixel.scale((Math.min(1.25F, Math.max(0.75F, getBlockHeight(heightPixel) / .65F / 100.0F))) / 8 * 8);
 				
 				float darken = 0.85F;
-				float ligthen = 1.06F;
+				float lighten = 1.06F;
 				
 				if (mapLayer.pixelSize < 1)
 					darken = 0.91F;
@@ -131,7 +131,7 @@ public class MapImage {
 					if (northHeight > getBlockHeight(heightPixel))
 						colorPixel.scale(darken);
 					else if (northHeight < getBlockHeight(heightPixel))
-						colorPixel.scale(ligthen);
+						colorPixel.scale(lighten);
 				}
 				
 				// Compare to eastern block
@@ -141,7 +141,7 @@ public class MapImage {
 					if (eastHeight > getBlockHeight(heightPixel))
 						colorPixel.scale(darken);
 					else if (eastHeight < getBlockHeight(heightPixel))
-						colorPixel.scale(ligthen);
+						colorPixel.scale(lighten);
 				}
 				
 				drawPixels(pixelX, pixelZ, colorPixel, heightPixel);
