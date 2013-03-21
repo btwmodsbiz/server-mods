@@ -37,7 +37,7 @@ public class MapImage {
 	}
 	
 	public int getHeightAt(int x, int z) {
-		return heightImage.getRGB(x, z) & 0xFF;
+		return heightImage == null ? 0 : (heightImage.getRGB(x, z) & 0xFF);
 	}
 	
 	public boolean loadImages() throws Exception {
@@ -45,26 +45,28 @@ public class MapImage {
 		
 		colorImage = heightImage = null;
 		
-		if (colorImageFile.exists() && (colorImage = ImageIO.read(colorImageFile)) == null) {
+		if (colorImageFile.exists() && (colorImage = ImageIO.read(colorImageFile)) == null)
 			success = false;
-		}
-		
-		if (heightImageFile.exists() && (heightImage = ImageIO.read(heightImageFile)) == null) {
-			success = false;
-		}
 		
 		if (colorImage == null)
 			colorImage = createBlank();
 		
-		if (heightImage == null)
-			heightImage = createBlank();
+		if (mapLayer.map.hasHeightImage()) {
+			if (heightImageFile.exists() && (heightImage = ImageIO.read(heightImageFile)) == null)
+				success = false;
+			
+			if (heightImage == null)
+				heightImage = createBlank();
+		}
 		
 		return success;
 	}
 	
 	public void setBlankImages() {
 		colorImage = createBlank();
-		heightImage = createBlank();
+		
+		if (mapLayer.map.hasHeightImage())
+			heightImage = createBlank();
 	}
 	
 	private BufferedImage createBlank() {
@@ -72,7 +74,7 @@ public class MapImage {
 	}
 	
 	public boolean isLoaded() {
-		return colorImage != null && heightImage != null;
+		return colorImage != null && (!mapLayer.map.hasHeightImage() || heightImage != null);
 	}
 	
 	public void drawPixels(int x, int z, PixelColor colorPixel, PixelColor heightPixel) {
@@ -82,7 +84,9 @@ public class MapImage {
 		for (int iX = 0; iX < mapLayer.pixelSize; iX++) {
 			for (int iZ = 0; iZ < mapLayer.pixelSize; iZ++) {
 				colorImage.setRGB(x + iX, z + iZ, colorPixel.asColor().getRGB());
-				heightImage.setRGB(x + iX, z + iZ, heightPixel.asColor().getRGB());
+				
+				if (heightImage != null)
+					heightImage.setRGB(x + iX, z + iZ, heightPixel.asColor().getRGB());
 			}
 		}
 	}
@@ -110,9 +114,11 @@ public class MapImage {
 				
 				// Adjust brightness for height.
 				//if (blockId != Block.lavaMoving.blockID && blockId != Block.lavaStill.blockID && blockId != Block.waterMoving.blockID && blockId != Block.waterStill.blockID)
-				depthBrightness(colorPixel, heightPixel);
+				if (mapLayer.map.depthBrightness)
+					depthBrightness(colorPixel, heightPixel);
 				
-				heightUndulate(chunk, colorPixel, heightPixel, xOffset, zOffset);
+				if (mapLayer.map.heightUndulate)
+					heightUndulate(chunk, colorPixel, heightPixel, xOffset, zOffset);
 				
 				drawPixels(pixelX, pixelZ, colorPixel, heightPixel);
 				
@@ -170,6 +176,14 @@ public class MapImage {
 		int height = 0;
 		int biomeId = 255;
 		int[] biomeIdCounts = new int[256];
+
+		Color baseColor = mapLayer.map.baseColor;
+		if (baseColor != null) {
+			red = baseColor.getRed();
+			green = baseColor.getGreen();
+			blue = baseColor.getBlue();
+			alpha = baseColor.getAlpha();
+		}
 		
 		colorPixel.clear();
 		heightPixel.clear();
@@ -288,21 +302,24 @@ public class MapImage {
 		else {
 			ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to save the color image to the temp file for " + chunkX + "," + chunkZ);
 		}
-		if (ImageIO.write(heightImage, "png", mapLayer.map.mod.tempSave)) {
-			if (!heightImageFile.exists() || heightImageFile.delete()) {
-				if (mapLayer.map.mod.tempSave.renameTo(heightImageFile)) {
-					heightImageFile.setReadable(true, false);
+		
+		if (heightImage != null) {
+			if (ImageIO.write(heightImage, "png", mapLayer.map.mod.tempSave)) {
+				if (!heightImageFile.exists() || heightImageFile.delete()) {
+					if (mapLayer.map.mod.tempSave.renameTo(heightImageFile)) {
+						heightImageFile.setReadable(true, false);
+					}
+					else {
+						ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + heightImageFile.getPath());
+					}
 				}
 				else {
-					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + heightImageFile.getPath());
+					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to delete the old image at: " + heightImageFile.getPath());
 				}
 			}
 			else {
-				ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to delete the old image at: " + heightImageFile.getPath());
+				ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to save the height image to the temp file for " + chunkX + "," + chunkZ);
 			}
-		}
-		else {
-			ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to save the height image to the temp file for " + chunkX + "," + chunkZ);
 		}
 	}
 	

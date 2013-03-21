@@ -1,5 +1,6 @@
 package btwmod.livemap;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -258,6 +259,10 @@ public class mod_LiveMap implements IMod, IChunkListener {
 			}
 			else {
 				
+				boolean heightUndulate = settings.getBoolean(section, "heightUndulate", true);
+				boolean depthBrightness = settings.getBoolean(section, "depthBrightness", true);
+				Color baseColor = null;
+				
 				if (!settings.hasKey(section, "directory")) {
 					ModLoader.outputError(getName() + " is missing the 'directory' setting for: " + section);
 					continue;
@@ -284,8 +289,17 @@ public class mod_LiveMap implements IMod, IChunkListener {
 					continue;
 				}
 				
+				String baseColorSetting = settings.get(section, "baseColor");
+				if (baseColorSetting != null && baseColorSetting.matches("/^#[A-Fa-f0-9]{6}$/")) {
+					baseColor = new Color(
+						Integer.parseInt(baseColorSetting.substring(1, 3), 16),
+						Integer.parseInt(baseColorSetting.substring(3, 5), 16),
+						Integer.parseInt(baseColorSetting.substring(5, 7), 16)
+					);
+				}
+				
 				//new MapManager(this, 0, imageSize, zoomLevels, blockColors, new File(imageDir, "overworld"))
-				mapsList.add(new MapManager(this, dimension, imageSize, zoomLevels, blockColors, directory));
+				mapsList.add(new MapManager(this, dimension, imageSize, zoomLevels, blockColors, directory, heightUndulate, depthBrightness, baseColor));
 			}
 		}
 		

@@ -1,5 +1,6 @@
 package btwmod.livemap;
 
+import java.awt.Color;
 import java.io.File;
 
 import net.minecraft.src.Chunk;
@@ -13,12 +14,18 @@ public class MapManager {
 	public final int imageSize;
 	public final BlockColor[][] blockColors;
 	public final MapLayer[] mapLayers;
+	public final boolean heightUndulate;
+	public final boolean depthBrightness;
+	public final Color baseColor;
 	
-	public MapManager(mod_LiveMap mod, int dimension, int imageSize, int[] zoomLevels, BlockColor[][] blockColors, File directory) {
+	public MapManager(mod_LiveMap mod, int dimension, int imageSize, int[] zoomLevels, BlockColor[][] blockColors, File directory, boolean heightUndulate, boolean depthBrightness, Color baseColor) {
 		this.mod = mod;
 		this.dimension = dimension;
 		this.imageSize = imageSize;
 		this.blockColors = blockColors;
+		this.heightUndulate = heightUndulate;
+		this.depthBrightness = depthBrightness;
+		this.baseColor = baseColor;
 		
 		if (Util.getWorldNameFromDimension(dimension) == null)
 			throw new IllegalArgumentException("dimension");
@@ -51,6 +58,10 @@ public class MapManager {
 				}
 			}
 		}
+	}
+	
+	public boolean hasHeightImage() {
+		return heightUndulate;
 	}
 
 	public void processChunk(Chunk chunk) {
