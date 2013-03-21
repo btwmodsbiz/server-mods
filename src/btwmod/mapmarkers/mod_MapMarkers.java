@@ -1,4 +1,4 @@
-package btwmod.livemap;
+package btwmod.mapmarkers;
 
 import java.io.File;
 import java.io.FileWriter;

@@ -1,4 +1,4 @@
-package btwmod.livemap;
+package btwmod.mapmarkers;
 
 import btwmods.Util;
 import btwmods.io.Settings;
