@@ -206,8 +206,8 @@ public class RegionLoader implements ITickListener {
 				}
 				else {
 					RegionFile regionFile = RegionFileCache.createOrLoadRegionFile(region.location, region.regionX << 5, region.regionZ << 5);
-					for (int x = 0; x < 32; x++) {
-						for (int z = 0; z < 32; z++) {
+					for (int x = 31; x >= 0; x--) {
+						for (int z = 31; z >= 0; z--) {
 							if (regionFile.isChunkSaved(x, z)) {
 								regionQueue.add(new QueuedRegionChunk(region, region.regionX << 5 | x, region.regionZ << 5 | z));
 							}
