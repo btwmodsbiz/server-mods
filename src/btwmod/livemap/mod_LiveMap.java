@@ -1,6 +1,5 @@
 package btwmod.livemap;
 
-import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -8,6 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -27,8 +27,9 @@ import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.ReflectionAPI;
 import btwmods.ServerAPI;
-import btwmods.Util;
 import btwmods.WorldAPI;
+import btwmods.io.IllegalSettingException;
+import btwmods.io.MissingSettingException;
 import btwmods.io.Settings;
 import btwmods.world.ChunkEvent;
 import btwmods.world.IChunkListener;
@@ -37,12 +38,10 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	
 	public boolean debugMessages = false;
 
-	private int[] zoomLevels = { 256, 128, 64, 32, 16 };
-	private int imageSize = 256;
 	private File imageDir = ModLoader.modDataDir;
 	public final File tempSave = new File(ModLoader.modDataDir, "livemap.temp");
 	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
-	public final BlockColor[][] blockColors = new BlockColor[Block.blocksList.length][];
+	private BlockColor[][] blockColors;
 	
 	private volatile ChunkProcessor chunkProcessor = null;
 
@@ -86,15 +85,13 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	public RegionLoader getRegionLoader() {
 		return regionLoader;
 	}
+	
+	public BlockColor[][] getBlockColors() {
+		return blockColors;
+	}
 
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
-		imageSize = settings.getInt("imageSize", imageSize);
-		if (imageSize < 1 || imageSize % 16 != 0) {
-			ModLoader.outputError(getName() + "'s imageSize must be a positive integer that is divisible by 16.", Level.SEVERE);
-			return;
-		}
-
 		if (settings.hasKey("imageDir")) {
 			imageDir = new File(settings.get("imageDir"));
 		}
@@ -126,8 +123,12 @@ public class mod_LiveMap implements IMod, IChunkListener {
 			chunkLoaderLocations = null;
 		}
 
-		if (!loadColorData())
+		// Load block color data.
+		if ((blockColors = loadColorData(colorData, true)) == null)
 			return;
+		
+		// Set default colors for any not set by the data file.
+		setColorDataDefaults(blockColors);
 		
 		if (!loadMapManagers(settings)) {
 			ModLoader.outputError(getName() + " does not have any valid maps specified.");
@@ -148,99 +149,142 @@ public class mod_LiveMap implements IMod, IChunkListener {
 		CommandsAPI.unregisterCommand(commandMap);
 	}
 
-	private boolean loadColorData() {
+	public BlockColor[][] loadColorData(File colorData, boolean logErrors) {
+		if (!colorData.isFile()) {
+			if (logErrors)
+				ModLoader.outputError(getName() + " could not find color data file at: " + colorData.getPath(), Level.SEVERE);
+			return null;
+		}
+		
 		List<List<BlockColor>> blockColorsTemp = new ArrayList<List<BlockColor>>();
 		for (int i = 0; i < Block.blocksList.length; i++)
 			blockColorsTemp.add(null);
 		
-		if (colorData.isFile()) {
-			BufferedReader reader = null;
-			try {
-				reader = new BufferedReader(new FileReader(colorData));
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(colorData));
+
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (line.trim().length() > 0 && line.trim().charAt(0) != '#') {
+					BlockColor color;
+					try {
+						color = BlockColor.fromConfigLine(line);
+					} catch (IllegalArgumentException e) {
+						if (logErrors)
+							ModLoader.outputError(getName() + " found an invalid ('" + e.getMessage() + "') colorData entry: " + line, Level.SEVERE);
+						return null;
+					} catch (ParseException e) {
+						if (logErrors)
+							ModLoader.outputError(getName() + " found an invalid ('" + e.getMessage() + "') colorData entry: " + line, Level.SEVERE);
+						return null;
+					}
 	
-				String line;
-				while ((line = reader.readLine()) != null) {
-					if (line.trim().length() > 0 && line.trim().charAt(0) != '#') {
-						BlockColor color;
-						try {
-							color = BlockColor.fromConfigLine(line);
-						} catch (IllegalArgumentException e) {
-							ModLoader.outputError(getName() + " found an invalid ('" + e.getMessage() + "') colorData entry: " + line, Level.SEVERE);
-							return false;
-						} catch (ParseException e) {
-							ModLoader.outputError(getName() + " found an invalid ('" + e.getMessage() + "') colorData entry: " + line, Level.SEVERE);
-							return false;
-						}
-		
-						if (color == null) {
+					if (color == null) {
+						if (logErrors)
 							ModLoader.outputError(getName() + " found an invalid colorData entry: " + line, Level.SEVERE);
-							return false;
-		
-						} else {
-							Set<Block> blocks = BlockColor.getBlocksByName(color.blockName);
-		
-							if (blocks == null) {
-								// TODO: Report color for block that does not exist?
-							}
-							else {
-								for (Block block : blocks) {
-									List<BlockColor> list = blockColorsTemp.get(block.blockID);
-									if (list == null) {
-										blockColorsTemp.set(block.blockID, list = new ArrayList<BlockColor>());
-									}
-									list.add(color);
+						return null;
+	
+					} else {
+						Set<Block> blocks = BlockColor.getBlocksByName(color.blockName);
+	
+						if (blocks == null) {
+							// TODO: Report color for block that does not exist?
+						}
+						else {
+							for (Block block : blocks) {
+								List<BlockColor> list = blockColorsTemp.get(block.blockID);
+								if (list == null) {
+									blockColorsTemp.set(block.blockID, list = new ArrayList<BlockColor>());
 								}
+								list.add(color);
 							}
 						}
 					}
 				}
-			} catch (IOException e) {
+			}
+		} catch (IOException e) {
+			if (logErrors)
 				ModLoader.outputError(e, getName() + " failed to read the colorData file: " + e.getMessage(), Level.SEVERE);
-				return false;
-			} finally {
-				try {
-					if (reader != null)
-						reader.close();
-				} catch (IOException e) {
-	
-				}
+			return null;
+		} finally {
+			try {
+				if (reader != null)
+					reader.close();
+			} catch (IOException e) {
+
 			}
 		}
-
-		// Set colors for blocks not set by the config.
+		
+		BlockColor[][] blockColors = new BlockColor[Block.blocksList.length][];
+		
 		for (int i = 0; i < blockColors.length; i++) {
+			List<BlockColor> list = blockColorsTemp.get(i);
+			blockColors[i] = list == null || list.size() == 0 ? null : list.toArray(new BlockColor[list.size()]);
+		}
+
+		return blockColors;
+	}
+	
+	@SuppressWarnings("static-method")
+	public void setColorDataDefaults(BlockColor[][] blockColors) {
+		for (int i = 0, l = blockColors.length; i < l; i++) {
 			if (Block.blocksList[i] != null && Block.blocksList[i].getBlockName() != null) {
+				
 				boolean genericFound = false;
-				List<BlockColor> list = blockColorsTemp.get(i);
-				if (list == null) {
-					blockColorsTemp.set(i, list = new ArrayList<BlockColor>());
-				}
-				else {
-					for (BlockColor color : list) {
+				
+				if (blockColors[i] != null) {
+					for (BlockColor color : blockColors[i]) {
 						if (!color.hasFilter())
 							genericFound = true;
 					}
 				}
 				
 				if (!genericFound) {
+					List<BlockColor> list = new ArrayList<BlockColor>();
+					if (blockColors[i] != null)
+						list.addAll(Arrays.asList(blockColors[i]));
+					
 					BlockColor color = BlockColor.fromBlock(Block.blocksList[i]);
 					
 					// Only add blocks that have a proper color.
 					if (color.red != 0 || color.green != 0 || color.blue != 0)
 						list.add(BlockColor.fromBlock(Block.blocksList[i]));
+					
+					if (list.size() > 0)
+						blockColors[i] = list.toArray(new BlockColor[list.size()]);
 				}
-				
-				if (list.size() > 0)
-					blockColors[i] = blockColorsTemp.get(i).toArray(new BlockColor[list.size()]);
+			}
+		}
+	}
+	
+	@SuppressWarnings("static-method")
+	public BlockColor[][] extendColorData(BlockColor[][] base, BlockColor[][] extensions, boolean override) {
+		BlockColor[][] extended = new BlockColor[base.length][];
+		
+		for (int i = 0, l = base.length; i < l; i++) {
+			if (extensions[i] != null) {
+				if (override || base[i] == null) {
+					extended[i] = new BlockColor[extensions[i].length];
+					System.arraycopy(extensions[i], 0, extended[i], 0, extensions[i].length);
+				}
+				else {
+					BlockColor[] merged = new BlockColor[base[i].length + extensions.length];
+					System.arraycopy(base[i], 0, merged, 0, base[i].length);
+					System.arraycopy(extensions[i], 0, merged, base[i].length, extensions[i].length);
+					extended[i] = merged;
+				}
+			}
+			else if (base[i] != null) {
+				extended[i] = new BlockColor[base[i].length];
+				System.arraycopy(base[i], 0, extended[i], 0, base[i].length);
+			}
+			else {
+				extended[i] = null;
 			}
 		}
 		
-		for (int i = 0; i < blockColors.length; i++) {
-			List<BlockColor> list = blockColorsTemp.get(i);
-			blockColors[i] = list == null || list.size() == 0 ? null : blockColorsTemp.get(i).toArray(new BlockColor[list.size()]);
-		}
-
-		return true;
+		return extended;
 	}
 	
 	private boolean loadMapManagers(Settings settings) {
@@ -255,51 +299,24 @@ public class mod_LiveMap implements IMod, IChunkListener {
 		for (String mapName : mapNames) {
 			String section = "map:" + mapName;
 			if (!settings.hasSection(section)) {
-				ModLoader.outputError(getName() + " is missing the a settings section for map: " + mapName);
+				ModLoader.outputError(getName() + " is missing settings for map: " + mapName);
 			}
 			else {
-				
-				boolean heightUndulate = settings.getBoolean(section, "heightUndulate", true);
-				boolean depthBrightness = settings.getBoolean(section, "depthBrightness", true);
-				Color baseColor = null;
-				
-				if (!settings.hasKey(section, "directory")) {
-					ModLoader.outputError(getName() + " is missing the 'directory' setting for: " + section);
-					continue;
+				try {
+					mapsList.add(new MapManager(this, settings, section));
+					
+				} catch (IOException e) {
+					ModLoader.outputError(e, getName() + " failed (" + e.getClass().getSimpleName() + ") to create map " + mapName + ": " + e.getMessage());
+					
+				} catch (MissingSettingException e) {
+					ModLoader.outputError(e, getName() + " failed to create map " + mapName + " as it was missing the " + e.key + " setting.");
+					
+				} catch (IllegalSettingException e) {
+					if (e.key.equalsIgnoreCase("imageSize"))
+						ModLoader.outputError(e, getName() + " failed to create map " + mapName + " as the " + e.key + " setting must be a power of 2: " + e.value);
+					else
+						ModLoader.outputError(e, getName() + " failed to create map " + mapName + " as it had an invalid value for the " + e.key + " setting: " + e.value);
 				}
-				
-				File directory = new File(settings.get(section, "directory"));
-				
-				if (!settings.hasKey(section, "dimension")) {
-					ModLoader.outputError(getName() + " is missing the 'dimension' setting for: " + section);
-					continue;
-				}
-				
-				int dimension = settings.getInt(section, "dimension", 255);
-				
-				if (Util.getWorldNameFromDimension(dimension) == null) {
-					ModLoader.outputError(getName() + " has an invalid 'dimension' setting for: " + section);
-					continue;
-				}
-				
-				int imageSize = settings.getInt(section, "imageSize", 256);
-				
-				if (imageSize <= 0 || (imageSize & (imageSize - 1)) != 0) {
-					ModLoader.outputError(getName() + " must have a 'imageSize' setting that is a power of 2 for: " + section);
-					continue;
-				}
-				
-				String baseColorSetting = settings.get(section, "baseColor");
-				if (baseColorSetting != null && baseColorSetting.matches("/^#[A-Fa-f0-9]{6}$/")) {
-					baseColor = new Color(
-						Integer.parseInt(baseColorSetting.substring(1, 3), 16),
-						Integer.parseInt(baseColorSetting.substring(3, 5), 16),
-						Integer.parseInt(baseColorSetting.substring(5, 7), 16)
-					);
-				}
-				
-				//new MapManager(this, 0, imageSize, zoomLevels, blockColors, new File(imageDir, "overworld"))
-				mapsList.add(new MapManager(this, dimension, imageSize, zoomLevels, blockColors, directory, heightUndulate, depthBrightness, baseColor));
 			}
 		}
 		
@@ -372,7 +389,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 
 				if (debugMessages && count > 0)
 					ModLoader.outputInfo(getName() + " thread rendered " + count + " chunks in " + (System.currentTimeMillis() - start) + "ms (" + saving + "ms saving).");
-
+				
 				try {
 					Thread.sleep(1000L);
 				} catch (InterruptedException e) {

@@ -37,7 +37,7 @@ public class MapImage {
 	}
 	
 	public int getHeightAt(int x, int z) {
-		return heightImage == null ? 0 : (heightImage.getRGB(x, z) & 0xFF);
+		return heightImage == null ? 0 : (heightImage.getRGB(x, z) >> 8 & 0x000000FF);
 	}
 	
 	public boolean loadImages() throws Exception {
@@ -77,18 +77,14 @@ public class MapImage {
 		return colorImage != null && (!mapLayer.map.hasHeightImage() || heightImage != null);
 	}
 	
-	public void drawPixels(int x, int z, PixelColor colorPixel, PixelColor heightPixel) {
+	public void drawPixel(int x, int z, PixelColor colorPixel, PixelColor heightPixel) {
 		if (!isLoaded())
 			return;
 		
-		for (int iX = 0; iX < mapLayer.pixelSize; iX++) {
-			for (int iZ = 0; iZ < mapLayer.pixelSize; iZ++) {
-				colorImage.setRGB(x + iX, z + iZ, colorPixel.asColor().getRGB());
-				
-				if (heightImage != null)
-					heightImage.setRGB(x + iX, z + iZ, heightPixel.asColor().getRGB());
-			}
-		}
+		colorImage.setRGB(x, z, colorPixel.asColor().getRGB());
+		
+		if (heightImage != null)
+			heightImage.setRGB(x, z, heightPixel.asColor().getRGB());
 	}
 
 	public void renderChunk(Chunk chunk) {
@@ -97,7 +93,7 @@ public class MapImage {
 		
 		MapPos pos = new MapPos(chunk, mapLayer);
 		
-		int increment = (int)Math.max(1.0F, 1.0F / mapLayer.pixelSize);
+		int increment = 16 / (mapLayer.map.imageSize / mapLayer.chunksPerImage);
 		
 		PixelColor colorPixel = new PixelColor();
 		PixelColor heightPixel = new PixelColor();
@@ -118,9 +114,9 @@ public class MapImage {
 					depthBrightness(colorPixel, heightPixel);
 				
 				if (mapLayer.map.heightUndulate)
-					heightUndulate(chunk, colorPixel, heightPixel, xOffset, zOffset);
+					heightUndulate(colorPixel, heightPixel, pixelX, pixelZ);
 				
-				drawPixels(pixelX, pixelZ, colorPixel, heightPixel);
+				drawPixel(pixelX, pixelZ, colorPixel, heightPixel);
 				
 				colorPixel.clear();
 				heightPixel.clear();
@@ -133,37 +129,38 @@ public class MapImage {
 		colorPixel.scale((Math.min(1.25F, Math.max(0.75F, getBlockHeight(heightPixel) / .65F / 100.0F))) / 8 * 8);
 	}
 	
-	protected void heightUndulate(Chunk chunk, PixelColor colorPixel, PixelColor heightPixel, int xOffset, int zOffset) {
+	protected void heightUndulate(PixelColor colorPixel, PixelColor heightPixel, int xOffset, int zOffset) {
 		float darken = 0.85F;
 		float lighten = 1.06F;
 		
-		if (mapLayer.pixelSize < 1)
+		if (mapLayer.map.imageSize / mapLayer.chunksPerImage < 8)
 			darken = 0.91F;
+		
+		else if (mapLayer.map.imageSize / mapLayer.chunksPerImage < 16)
+			darken = 0.88F;
 		
 		// Compare to northern block
 		int northPosZ = zOffset - 1;
 		if (northPosZ >= 0) {
-			//if (mapLayer.pixelSize < 1)
-			//	colorPixel.composite(new Color(colorImage.getRGB(posX, northPosZ)), 0.25F);
-			
-			int northHeight = getHeightAt(chunk, xOffset, northPosZ);
-			//int x = heightImage.getRGB(pixelX, pixelZ - 1);
-			//if (x > 0)
-			//	Integer.toString(x);
-			if (northHeight > getBlockHeight(heightPixel))
-				colorPixel.scale(darken);
-			else if (northHeight < getBlockHeight(heightPixel))
-				colorPixel.scale(lighten);
+			int northHeight = getHeightAt(xOffset, northPosZ);
+			if (northHeight > 0) {
+				if (northHeight > getBlockHeight(heightPixel))
+					colorPixel.scale(darken);
+				else if (northHeight < getBlockHeight(heightPixel))
+					colorPixel.scale(lighten);
+			}
 		}
 		
 		// Compare to eastern block
 		int eastPosX = xOffset - 1;
 		if (eastPosX >= 0) {
-			int eastHeight = getHeightAt(chunk, eastPosX, zOffset);
-			if (eastHeight > getBlockHeight(heightPixel))
-				colorPixel.scale(darken);
-			else if (eastHeight < getBlockHeight(heightPixel))
-				colorPixel.scale(lighten);
+			int eastHeight = getHeightAt(eastPosX, zOffset);
+			if (eastHeight > 0) {
+				if (eastHeight > getBlockHeight(heightPixel))
+					colorPixel.scale(darken);
+				else if (eastHeight < getBlockHeight(heightPixel))
+					colorPixel.scale(lighten);
+			}
 		}
 	}
 	
@@ -176,41 +173,40 @@ public class MapImage {
 		int height = 0;
 		int biomeId = 255;
 		int[] biomeIdCounts = new int[256];
-
+		
 		Color baseColor = mapLayer.map.baseColor;
-		if (baseColor != null) {
-			red = baseColor.getRed();
-			green = baseColor.getGreen();
-			blue = baseColor.getBlue();
-			alpha = baseColor.getAlpha();
-		}
 		
 		colorPixel.clear();
 		heightPixel.clear();
-		
-		BlockColor[] stack;
 
-		int increment = (int)Math.max(1.0F, 1.0F / mapLayer.pixelSize);
+		int increment = 16 / (mapLayer.map.imageSize / mapLayer.chunksPerImage);
 		
 		for (int iX = 0; iX < increment; iX++) {
 			for (int iZ = 0; iZ < increment; iZ++) {
-				int posY = Math.max(0, chunk.getHeightValue(x + iX, z +iZ));
+				int posY = mapLayer.map.forcedMinHeight == mapLayer.map.forcedMaxHeight
+					? mapLayer.map.forcedMinHeight
+					: Math.min(mapLayer.map.forcedMaxHeight, Math.max(mapLayer.map.forcedMinHeight, chunk.getHeightValue(x + iX, z +iZ)));
 				
 				while (chunk.getBlockID(x + iX, posY, z + iZ) == 0 && posY > 0)
 					posY--;
 				
 				// Get the stack of BlockColors for this exact block location.
-				stack = getBlockColorStack(chunk, x + iX, posY, z + iZ, biomes == null ? -1 : biomes[z << 4 | x] & 255);
+				BlockColor[] stack = getBlockColorStack(chunk, x + iX, posY, z + iZ, biomes == null ? -1 : biomes[z << 4 | x] & 255);
 				if (stack.length > 0) {
 					count++;
 					
 					// Create a composite color from the BlockColor stack.
 					PixelColor stackColor = new PixelColor();
+					int lastNonClear = 0;
 					for (int i = stack.length - 1; i >= 0; i--) {
-						stack[i].addTo(stackColor);
-						if (biomes != null && biomes[z << 4 | x] != 255) {
-							if (biomeId == 255 || biomeIdCounts[biomeId] < ++biomeIdCounts[biomes[z << 4 | x]]) {
-								biomeId = biomes[z << 4 | x];
+						if (stack[i] != null && stack[i].alpha > 0.0F) {
+							lastNonClear = i;
+							
+							stack[i].addTo(stackColor);
+							if (biomes != null && biomes[z << 4 | x] != 255) {
+								if (biomeId == 255 || biomeIdCounts[biomeId] < ++biomeIdCounts[biomes[z << 4 | x]]) {
+									biomeId = biomes[z << 4 | x];
+								}
 							}
 						}
 					}
@@ -220,7 +216,7 @@ public class MapImage {
 					green += stackColor.green * stackColor.alpha;
 					blue += stackColor.blue * stackColor.alpha;
 					alpha += stackColor.alpha;
-					height += posY;
+					height += posY - lastNonClear;
 				}
 			}
 		}
@@ -228,6 +224,14 @@ public class MapImage {
 		if (count > 0.0F) {
 			colorPixel.set(red / count, green / count, blue / count, alpha / count);
 			heightPixel.set(new Color(0, Math.round(height / count), biomeId));
+			
+			// TODO: this is just here as a reminder. Need to put the baseColor _under_ the colorPixel.
+			/*if (colorPixel.alpha < 1.0F && baseColor != null) {
+				red = baseColor.getRed();
+				green = baseColor.getGreen();
+				blue = baseColor.getBlue();
+				alpha = baseColor.getAlpha();
+			}*/
 			
 			if (getBlockHeight(heightPixel) != Math.round(height / count))
 				ModLoader.outputError("HeightPixel height " + getBlockHeight(heightPixel) + " (color: " + heightPixel.red + "," + heightPixel.green + "," + heightPixel.blue + ") doesn't match " + Math.round(height / count) + " for " + x + "," + z + " for chunk " + chunk.xPosition + "," + chunk.zPosition + " in layer " + mapLayer.chunksPerImage);
@@ -263,6 +267,9 @@ public class MapImage {
 						break;
 					}
 				}
+			}
+			else {
+				colorStack.add(null);
 			}
 			
 			y--;

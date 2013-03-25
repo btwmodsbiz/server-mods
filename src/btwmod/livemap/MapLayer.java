@@ -15,7 +15,6 @@ public class MapLayer {
 	public final MapManager map;
 	public final File layerDirectory;
 	public final int chunksPerImage;
-	public final float pixelSize;
 
 	protected Map<String, MapImage> images = new LinkedHashMap<String, MapImage>();
 
@@ -26,7 +25,6 @@ public class MapLayer {
 		this.map = map;
 		this.layerDirectory = layerDirectory;
 		this.chunksPerImage = chunksPerImage;
-		pixelSize = map.imageSize / chunksPerImage / 16.0F;
 	}
 	
 	public MapImage provideImage(Chunk chunk) throws Exception {
