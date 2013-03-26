@@ -3,6 +3,7 @@ package btwmod.livemap;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -292,7 +293,7 @@ public class MapImage {
 		return blockId > 0 && blockId < mapLayer.map.blockColors.length && mapLayer.map.blockColors[blockId] != null;
 	}
 
-	protected void save() throws Exception {
+	protected void save() throws IOException {
 		if (ImageIO.write(colorImage, "png", mapLayer.map.mod.tempSave)) {
 			if (!colorImageFile.exists() || colorImageFile.delete()) {
 				if (mapLayer.map.mod.tempSave.renameTo(colorImageFile)) {
