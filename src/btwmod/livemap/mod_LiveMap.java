@@ -38,17 +38,17 @@ import btwmods.world.IChunkListener;
 
 public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 	
+	public final File tempSave = new File(ModLoader.modDataDir, "livemap.temp");
+	
 	public boolean debugMessages = false;
 
 	private File imageDir = ModLoader.modDataDir;
-	public final File tempSave = new File(ModLoader.modDataDir, "livemap.temp");
 	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
 	private BlockColor[][] blockColors;
 	
 	private volatile ChunkProcessor chunkProcessor = null;
 	
 	private boolean allowQueuing = true;
-
 	private Queue<Chunk> chunkQueue = new ConcurrentLinkedQueue<Chunk>();
 	private AtomicInteger chunkQueueCount = new AtomicInteger();
 	
