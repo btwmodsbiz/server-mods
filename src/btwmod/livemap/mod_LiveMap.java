@@ -358,14 +358,18 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 			new Thread(chunkProcessor = new ChunkProcessor(mapManagers), getName() + " Thread").start();
 		}
 	}
+	
+	public void clearQueue() {
+		chunkQueue.clear();
+		chunkQueueCount.set(0);
+	}
 
 	@Override
 	public void onServerStop(ServerStopEvent event) {
 		switch (event.getType()) {
 			case PRE:
 				allowQueuing = false;
-				chunkQueue.clear();
-				chunkQueueCount.set(0);
+				clearQueue();
 				break;
 			
 			case POST:
