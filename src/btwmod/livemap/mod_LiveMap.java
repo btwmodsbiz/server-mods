@@ -39,8 +39,9 @@ import btwmods.world.IChunkListener;
 public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 	
 	public final File tempSave = new File(ModLoader.modDataDir, "livemap.temp");
-	
-	public boolean debugMessages = false;
+
+	public volatile int mapImageCacheMax = 20;
+	public volatile boolean debugMessages = false;
 
 	private File imageDir = ModLoader.modDataDir;
 	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
@@ -100,6 +101,8 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
+		mapImageCacheMax = Math.min(500, Math.max(10, settings.getInt("mapImageCacheMax", mapImageCacheMax)));
+		
 		if (settings.hasKey("imageDir")) {
 			imageDir = new File(settings.get("imageDir"));
 		}
@@ -382,7 +385,7 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 					
 				}
 				
-				if (thread.isRunning()) {
+				if (thread != null && thread.isRunning()) {
 					ModLoader.outputInfo(getName() + " is waiting for images to save...");
 					
 					while (thread.isRunning()) {
@@ -394,7 +397,6 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 					}
 				}
 				break;
-			
 		}
 	}
 
@@ -419,28 +421,15 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 				Chunk chunk = null;
 				int count = 0;
 				long start = System.currentTimeMillis();
-				long saving = 0;
 				while (this == chunkProcessor && (chunk = chunkQueue.poll()) != null) {
 					chunkQueueCount.decrementAndGet();
 					renderChunk(chunk);
-					
-					if (debugMessages && count == 0)
-						ModLoader.outputInfo(getName() + " thread rendered chunk " + chunk.xPosition + "," + chunk.zPosition + ".");
-					
-					// Save and clear the images every so many chunks.
-					if (++count % 50 == 0) {
-						long startSaving = System.currentTimeMillis();
-						save();
-						saving += System.currentTimeMillis() - startSaving;
-					}
 				}
 
-				long startSaving = System.currentTimeMillis();
 				save();
-				saving += System.currentTimeMillis() - startSaving;
 
 				if (debugMessages && count > 0)
-					ModLoader.outputInfo(getName() + " thread rendered " + count + " chunks in " + (System.currentTimeMillis() - start) + "ms (" + saving + "ms saving).");
+					ModLoader.outputInfo(getName() + " thread rendered " + count + " chunks in " + (System.currentTimeMillis() - start) + "ms.");
 				
 				try {
 					Thread.sleep(1000L);

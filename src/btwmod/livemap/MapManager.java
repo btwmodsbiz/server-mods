@@ -98,6 +98,14 @@ public class MapManager {
 	public boolean hasHeightImage() {
 		return heightUndulate;
 	}
+	
+	public int getImageCount() {
+		int count = 0;
+		for (int i = 0; i < mapLayers.length; i++) {
+			count += mapLayers[i].getImageCount();
+		}
+		return count;
+	}
 
 	public void processChunk(Chunk chunk) {
 		for (int i = 0; i < mapLayers.length; i++) {

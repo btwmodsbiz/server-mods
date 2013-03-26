@@ -1,8 +1,7 @@
 package btwmod.livemap;
 
 import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.io.IOException;
 import java.util.Map.Entry;
 
 import btwmods.ModLoader;
@@ -16,7 +15,7 @@ public class MapLayer {
 	public final File layerDirectory;
 	public final int chunksPerImage;
 
-	protected Map<String, MapImage> images = new LinkedHashMap<String, MapImage>();
+	protected final MapImageCache<String> images;
 
 	public MapLayer(MapManager map, File layerDirectory, int chunksPerImage) {
 		if (map.imageSize / chunksPerImage == 0)
@@ -25,6 +24,7 @@ public class MapLayer {
 		this.map = map;
 		this.layerDirectory = layerDirectory;
 		this.chunksPerImage = chunksPerImage;
+		images = new MapImageCache<String>(this);
 	}
 	
 	public MapImage provideImage(Chunk chunk) throws Exception {
@@ -39,7 +39,7 @@ public class MapLayer {
 			
 			if (!image.loadImages()) {
 				// TODO: Queue up the images for the chunks if failed.
-				ModLoader.outputError("Failed to load image: " + image.colorImageFile.getPath());
+				ModLoader.outputError(map.mod.getName() + " failed to load image: " + image.colorImageFile.getPath());
 			}
 		}
 		return image;
@@ -49,6 +49,10 @@ public class MapLayer {
 		if (chunk.worldObj.provider.dimensionId == map.dimension) {
 			provideImage(chunk).renderChunk(chunk);
 		}
+	}
+	
+	public int getImageCount() {
+		return images.size();
 	}
 
 	protected String getChunkKey(Chunk chunk) {
@@ -67,5 +71,13 @@ public class MapLayer {
 	
 	protected void clear() {
 		images.clear();
+	}
+
+	public void onCacheRemoved(MapImage image) {
+		try {
+			image.save();
+		} catch (IOException e) {
+			ModLoader.outputError(e, map.mod.getName() + " failed (" + e.getClass().getSimpleName() + ") to save image to temp file for dimension " + map.dimension + " chunk " + image.chunkX + "/" + image.chunkZ + ": " + e.getMessage());
+		}
 	}
 }
