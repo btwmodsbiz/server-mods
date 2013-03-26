@@ -119,7 +119,7 @@ public class MapManager {
 		}
 	}
 
-	public void saveAndClear() {
+	public void save(boolean clear) {
 		for (int i = 0; i < mapLayers.length; i++) {
 			if (mapLayers[i] != null) {
 				try {
@@ -128,7 +128,8 @@ public class MapManager {
 					ModLoader.outputError(e, mod.getName() + " failed (" + e.getClass().getSimpleName() + ") to save images for layer " + (i+1) + ": " + e.getMessage());
 				}
 				
-				mapLayers[i].clear();
+				if (clear)
+					mapLayers[i].clear();
 			}
 		}
 	}

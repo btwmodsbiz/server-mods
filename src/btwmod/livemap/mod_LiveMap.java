@@ -421,12 +421,18 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 				Chunk chunk = null;
 				int count = 0;
 				long start = System.currentTimeMillis();
+				long nextSave = System.currentTimeMillis() + (5 * 1000);
 				while (this == chunkProcessor && (chunk = chunkQueue.poll()) != null) {
 					chunkQueueCount.decrementAndGet();
 					renderChunk(chunk);
+					
+					if (System.currentTimeMillis() > nextSave) {
+						save(false);
+						nextSave = System.currentTimeMillis() + (5 * 1000);
+					}
 				}
 
-				save();
+				save(true);
 
 				if (debugMessages && count > 0)
 					ModLoader.outputInfo(getName() + " thread rendered " + count + " chunks in " + (System.currentTimeMillis() - start) + "ms.");
@@ -447,9 +453,9 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 			}
 		}
 		
-		protected void save() {
+		protected void save(boolean clear) {
 			for (int i = 0; i < maps.length; i++) {
-				maps[i].saveAndClear();
+				maps[i].save(clear);
 			}
 		}
 	}
