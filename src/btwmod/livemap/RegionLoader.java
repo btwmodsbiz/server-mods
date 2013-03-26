@@ -13,6 +13,7 @@ import net.minecraft.src.AnvilChunkLoader;
 import net.minecraft.src.Chunk;
 import net.minecraft.src.IChunkLoader;
 import net.minecraft.src.ICommandSender;
+import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.RegionFile;
 import net.minecraft.src.RegionFileCache;
 import net.minecraft.src.WorldServer;
@@ -155,6 +156,7 @@ public class RegionLoader implements ITickListener {
 		if (total > 0
 			&& event.getType() == TickEvent.TYPE.END
 			&& event.getTickCounter() % regionChunksDequeTicks == 0
+			&& mod.getAllowQueuing()
 			&& mod.getChunkQueueCount() < regionChunkQueueThreshold) {
 			
 			if (processed >= total) {
@@ -162,10 +164,10 @@ public class RegionLoader implements ITickListener {
 				
 				int queueCheck = regionQueue.size();
 				if (queueCheck > 0) {
-					ModLoader.outputError(mod.getName() + "'s " + RegionLoader.class.getSimpleName() + " completed but had " + queueCheck + " remaining in the queue.");
+					ModLoader.outputError(mod.getName() + "completed loading chunks by region but had " + queueCheck + " remaining in the queue.");
 					regionQueue.clear();
 				} else {
-					ModLoader.outputInfo(mod.getName() + "'s " + RegionLoader.class.getSimpleName() + " completed.");
+					ModLoader.outputInfo(mod.getName() + " completed loading chunks by region.");
 				}
 			}
 			
@@ -177,7 +179,7 @@ public class RegionLoader implements ITickListener {
 					
 					if (processed * 100 / total > lastReportedPercentage && lastReportedTime + 5000 < System.currentTimeMillis()) {
 						lastReportedPercentage = processed * 100 / total;
-						ModLoader.outputInfo(mod.getName() + " processed " + processed + " (" + lastReportedPercentage + "%) chunks.");
+						ModLoader.outputInfo(mod.getName() + " loaded " + processed + " (" + lastReportedPercentage + "%) chunks.");
 						lastReportedTime = System.currentTimeMillis();
 					}
 					
@@ -187,7 +189,13 @@ public class RegionLoader implements ITickListener {
 					}
 					else {
 						try {
-							Chunk chunk = mod.getChunkLoader(regionChunk.worldIndex).loadChunk(regionChunk.world, regionChunk.chunkX, regionChunk.chunkZ);
+							Chunk chunk = null;
+							AnvilChunkLoader chunkLoader = (AnvilChunkLoader)mod.getChunkLoader(regionChunk.worldIndex);
+							NBTTagCompound chunkNBT = chunkLoader.loadChunkNBT(regionChunk.world, regionChunk.chunkX, regionChunk.chunkZ);
+
+							if (chunkNBT != null && chunkNBT.hasKey("Level") && chunkNBT.getCompoundTag("Level").hasKey("Sections")) {
+								chunk = chunkLoader.readChunkFromNBT(regionChunk.world, chunkNBT.getCompoundTag("Level"), true);
+							}
 							
 							if (chunk == null) {
 								ModLoader.outputError(mod.getName() + " failed to get chunk input stream for chunk " + regionChunk.chunkX + "," + regionChunk.chunkZ + " in world " + regionChunk.worldIndex);
