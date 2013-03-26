@@ -31,10 +31,12 @@ import btwmods.WorldAPI;
 import btwmods.io.IllegalSettingException;
 import btwmods.io.MissingSettingException;
 import btwmods.io.Settings;
+import btwmods.server.IServerStopListener;
+import btwmods.server.ServerStopEvent;
 import btwmods.world.ChunkEvent;
 import btwmods.world.IChunkListener;
 
-public class mod_LiveMap implements IMod, IChunkListener {
+public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 	
 	public boolean debugMessages = false;
 
@@ -44,6 +46,8 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	private BlockColor[][] blockColors;
 	
 	private volatile ChunkProcessor chunkProcessor = null;
+	
+	private boolean allowQueuing = true;
 
 	private Queue<Chunk> chunkQueue = new ConcurrentLinkedQueue<Chunk>();
 	private AtomicInteger chunkQueueCount = new AtomicInteger();
@@ -76,6 +80,10 @@ public class mod_LiveMap implements IMod, IChunkListener {
 		}
 		
 		return null;
+	}
+	
+	public boolean getAllowQueuing() {
+		return allowQueuing;
 	}
 	
 	public int getChunkQueueCount() {
@@ -138,6 +146,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 		regionLoader = new RegionLoader(this, settings);
 
 		WorldAPI.addListener(this);
+		ServerAPI.addListener(this);
 		ServerAPI.addListener(regionLoader);
 		CommandsAPI.registerCommand(commandMap = new CommandMap(this), this);
 	}
@@ -145,6 +154,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	@Override
 	public void unload() throws Exception {
 		WorldAPI.removeListener(this);
+		ServerAPI.removeListener(this);
 		ServerAPI.removeListener(regionLoader);
 		CommandsAPI.unregisterCommand(commandMap);
 	}
@@ -338,11 +348,49 @@ public class mod_LiveMap implements IMod, IChunkListener {
 	}
 	
 	public void queueChunk(Chunk chunk) {
+		if (!allowQueuing)
+			return;
+		
 		chunkQueue.add(chunk);
 		chunkQueueCount.incrementAndGet();
 		
 		if (chunkProcessor == null || !chunkProcessor.isRunning()) {
 			new Thread(chunkProcessor = new ChunkProcessor(mapManagers), getName() + " Thread").start();
+		}
+	}
+
+	@Override
+	public void onServerStop(ServerStopEvent event) {
+		switch (event.getType()) {
+			case PRE:
+				allowQueuing = false;
+				chunkQueue.clear();
+				chunkQueueCount.set(0);
+				break;
+			
+			case POST:
+				ChunkProcessor thread = chunkProcessor;
+				chunkProcessor = null;
+				
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					
+				}
+				
+				if (thread.isRunning()) {
+					ModLoader.outputInfo(getName() + " is waiting for images to save...");
+					
+					while (thread.isRunning()) {
+						try {
+							Thread.sleep(10);
+						} catch (InterruptedException e) {
+							
+						}
+					}
+				}
+				break;
+			
 		}
 	}
 
@@ -368,7 +416,7 @@ public class mod_LiveMap implements IMod, IChunkListener {
 				int count = 0;
 				long start = System.currentTimeMillis();
 				long saving = 0;
-				while ((chunk = chunkQueue.poll()) != null) {
+				while (this == chunkProcessor && (chunk = chunkQueue.poll()) != null) {
 					chunkQueueCount.decrementAndGet();
 					renderChunk(chunk);
 					
