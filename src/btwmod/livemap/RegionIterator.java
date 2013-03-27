@@ -107,20 +107,20 @@ public class RegionIterator implements Iterator<Chunk> {
 	}
 	
 	private void nextChunkOffset() {
-		currentZOffset--;
+		currentXOffset++;
 		
-		if (currentZOffset < 0) {
-			currentZOffset = 31;
-			currentXOffset--;
+		if (currentXOffset > 31) {
+			currentXOffset = 0;
+			currentZOffset++;
 		}
 		
-		if (currentXOffset < 0)
+		if (currentZOffset > 31)
 			nextRegion();
 	}
 	
 	private void nextRegion() {
 		currentRegion = regions.pollFirst();
-		currentXOffset = currentZOffset = 31;
+		currentXOffset = currentZOffset = 0;
 	}
 
 	@Override
