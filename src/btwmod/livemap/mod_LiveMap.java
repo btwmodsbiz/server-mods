@@ -31,7 +31,7 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 	private File colorData = new File(ModLoader.modsDir, "livemap-colors.txt");
 	private BlockColor[][] blockColors;
 	
-	private volatile ChunkProcessor chunkProcessor = null;
+	private volatile RenderingThread chunkProcessor = null;
 	
 	private boolean allowQueuing = true;
 	private Queue<Chunk> unloadedChunkQueue = new ConcurrentLinkedQueue<Chunk>();
@@ -133,9 +133,13 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 		checkThread();
 	}
 	
+	public boolean isRenderingThread(RenderingThread thread) {
+		return chunkProcessor == thread;
+	}
+	
 	private void checkThread() {
 		if (chunkProcessor == null || !chunkProcessor.isRunning()) {
-			new Thread(chunkProcessor = new ChunkProcessor(mapManagers), getName() + " Thread").start();
+			new Thread(chunkProcessor = new RenderingThread(this, mapManagers, unloadedChunkQueue, regionQueue), getName() + " Thread").start();
 		}
 	}
 	
@@ -153,7 +157,7 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 				break;
 			
 			case POST:
-				ChunkProcessor thread = chunkProcessor;
+				RenderingThread thread = chunkProcessor;
 				chunkProcessor = null;
 				
 				try {
@@ -174,89 +178,6 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 					}
 				}
 				break;
-		}
-	}
-
-	private class ChunkProcessor implements Runnable {
-		
-		private final MapManager[] maps;
-		
-		private volatile boolean isRunning = true;
-
-		public boolean isRunning() {
-			return isRunning;
-		}
-		
-		public ChunkProcessor(MapManager[] maps) {
-			this.maps = maps;
-		}
-
-		@Override
-		public void run() {
-			while (this == chunkProcessor) {
-				
-				Chunk chunk = null;
-				int count = 0;
-				int debugCount = 0;
-				long start = System.currentTimeMillis();
-				long nextSave = System.currentTimeMillis() + (5 * 1000);
-				long nextDebug = System.currentTimeMillis() + (10 * 1000);
-				while (this == chunkProcessor && (chunk = getNextChunk()) != null) {
-					renderChunk(chunk);
-					count++;
-					debugCount++;
-					
-					if (System.currentTimeMillis() > nextSave) {
-						save(false);
-						nextSave = System.currentTimeMillis() + (5 * 1000);
-					}
-					
-					if (debugMessages && System.currentTimeMillis() > nextDebug) {
-						ModLoader.outputInfo(getName() + " thread rendered " + debugCount + " chunks.");
-						nextDebug = System.currentTimeMillis() + (10 * 1000);
-						debugCount = 0;
-					}
-					
-					try {
-						Thread.sleep(10L);
-					} catch (InterruptedException e) {
-
-					}
-				}
-
-				save(true);
-
-				if (debugMessages && count > 0)
-					ModLoader.outputInfo(getName() + " thread rendered " + count + " total chunks in " + (System.currentTimeMillis() - start) + "ms.");
-				
-				try {
-					Thread.sleep(1000L);
-				} catch (InterruptedException e) {
-
-				}
-			}
-
-			isRunning = false;
-		}
-		
-		private Chunk getNextChunk() {
-			Chunk chunk = unloadedChunkQueue.poll();
-			if (chunk == null && regionQueue.hasNext()) {
-				chunk = regionQueue.next();
-			}
-			return chunk;
-		}
-		
-		private void renderChunk(Chunk chunk) {
-			for (int i = 0; i < maps.length; i++) {
-				maps[i].processChunk(chunk);
-			}
-		}
-		
-		protected void save(boolean clear) {
-			for (int i = 0; i < maps.length; i++) {
-				maps[i].save(clear);
-			}
 		}
 	}
 }
