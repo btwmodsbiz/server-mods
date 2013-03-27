@@ -20,7 +20,7 @@ public class CommandMap extends CommandBaseExtended {
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/" + getCommandName() + " (region | world | remaining | debug) ...";
+		return "/" + getCommandName() + " (region | world | remaining | clear | debug) ...";
 	}
 
 	@Override
@@ -32,45 +32,21 @@ public class CommandMap extends CommandBaseExtended {
 	public void processCommand(ICommandSender sender, String[] args) {
 		if (isStringMatch(args, 0, "debug")) {
 			if (args.length == 1) {
-				sender.sendChatToPlayer(mod.getName() + "'s debug messages are " + (mod.debugMessages ? "on" : "off") + ".");
+				sender.sendChatToPlayer(Util.COLOR_YELLOW + mod.getName() + "'s debug messages are " + (mod.debugMessages ? "on" : "off") + ".");
 			}
 			else if (isBoolean(args, 1)) {
 				mod.debugMessages = Settings.getBooleanValue(args[1], mod.debugMessages);
-				sender.sendChatToPlayer(mod.getName() + "'s debug messages are now " + (mod.debugMessages ? "on" : "off") + ".");
+				sender.sendChatToPlayer(Util.COLOR_YELLOW + mod.getName() + "'s debug messages are now " + (mod.debugMessages ? "on" : "off") + ".");
 			}
 			else {
 				throw new WrongUsageException("/" + getCommandName() + " debug (on | off)", new Object[0]);
 			}
 		}
 		else if (isStringMatch(args, 0, "remaining")) {
-			sender.sendChatToPlayer(mod.getName() + " has " + mod.getRegionLoader().getQueueRemaining() + " chunks in the queue.");
+			sender.sendChatToPlayer(Util.COLOR_YELLOW + mod.getName() + " has " + mod.getRemainingRegionChunks() + " chunks in the queue.");
 		}
 		else if (isStringMatch(args, 0, "region")) {
-			if (isStringMatch(args, 1, "dequeuelimit")) {
-				if (isInt(args, 2))
-					sender.sendChatToPlayer(args[1].toLowerCase() + " changed from " + mod.getRegionLoader().regionChunksDequeLimit + " to " + (mod.getRegionLoader().regionChunksDequeLimit = parseIntBounded(sender, args[2], 1, 500)) + ".");
-				else if (args.length == 2)
-					sender.sendChatToPlayer(args[1].toLowerCase() + " is " + mod.getRegionLoader().regionChunksDequeLimit + ".");
-				else
-					throw new WrongUsageException("/" + getCommandName() + " " + args[0].toLowerCase() + " " + args[1].toLowerCase() + " [num]", new Object[0]);
-			}
-			else if (isStringMatch(args, 1, "dequeueticks")) {
-				if (isInt(args, 2))
-					sender.sendChatToPlayer(args[1].toLowerCase() + " changed from " + mod.getRegionLoader().regionChunksDequeTicks + " to " + (mod.getRegionLoader().regionChunksDequeTicks = parseIntWithMin(sender, args[2], 1)) + ".");
-				else if (args.length == 2)
-					sender.sendChatToPlayer(args[1].toLowerCase() + " is " + mod.getRegionLoader().regionChunksDequeTicks + ".");
-				else
-					throw new WrongUsageException("/" + getCommandName() + " " + args[0].toLowerCase() + " " + args[1].toLowerCase() + " [num]", new Object[0]);
-			}
-			else if (isStringMatch(args, 1, "loadedchunkslimit")) {
-				if (isInt(args, 2))
-					sender.sendChatToPlayer(args[1].toLowerCase() + " changed from " + mod.getRegionLoader().regionChunkQueueThreshold + " to " + + (mod.getRegionLoader().regionChunkQueueThreshold = parseIntBounded(sender, args[2], 1, 5000)) + ".");
-				else if (args.length == 2)
-					sender.sendChatToPlayer(args[1].toLowerCase() + " is " + mod.getRegionLoader().regionChunkQueueThreshold + ".");
-				else
-					throw new WrongUsageException("/" + getCommandName() + " " + args[0].toLowerCase() + " " + args[1].toLowerCase() + " [num]", new Object[0]);
-			}
-			else if (isInt(args, 2) && isInt(args, 3)) {
+			if (isInt(args, 2) && isInt(args, 3)) {
 				int worldIndex;
 				int range = isInt(args, 4) ? parseInt(sender, args[4]) : 0;
 				
@@ -78,7 +54,7 @@ public class CommandMap extends CommandBaseExtended {
 					worldIndex = Util.getWorldIndexFromName(args[1]);
 				}
 				catch (IllegalArgumentException e) {
-					throw new WrongUsageException("/" + getCommandName() + " region <world> <x> <z>", new Object[0]);
+					throw new WrongUsageException("/" + getCommandName() + " region <world> <x> <z> [<radius>]", new Object[0]);
 				}
 
 				int x = parseInt(sender, args[2]);
@@ -88,21 +64,21 @@ public class CommandMap extends CommandBaseExtended {
 				for (int iX = x - range; iX <= x + range; iX++) {
 					for (int iZ = z - range; iZ <= z + range; iZ++) {
 						try {
-							mod.getRegionLoader().queueRegion(worldIndex, iX, iZ, regions > 0);
+							mod.queueRegion(worldIndex, iX, iZ);
 							regions++;
 						} catch (Exception e) {
-							sender.sendChatToPlayer(e.getMessage());
+							sender.sendChatToPlayer(Util.COLOR_RED + e.getMessage());
 						}
 					}
 				}
 
 				if (regions == 1)
-					sender.sendChatToPlayer("Queued region " + x + "." + z + " (" + (32*32) + " chunks) for " + Util.getWorldNameFromIndex(worldIndex) + " for mapping.");
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Queued region " + x + "." + z + " (" + (32*32) + " chunks) for " + Util.getWorldNameFromIndex(worldIndex) + " for mapping.");
 				else if (regions > 1)
-					sender.sendChatToPlayer("Queued " + regions + " regions (" + (regions*32*32) + " chunks) centered on " + x + "." + z + " for " + Util.getWorldNameFromIndex(worldIndex) + " for mapping.");
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Queued " + regions + " regions (" + (regions*32*32) + " chunks) centered on " + x + "." + z + " for " + Util.getWorldNameFromIndex(worldIndex) + " for mapping.");
 			}
 			else {
-				throw new WrongUsageException("/" + getCommandName() + " region (dequeuelimit | dequeueticks | loadedchunkslimit | <world>) ...", new Object[0]);
+				throw new WrongUsageException("/" + getCommandName() + " region <world> <x> <z> [<radius>]", new Object[0]);
 			}
 		}
 		else if (isStringMatch(args, 0, "world") && isWorldName(args, 1)) {
@@ -115,13 +91,21 @@ public class CommandMap extends CommandBaseExtended {
 				throw new WrongUsageException("/" + getCommandName() + " world <name>", new Object[0]);
 			}
 
-			int count = mod.getRegionLoader().queueWorld(worldIndex, sender);
-			if (count > 0) {
-				sender.sendChatToPlayer("Queued " + count + " region" + (count > 1 ? "s" : "") + " (" + (count*32*32) + " chunks) from " + Util.getWorldNameFromIndex(worldIndex) + " for mapping.");
+			try {
+				int count = mod.queueWorld(worldIndex);
+				if (count > 0) {
+					sender.sendChatToPlayer(Util.COLOR_YELLOW + "Queued " + count + " region" + (count > 1 ? "s" : "") + " (" + (count*32*32) + " chunks) from " + Util.getWorldNameFromIndex(worldIndex) + " for mapping.");
+				}
+				else if (count == 0) {
+					sender.sendChatToPlayer(Util.COLOR_RED + "No regions were found for " + Util.getWorldNameFromIndex(worldIndex) + ".");
+				}
+			} catch (Exception e) {
+				sender.sendChatToPlayer(e.getMessage());
 			}
-			else if (count == 0) {
-				sender.sendChatToPlayer("No regions were found for " + Util.getWorldNameFromIndex(worldIndex) + ".");
-			}
+		}
+		else if (isStringMatch(args, 0, "clear")) {
+			mod.clearQueue();
+			sender.sendChatToPlayer(Util.COLOR_YELLOW + "Cleared queued regions and unloaded chunks.");
 		}
 		else {
 			throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
@@ -131,10 +115,10 @@ public class CommandMap extends CommandBaseExtended {
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
 		if (args.length == 1) {
-			return getListOfStringsMatchingLastWord(args, new String[] { "debug", "region", "remaining", "world" });
+			return getListOfStringsMatchingLastWord(args, new String[] { "debug", "region", "remaining", "world", "clear" });
 		}
-		else if (args.length == 2 && isStringMatch(args, 0, "region")) {
-			return getListOfStringsMatchingLastWord(args, new String[] { "dequeuelimit", "dequeueticks", "loadedchunkslimit" });
+		else if (args.length == 2 && isStringMatch(args, 0, new String[] { "region", "world" })) {
+			return getListOfStringsMatchingLastWord(args, new String[] { "Overworld", "Nether", "TheEnd" });
 		}
 		return super.addTabCompletionOptions(sender, args);
 	}

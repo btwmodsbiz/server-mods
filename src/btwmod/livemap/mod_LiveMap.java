@@ -133,6 +133,10 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 		checkThread();
 	}
 	
+	public int getRemainingRegionChunks() {
+		return regionQueue.getChunkCount();
+	}
+	
 	public boolean isRenderingThread(RenderingThread thread) {
 		return chunkProcessor == thread;
 	}
