@@ -25,6 +25,7 @@ public class MapManager {
 	public final Color baseColor;
 	public final int forcedMinHeight;
 	public final int forcedMaxHeight;
+	public final boolean nightMode;
 	
 	public MapManager(mod_LiveMap mod, Settings settings, String section) throws IOException {
 		if (!settings.hasKey(section, "directory"))
@@ -40,6 +41,7 @@ public class MapManager {
 		depthBrightness = settings.getBoolean(section, "depthBrightness", true);
 		forcedMinHeight = Math.max(0, Math.min(255, settings.getInt(section, "forcedMinHeight", 0)));
 		forcedMaxHeight = Math.max(0, Math.min(255, settings.getInt(section, "forcedMaxHeight", 255)));
+		nightMode = settings.getBoolean(section, "nightMode", false);
 		
 		BlockColor[][] overrides = null;
 		if (settings.hasKey(section, "blockColorOverrides"))

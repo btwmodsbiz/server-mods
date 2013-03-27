@@ -9,6 +9,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import btwmods.ModLoader;
 import net.minecraft.src.Chunk;
+import net.minecraft.src.EnumSkyBlock;
 
 public class MapImage {
 
@@ -179,8 +180,10 @@ public class MapImage {
 		int blue = 0;
 		float alpha = 0;
 		int height = 0;
+		int blockLight = 0;
 		int biomeId = 255;
 		int[] biomeIdCounts = new int[256];
+		boolean nightMode = mapLayer.map.nightMode;
 		
 		Color baseColor = mapLayer.map.baseColor;
 		
@@ -225,11 +228,22 @@ public class MapImage {
 					blue += stackColor.blue * stackColor.alpha;
 					alpha += stackColor.alpha;
 					height += posY - lastNonClear;
+					
+					if (nightMode)
+						blockLight += chunk.getSavedLightValue(EnumSkyBlock.Block, x + iX, posY - lastNonClear + 1, z +iZ);
 				}
 			}
 		}
 		
 		if (count > 0.0F) {
+			if (nightMode) {
+				blockLight /= count;
+				blockLight += 3;
+				red *= blockLight / 26F;
+				green *= blockLight / 26F;
+				blue *= blockLight / 26F;
+			}
+			
 			colorPixel.set(red / count, green / count, blue / count, alpha / count);
 			heightPixel.set(new Color(0, Math.round(height / count), biomeId));
 			
