@@ -24,6 +24,8 @@ public class MapImage {
 	public final File colorImageFile;
 	public final File heightImageFile;
 	
+	private boolean requiresSave = true;
+	
 	public MapImage(MapLayer mapLayer, int chunkX, int chunkZ) throws Exception {
 		this.mapLayer = mapLayer;
 		
@@ -60,10 +62,13 @@ public class MapImage {
 				heightImage = createBlank();
 		}
 		
+		requiresSave = success;
+		
 		return success;
 	}
 	
 	public void setBlankImages() {
+		requiresSave = true;
 		colorImage = createBlank();
 		
 		if (mapLayer.map.hasHeightImage())
@@ -91,6 +96,8 @@ public class MapImage {
 	public void renderChunk(Chunk chunk) {
 		if (!isLoaded())
 			return;
+		
+		requiresSave = true;
 		
 		MapPos pos = new MapPos(chunk, mapLayer);
 		
@@ -294,20 +301,27 @@ public class MapImage {
 	}
 
 	protected void save() throws IOException {
+		if (!requiresSave)
+			return;
+		
+		boolean success = true;
 		if (ImageIO.write(colorImage, "png", mapLayer.map.mod.tempSave)) {
 			if (!colorImageFile.exists() || colorImageFile.delete()) {
 				if (mapLayer.map.mod.tempSave.renameTo(colorImageFile)) {
 					colorImageFile.setReadable(true, false);
 				}
 				else {
+					success = false;
 					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + colorImageFile.getPath());
 				}
 			}
 			else {
+				success = false;
 				ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to delete the old image at: " + colorImageFile.getPath());
 			}
 		}
 		else {
+			success = false;
 			ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to save the color image to the temp file for " + chunkX + "," + chunkZ);
 		}
 		
@@ -318,17 +332,23 @@ public class MapImage {
 						heightImageFile.setReadable(true, false);
 					}
 					else {
+						success = false;
 						ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to move the temp image to: " + heightImageFile.getPath());
 					}
 				}
 				else {
+					success = false;
 					ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to delete the old image at: " + heightImageFile.getPath());
 				}
 			}
 			else {
+				success = false;
 				ModLoader.outputError(mapLayer.map.mod.getName() + "'s " + MapImage.class.getSimpleName() + " failed to save the height image to the temp file for " + chunkX + "," + chunkZ);
 			}
 		}
+		
+		if (success)
+			requiresSave = false;
 	}
 	
 	public static int getBlockHeight(PixelColor color) {
