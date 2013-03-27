@@ -91,7 +91,7 @@ public class RegionIterator implements Iterator<Chunk> {
 				AnvilChunkLoader chunkLoader = WorldAPI.getAnvilChunkLoader(currentRegion.worldIndex);
 				
 				if (chunkLoader != null) {
-					NBTTagCompound chunkNBT = chunkLoader.loadChunkNBT(currentRegion.world, currentRegion.regionX << 5 | currentXOffset, currentRegion.regionZ | currentZOffset);
+					NBTTagCompound chunkNBT = chunkLoader.loadChunkNBT(currentRegion.world, currentRegion.regionX << 5 | currentXOffset, currentRegion.regionZ << 5 | currentZOffset);
 					
 					if (chunkNBT != null && chunkNBT.hasKey("Level") && chunkNBT.getCompoundTag("Level").hasKey("Sections")) {
 						nextChunk = chunkLoader.readChunkFromNBT(currentRegion.world, chunkNBT.getCompoundTag("Level"), true);
