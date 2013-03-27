@@ -43,10 +43,10 @@ public class MapManager {
 		
 		BlockColor[][] overrides = null;
 		if (settings.hasKey(section, "blockColorOverrides"))
-			overrides = mod.loadColorData(new File(settings.get(section, "blockColorOverrides")), true);
+			overrides = MapUtil.loadColorData(new File(settings.get(section, "blockColorOverrides")), mod);
 		
 		if (overrides != null)
-			this.blockColors = mod.extendColorData(mod.getBlockColors(), overrides, true);
+			this.blockColors = MapUtil.extendColorData(mod.getBlockColors(), overrides, true);
 		else
 			this.blockColors = mod.getBlockColors();
 		
