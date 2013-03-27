@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+
+import btwmods.Util;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.CommandBase;
@@ -16,6 +19,7 @@ import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityMob;
 import net.minecraft.src.EntitySquid;
 import net.minecraft.src.ICommandSender;
+import net.minecraft.src.Packet3Chat;
 import net.minecraft.src.World;
 import net.minecraft.src.WrongUsageException;
 
@@ -53,6 +57,7 @@ public class CommandClearEntities extends CommandBase {
 
 		World world = MinecraftServer.getServer().worldServers[worldNames.get(args[0]).intValue()];
 		List<Entity> toRemove = new ArrayList<Entity>();
+		Map<Class, Integer> counts = new HashMap<Class, Integer>();
 		
 		int count = 0;
 		long startTime = System.currentTimeMillis();
@@ -61,6 +66,9 @@ public class CommandClearEntities extends CommandBase {
 			Object obj = iterator.next();
 			if (obj instanceof EntityMob || obj instanceof EntityGhast || obj instanceof EntitySquid || obj instanceof EntityBat) {
 				if (!((EntityLiving)obj).isPersistenceRequired()) {
+					Integer classCount = counts.get(obj.getClass());
+					counts.put(obj.getClass(), Integer.valueOf((classCount == null ? 0 : classCount.intValue()) + 1));
+					
 					toRemove.add((Entity)obj);
 					count++;
 				}
@@ -71,7 +79,17 @@ public class CommandClearEntities extends CommandBase {
 			world.removeEntity(entity);
 		}
 		
-		sender.sendChatToPlayer("Removed " + count + " entities in " + (System.currentTimeMillis() - startTime) + "ms");
+		List<String> countStrings = new ArrayList<String>();
+		countStrings.add("");
+		for (Entry<Class, Integer> entry : counts.entrySet()) {
+			countStrings.add(entry.getKey().getSimpleName() + "x" + entry.getValue().intValue());
+		}
+		
+		countStrings.set(0, "Removed " + count + " entities in " + (System.currentTimeMillis() - startTime) + "ms:");
+		
+		for (String message : Util.combineIntoMaxLengthMessages(countStrings, Packet3Chat.maxChatLength, " ", false)) {
+			sender.sendChatToPlayer(message);
+		}
 	}
 	
 	private void getWorldNames() {
