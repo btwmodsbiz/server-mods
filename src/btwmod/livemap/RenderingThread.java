@@ -34,7 +34,7 @@ public class RenderingThread implements Runnable {
 			int count = 0;
 			int debugCount = 0;
 			long start = System.currentTimeMillis();
-			long nextSave = System.currentTimeMillis() + (5 * 1000);
+			long nextSave = System.currentTimeMillis() + (1 * 1000);
 			long nextDebug = System.currentTimeMillis() + (10 * 1000);
 			while (mod.isRenderingThread(this) && (chunk = getNextChunk()) != null) {
 				renderChunk(chunk);
@@ -43,7 +43,7 @@ public class RenderingThread implements Runnable {
 				
 				if (System.currentTimeMillis() > nextSave) {
 					save(false);
-					nextSave = System.currentTimeMillis() + (5 * 1000);
+					nextSave = System.currentTimeMillis() + (1 * 1000);
 				}
 				
 				if (mod.debugMessages && System.currentTimeMillis() > nextDebug) {
