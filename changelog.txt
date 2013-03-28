@@ -1,3 +1,23 @@
+Version 4.62.1-b (vMC 1.4.7 BTW 4.61)
+
+  - Major rewrite to Live Map.
+
+  - Added toggles for depth brightness and height undulation, and a base
+    color for pixels to Live Map.
+    
+  - Added min/max height to start checking blocks at to Live Map.
+  
+  - Added nightMode setting to maps.
+  
+  - Changed Live Map so it gracefully handles the server stopping.
+    
+  - Changed Live Map so MapLayers use a cache with a max size. When the max
+    size is reached the eldest image is saved and removed from the cache.
+    
+  - Changed CommandClearEntities so it lists the entities it removed.
+
+  - Moved markers mod to its own package.
+
 Version 4.61.1 (vMC 1.4.7 BTW 4.61)
 
   - Changed mods to use ChatAPI.
