@@ -155,6 +155,7 @@ public class CommandDumpEntities extends CommandBase {
 					entityJson.addProperty("x", entity.posX);
 					entityJson.addProperty("y", entity.posY);
 					entityJson.addProperty("z", entity.posZ);
+					entityJson.addProperty("spawn", entity.getCountsTowardSpawnCap());
 					
 					if (entity.isDead) {
 						entityJson.addProperty("isDead", true);
