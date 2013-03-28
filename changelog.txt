@@ -1,4 +1,9 @@
-Version 4.62.1-b (vMC 1.4.7 BTW 4.61)
+Version 4.62.2 (vMC 1.4.7 BTW 4.62)
+
+  - Changed /dumpentities so it also logs if an entity counts toward the
+    spawn limit.
+
+Version 4.62.1-b (vMC 1.4.7 BTW 4.62)
 
   - Major rewrite to Live Map.
 
