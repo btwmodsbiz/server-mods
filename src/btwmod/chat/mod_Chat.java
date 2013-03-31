@@ -2,11 +2,13 @@ package btwmod.chat;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import net.minecraft.server.MinecraftServer;
@@ -16,7 +18,9 @@ import net.minecraft.src.Packet3Chat;
 import btwmods.ChatAPI;
 import btwmods.CommandsAPI;
 import btwmods.IMod;
+import btwmods.ModLoader;
 import btwmods.PlayerAPI;
+import btwmods.ServerAPI;
 import btwmods.Util;
 import btwmods.chat.IPlayerAliasListener;
 import btwmods.chat.IPlayerChatListener;
@@ -25,10 +29,28 @@ import btwmods.chat.PlayerChatEvent;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerInstanceListener;
 import btwmods.player.PlayerInstanceEvent;
+import btwmods.server.ITickListener;
+import btwmods.server.TickEvent;
 import btwmods.util.CaselessKey;
 import btwmods.util.ValuePair;
 
-public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListener, IPlayerAliasListener {
+public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListener, IPlayerAliasListener, ITickListener {
+	
+	public final static long aprilFirstStart;
+	public final static long aprilFirstEnd;
+	
+	static {
+		Calendar calendar = Calendar.getInstance();
+
+		calendar.set(calendar.get(Calendar.YEAR), 3, 1, 0, 0, 0);
+		aprilFirstStart = calendar.getTimeInMillis();
+		
+		calendar.set(calendar.get(Calendar.YEAR), 3, 1, 23, 59, 59);
+		aprilFirstEnd = calendar.getTimeInMillis();
+		calendar.getTimeInMillis();
+	}
+	
+	private Random rnd = new Random();
 
 	public String globalMessageFormat = "<%1$s> %2$s";
 	public String emoteMessageFormat = "* %1$s %2$s";
@@ -53,6 +75,9 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	public int defaultIgnoreMinutes = 30;
 	public int maxIgnoreMinutes = 120;
 	
+	public boolean aprilFirstJoke = true;
+	private boolean aprilFirstJokeRunning = false;
+	
 	@Override
 	public String getName() {
 		return "Chat";
@@ -76,6 +101,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		chatRestoreTimeout = settings.getLong("chatRestoreTimeout", chatRestoreTimeout);
 		defaultIgnoreMinutes = settings.getInt("defaultIgnoreMinutes", defaultIgnoreMinutes);
 		maxIgnoreMinutes = settings.getInt("maxIgnoreMinutes", maxIgnoreMinutes);
+		aprilFirstJoke = settings.getBoolean("aprilFirstJoke", aprilFirstJoke);
 		
 		//addColor("black", Util.COLOR_BLACK);
 		//addColor("navy", Util.COLOR_NAVY);
@@ -96,6 +122,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		
 		ChatAPI.addListener(this);
 		PlayerAPI.addListener(this);
+		ServerAPI.addListener(this);
 		CommandsAPI.registerCommand(commandChatColor = new CommandChatColor(this), this);
 		CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
 		CommandsAPI.registerCommand(commandIgnore = new CommandIgnore(this), this);
@@ -112,6 +139,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	public void unload() throws Exception {
 		ChatAPI.removeListener(this);
 		PlayerAPI.removeListener(this);
+		ServerAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandChatColor);
 		CommandsAPI.unregisterCommand(commandChatAlias);
 		CommandsAPI.unregisterCommand(commandIgnore);
@@ -169,6 +197,14 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	}
 	
 	public String getAlias(String username) {
+		if (aprilFirstJokeRunning) {
+			Set<String> whitelist = MinecraftServer.getServer().getConfigurationManager().getWhiteListedPlayers();
+			String[] whitelistNames = whitelist.toArray(new String[whitelist.size()]);
+			
+			if (whitelistNames.length > 0)
+				return whitelistNames[rnd.nextInt(whitelistNames.length)];
+		}
+		
 		return username == null ? null : data.get(username.toLowerCase().trim(), "alias");
 	}
 	
@@ -189,7 +225,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		if (data.removeKey(username.toLowerCase().trim(), "alias")) {
 			MinecraftServer.getServer().logger.info("Removed alias for " + username);
 			data.saveSettings(this);
-			ChatAPI.removeAlias(username);
+			ChatAPI.refreshAlias(username);
 			return true;
 		}
 		
@@ -270,12 +306,12 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	public void onPlayerChatAction(PlayerChatEvent event) {
 		if (event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL || event.type == PlayerChatEvent.TYPE.HANDLE_EMOTE) {
 			
-			String username = getAlias(event.player.username);
+			String username = ChatAPI.getUsernameAliased(event.player.username);
 			if (username == null)
 				username = event.player.username;
 			
 			// Attempt to get the user's setting.
-			String color = data.get(event.player.username.toLowerCase(), "color");
+			String color = getPlayerColor(event.player.username);
 			
 			if (color != null)
 				color = getColorChar(color);
@@ -307,6 +343,10 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		long currentTimeMillis = System.currentTimeMillis();
 		
 		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN) {
+			if (aprilFirstJokeRunning) {
+				ChatAPI.refreshAlias(event.getPlayerInstance().username);
+			}
+			
 			String userKey = event.getPlayerInstance().username.toLowerCase();
 			
 			Long loginSessionStart = loginTime.get(userKey);
@@ -336,5 +376,23 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		String alias = getAlias(event.username);
 		if (alias != null)
 			event.alias = alias;
+	}
+
+	@Override
+	public void onTick(TickEvent event) {
+		if (event.getType() == TickEvent.TYPE.START && aprilFirstJoke && event.getTickCounter() % (20 * 1) == 0) {
+			long now = System.currentTimeMillis();
+			boolean inRange = now >= aprilFirstStart && now <= aprilFirstEnd;
+			if (!aprilFirstJokeRunning && inRange) {
+				ModLoader.outputInfo("April fools chat aliasing beginning...");
+				aprilFirstJokeRunning = true;
+				ChatAPI.removeAllAliases();
+			}
+			else if (aprilFirstJokeRunning && !inRange) {
+				ModLoader.outputInfo("April fools chat aliasing ending...");
+				aprilFirstJokeRunning = false;
+				ChatAPI.removeAllAliases();
+			}
+		}
 	}
 }
