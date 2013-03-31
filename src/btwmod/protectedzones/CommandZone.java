@@ -308,7 +308,7 @@ public class CommandZone extends CommandBaseExtended {
 				if (playerMessages.size() == 1 && (playersHeader.length() + playerMessages.get(0).length()) <= Packet3Chat.maxChatLength) {
 					sender.sendChatToPlayer(playersHeader + playerMessages.get(0));
 				}
-				else if (playerMessages.size() > 1) {
+				else if (playerMessages.size() >= 1) {
 					sender.sendChatToPlayer(playersHeader);
 					for (String message : playerMessages) {
 						sender.sendChatToPlayer(message);
