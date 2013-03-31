@@ -1,3 +1,12 @@
+Version 4.64.1 (vMC 1.4.7 BTW 4.64)
+
+  - Added Last Login mod to maintain a list of the dates a player last
+    logged in.
+    
+  - Added April fools chat alias randomization (based on the whitelist).
+
+  - Fixed bug in /zone that prevented the whitelist from being displayed.
+
 Version 4.62.2 (vMC 1.4.7 BTW 4.62)
 
   - Changed /dumpentities so it also logs if an entity counts toward the
