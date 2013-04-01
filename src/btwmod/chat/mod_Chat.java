@@ -75,6 +75,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	public int defaultIgnoreMinutes = 30;
 	public int maxIgnoreMinutes = 120;
 	
+	private Map<String, String> aprilFirstColors = new HashMap<String, String>();
 	public boolean aprilFirstJoke = true;
 	private boolean aprilFirstJokeRunning = false;
 	
@@ -171,6 +172,16 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	}
 	
 	public String getPlayerColor(String username) {
+		if (aprilFirstJokeRunning) {
+			String color = aprilFirstColors.get(username.toLowerCase());
+			if (color == null) {
+				Set<String> keys = colorLookup.keySet();
+				String[] colors = keys.toArray(new String[keys.size()]);
+				aprilFirstColors.put(username.toLowerCase(), color = colors[rnd.nextInt(colors.length)]);
+			}
+			return color;
+		}
+		
 		return username == null ? null : data.get(username.toLowerCase(), "color");
 	}
 	
@@ -343,10 +354,6 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		long currentTimeMillis = System.currentTimeMillis();
 		
 		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN) {
-			if (aprilFirstJokeRunning) {
-				ChatAPI.refreshAlias(event.getPlayerInstance().username);
-			}
-			
 			String userKey = event.getPlayerInstance().username.toLowerCase();
 			
 			Long loginSessionStart = loginTime.get(userKey);
@@ -366,7 +373,12 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 			sendIgnoreList(event.getPlayerInstance(), false);
 				
 		}
-		else if (event.getType() == PlayerInstanceEvent.TYPE.LOGOUT) {
+		else if (event.getType() == PlayerInstanceEvent.TYPE.LOGOUT_POST) {
+			if (aprilFirstJokeRunning) {
+				ChatAPI.removeAlias(event.getPlayerInstance().username);
+				aprilFirstColors.remove(event.getPlayerInstance().username.toLowerCase());
+			}
+			
 			logoutTime.put(event.getPlayerInstance().username.toLowerCase(), new Long(System.currentTimeMillis()));
 		}
 	}
@@ -386,12 +398,12 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 			if (!aprilFirstJokeRunning && inRange) {
 				ModLoader.outputInfo("April fools chat aliasing beginning...");
 				aprilFirstJokeRunning = true;
-				ChatAPI.removeAllAliases();
+				ChatAPI.refreshAllAliases();
 			}
 			else if (aprilFirstJokeRunning && !inRange) {
 				ModLoader.outputInfo("April fools chat aliasing ending...");
 				aprilFirstJokeRunning = false;
-				ChatAPI.removeAllAliases();
+				ChatAPI.refreshAllAliases();
 			}
 		}
 	}
