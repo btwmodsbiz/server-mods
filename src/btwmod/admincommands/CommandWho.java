@@ -50,7 +50,7 @@ public class CommandWho extends CommandBase {
 			while (playerIterator.hasNext()) {
 				EntityPlayerMP player = (EntityPlayerMP)playerIterator.next();
 				String alias = ChatAPI.getUsernameAliased(player.username);
-				String username = player.username + (alias.equalsIgnoreCase(player.username) ? "" : " \"" + alias + "\"");
+				String username = alias; //player.username + (alias.equalsIgnoreCase(player.username) ? "" : " \"" + alias + "\"");
 
 				long seconds = mod.getTimeSinceLastPlayerAction(player);
 				if (seconds >= mod.getSecondsForAFK())
