@@ -202,7 +202,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 
 	@Override
 	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
-		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN || event.getType() == PlayerInstanceEvent.TYPE.LOGOUT) {
+		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN || event.getType() == PlayerInstanceEvent.TYPE.LOGOUT_PRE) {
 			lastContainerOpened.remove(event.getPlayerInstance().username.toLowerCase());
 			
 			logger.playerLogin(event, event.getPlayerInstance(),
@@ -210,7 +210,7 @@ public class PlayerListener implements ISlotListener, IDropListener, IContainerL
 					MathHelper.floor_double(event.getPlayerInstance().posX), 
 					MathHelper.floor_double(event.getPlayerInstance().posY),
 					MathHelper.floor_double(event.getPlayerInstance().posZ),
-					event.getType() == PlayerInstanceEvent.TYPE.LOGOUT);
+					event.getType() == PlayerInstanceEvent.TYPE.LOGOUT_PRE);
 		}
 		else if (event.getType() == PlayerInstanceEvent.TYPE.DEATH) {
 			logger.playerDeath(event, event.getPlayerInstance(),
