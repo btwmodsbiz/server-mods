@@ -18,14 +18,22 @@ import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.NetworkAPI;
 import btwmods.PlayerAPI;
+import btwmods.chat.IPlayerChatListener;
+import btwmods.chat.PlayerChatEvent;
 import btwmods.io.Settings;
 import btwmods.network.IPacketListener;
 import btwmods.network.NetworkType;
 import btwmods.network.PacketEvent;
+import btwmods.player.IPlayerActionListener;
+import btwmods.player.IPlayerBlockListener;
 import btwmods.player.IPlayerInstanceListener;
+import btwmods.player.ISlotListener;
+import btwmods.player.PlayerActionEvent;
+import btwmods.player.PlayerBlockEvent;
 import btwmods.player.PlayerInstanceEvent;
+import btwmods.player.SlotEvent;
 
-public class mod_AdminCommands implements IMod, IPacketListener, IPlayerInstanceListener {
+public class mod_AdminCommands implements IMod, IPacketListener, IPlayerInstanceListener, ISlotListener, IPlayerBlockListener, IPlayerChatListener, IPlayerActionListener {
 	
 	private long secondsForAFK = 300;
 	private final Map<String, Long> lastPlayerAction = new HashMap<String, Long>();
@@ -75,11 +83,14 @@ public class mod_AdminCommands implements IMod, IPacketListener, IPlayerInstance
 			
 			if (packet instanceof Packet102WindowClick
 					|| packet instanceof Packet14BlockDig
-					|| packet instanceof Packet15Place
 					|| packet instanceof Packet3Chat
 					|| packet instanceof Packet7UseEntity
 					|| packet instanceof Packet16BlockItemSwitch) {
 				markPlayerActed(event.getPlayer().username);
+			}
+			else if (packet instanceof Packet15Place) {
+				Packet15Place place = (Packet15Place)packet;
+				
 			}
 		}
 	}
@@ -112,6 +123,58 @@ public class mod_AdminCommands implements IMod, IPacketListener, IPlayerInstance
 	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
 		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN) {
 			markPlayerActed(event.getPlayerInstance().username);
+		}
+	}
+
+	@Override
+	public void onSlotAction(SlotEvent event) {
+		markPlayerActed(event.getPlayer().username);
+	}
+
+	@Override
+	public void onPlayerBlockAction(PlayerBlockEvent event) {
+		switch (event.getType()) {
+			case ACTIVATION_ATTEMPT:
+			case GET_ENDERCHEST_INVENTORY:
+			case ITEM_USE_ATTEMPT:
+			case ITEM_USE_CHECK_EDIT:
+			case REMOVE_ATTEMPT:
+				break;
+			case ACTIVATED:
+			case ITEM_USED:
+			case REMOVED:
+				markPlayerActed(event.getPlayer().username);
+				break;
+			
+		}
+	}
+
+	@Override
+	public void onPlayerChatAction(PlayerChatEvent event) {
+		switch (event.type) {
+			case AUTO_COMPLETE:
+			case SEND_TO_PLAYER_ATTEMPT:
+			case HANDLE_CHAT:
+			case HANDLE_EMOTE:
+			case HANDLE_GLOBAL:
+				break;
+			case GLOBAL:
+				markPlayerActed(event.player.username);
+				break;
+		}
+	}
+
+	@Override
+	public void onPlayerAction(PlayerActionEvent event) {
+		switch (event.getType()) {
+			case PLAYER_USE_ENTITY_ATTEMPT:
+			case USE_ITEM_ATTEMPT:
+			case ATTACKED_BY_PLAYER:
+				break;
+			case USE_ITEM:
+			case PLAYER_USE_ENTITY:
+				markPlayerActed(event.getPlayer().username);
+				break;
 		}
 	}
 }
