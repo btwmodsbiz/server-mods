@@ -1,3 +1,12 @@
+Version 4.64.2 (vMC 1.4.7 BTW 4.64)
+
+  - Changed mod_Chat to randomize colors as well, and reset the april fools
+    values after the user has been fully logged out.
+    
+  - Changed Item Logger's PlayerListener to use the new LOGOUT_PRE type name.
+  
+  - Fixed NullPointerException in Last Login.
+
 Version 4.64.1 (vMC 1.4.7 BTW 4.64)
 
   - Added Last Login mod to maintain a list of the dates a player last
