@@ -76,7 +76,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	public int maxIgnoreMinutes = 120;
 	
 	private Map<String, String> aprilFirstColors = new HashMap<String, String>();
-	public boolean aprilFirstJoke = true;
+	public boolean aprilFirstJoke = false;
 	private boolean aprilFirstJokeRunning = false;
 	
 	@Override
