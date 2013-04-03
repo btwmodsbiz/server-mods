@@ -1,3 +1,12 @@
+Version 4.64.3 (vMC 1.4.7 BTW 4.64)
+
+  - Changed Last Login to output top X logins reverse sorted by time.
+  
+  - Changed the April 1st prank to be off by default.
+  
+  - Fixed bug in Protected Zones where players could always place their own
+    heads.
+
 Version 4.64.2 (vMC 1.4.7 BTW 4.64)
 
   - Changed mod_Chat to randomize colors as well, and reset the april fools
