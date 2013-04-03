@@ -326,6 +326,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 											&& playerBlockEvent.getDirection() == 1
 											&& itemStack.getItem() == Item.skull
 											&& itemStack.getItemDamage() == 3
+											&& zone.isPlayerAllowed(player.username, zone.permissions.allowHeads)
 											&& itemStack.hasTagCompound()
 											&& itemStack.getTagCompound().hasKey("SkullOwner")
 											&& player.username.equalsIgnoreCase(itemStack.getTagCompound().getString("SkullOwner"))
