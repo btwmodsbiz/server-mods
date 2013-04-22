@@ -1,3 +1,7 @@
+Version 4.67.0 (vMC 1.5.1 BTW 4.67)
+
+  - Updated to BTW 4.67 and vMC 1.5.1
+
 Version 4.64.3 (vMC 1.4.7 BTW 4.64)
 
   - Changed Last Login to output top X logins reverse sorted by time.
