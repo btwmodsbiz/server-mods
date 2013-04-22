@@ -23,9 +23,9 @@ public class BlockColor {
 			
 			for (int i = 0; i < Block.blocksList.length; i++) {
 				if (Block.blocksList[i] != null) {
-					Set<Block> blocks = blockNameLookup.get(Block.blocksList[i].getBlockName());
+					Set<Block> blocks = blockNameLookup.get(Block.blocksList[i].getUnlocalizedName());
 					if (blocks == null)
-						blockNameLookup.put(Block.blocksList[i].getBlockName(), blocks = new LinkedHashSet<Block>());
+						blockNameLookup.put(Block.blocksList[i].getUnlocalizedName(), blocks = new LinkedHashSet<Block>());
 					
 					blocks.add(Block.blocksList[i]);
 				}
@@ -190,7 +190,7 @@ public class BlockColor {
 		int green = mapColor >> 8 & 255;
 		int blue = mapColor & 255;
 		
-		return new BlockColor(block.getBlockName(), 0, red, green, blue, BlockColor.opaque, BlockColor.noAlphaLimit, true, new int[0]);
+		return new BlockColor(block.getUnlocalizedName(), 0, red, green, blue, BlockColor.opaque, BlockColor.noAlphaLimit, true, new int[0]);
 	}
 	
 	public static BlockColor fromBlockList(BlockColor[] list, int blockId, int biomeId, Chunk chunk, int x, int y, int z) {

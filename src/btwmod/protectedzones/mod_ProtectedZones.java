@@ -354,7 +354,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 						
 						String message = "Protect" 
 								+ " " + action
-								+ (block == null ? "" : " " + block.getBlockName())
+								+ (block == null ? "" : " " + block.getUnlocalizedName())
 								+ (itemStack == null ? "" : " " + itemStack.getItemName())
 								+ " " + x + "," + y + "," + z + " by " + area.data.name + "#" + area.data.getAreaIndex(area);
 						

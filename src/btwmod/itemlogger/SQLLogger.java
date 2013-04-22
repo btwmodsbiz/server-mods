@@ -163,7 +163,7 @@ public class SQLLogger implements ILogger, ITickListener {
 		Date now = new Date();
 		mod.queueWrite(outputFile, buildStatement("containers",
 				"eventdate, eventtime, actiontype, username, container, dimension, x, y, z",
-				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "open", player.username, event.getBlock().getBlockName(), dimension, x, y, z }));
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "open", player.username, event.getBlock().getUnlocalizedName(), dimension, x, y, z }));
 	}
 
 	@Override
@@ -179,7 +179,7 @@ public class SQLLogger implements ILogger, ITickListener {
 		Date now = new Date();
 		mod.queueWrite(outputFile, buildStatement("containers",
 				"eventdate, eventtime, actiontype, username, container, dimension, x, y, z",
-				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "remove", player.username, event.getBlock().getBlockName(), dimension, x, y, z }));
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "remove", player.username, event.getBlock().getUnlocalizedName(), dimension, x, y, z }));
 	}
 
 	@Override
@@ -191,7 +191,7 @@ public class SQLLogger implements ILogger, ITickListener {
 					sqlDateFormat.format(now), sqlTimeFormat.format(now),
 					"withdrew",
 					player.username,
-					(lastContainerOpened == null ? null : lastContainerOpened.block.getBlockName()),
+					(lastContainerOpened == null ? null : lastContainerOpened.block.getUnlocalizedName()),
 					(lastContainerOpened == null ? null : lastContainerOpened.dimension),
 					(lastContainerOpened == null ? null : lastContainerOpened.x),
 					(lastContainerOpened == null ? null : lastContainerOpened.y),
@@ -213,7 +213,7 @@ public class SQLLogger implements ILogger, ITickListener {
 					sqlDateFormat.format(now), sqlTimeFormat.format(now),
 					"deposited",
 					player.username,
-					(lastContainerOpened == null ? null : lastContainerOpened.block.getBlockName()),
+					(lastContainerOpened == null ? null : lastContainerOpened.block.getUnlocalizedName()),
 					(lastContainerOpened == null ? null : lastContainerOpened.dimension),
 					(lastContainerOpened == null ? null : lastContainerOpened.x),
 					(lastContainerOpened == null ? null : lastContainerOpened.y),
@@ -234,7 +234,7 @@ public class SQLLogger implements ILogger, ITickListener {
 		if (contentsList.length() != 0)
 			mod.queueWrite(outputFile, buildStatement("containerbroken",
 					"eventdate, eventtime, container, dimension, x, y, z, contents",
-					new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), event.getBlockId() > 0 ? event.getBlock().getBlockName() : "air", dimension, x, y, z, contentsList }));
+					new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), event.getBlockId() > 0 ? event.getBlock().getUnlocalizedName() : "air", dimension, x, y, z, contentsList }));
 	}
 
 	@Override
@@ -243,7 +243,7 @@ public class SQLLogger implements ILogger, ITickListener {
 		int blockId = event.getWorld().getBlockId(x, y, z);
 		mod.queueWrite(outputFile, buildStatement("playeredits",
 				"eventdate, eventtime, actiontype, username, block, dimension, x, y, z, helditem",
-				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "edit", player.username, blockId == 0 ? "air" : Block.blocksList[blockId].getBlockName(), dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "edit", player.username, blockId == 0 ? "air" : Block.blocksList[blockId].getUnlocalizedName(), dimension, x, y, z, mod.getFullItemStackName(itemStack) }));
 	}
 
 	@Override
@@ -252,7 +252,7 @@ public class SQLLogger implements ILogger, ITickListener {
 		int blockId = event.getWorld().getBlockId(x, y, z);
 		mod.queueWrite(outputFile, buildStatement("playeredits",
 				"eventdate, eventtime, actiontype, username, block, dimension, x, y, z, helditem",
-				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "remove", player.username, blockId == 0 ? "Air" : Block.blocksList[blockId].getBlockName(), dimension, x, y, z, null }));
+				new Object[] { sqlDateFormat.format(now), sqlTimeFormat.format(now), "remove", player.username, blockId == 0 ? "Air" : Block.blocksList[blockId].getUnlocalizedName(), dimension, x, y, z, null }));
 	}
 
 	@Override

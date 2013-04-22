@@ -225,7 +225,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 		if (alias.length() < 1 || alias.length() > 16)
 			return false;
 		
-		MinecraftServer.getServer().logger.info("Set alias for " + username + " to " + alias);
+		MinecraftServer.getServer().getLogAgent().func_98233_a("Set alias for " + username + " to " + alias);
 		data.set(username.toLowerCase().trim(), "alias", alias);
 		data.saveSettings(this);
 		ChatAPI.setAlias(username, alias);
@@ -234,7 +234,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	
 	public boolean removeAlias(String username) {
 		if (data.removeKey(username.toLowerCase().trim(), "alias")) {
-			MinecraftServer.getServer().logger.info("Removed alias for " + username);
+			MinecraftServer.getServer().getLogAgent().func_98233_a("Removed alias for " + username);
 			data.saveSettings(this);
 			ChatAPI.refreshAlias(username);
 			return true;

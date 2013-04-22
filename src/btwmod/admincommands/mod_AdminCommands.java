@@ -51,7 +51,6 @@ public class mod_AdminCommands implements IMod, IPacketListener, IPlayerInstance
 		PlayerAPI.addListener(this);
 		registerCommand(new CommandWho(this));
 		//registerCommand(new DumpTrackedCommand());
-		registerCommand(new CommandReliableUpdates());
 		registerCommand(new CommandDumpEntities(settings));
 		registerCommand(new CommandClearEntities());
 		registerCommand(new CommandMOTD());

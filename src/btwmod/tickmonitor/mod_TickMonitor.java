@@ -25,7 +25,6 @@ import btwmods.player.PlayerInstanceEvent;
 import btwmods.stats.IStatsListener;
 import btwmods.stats.StatsEvent;
 import btwmods.stats.data.BasicStatsMap;
-import btwmods.util.BasicFormatter;
 import btwmods.Util;
 
 public class mod_TickMonitor implements IMod, IStatsListener, IPlayerInstanceListener {
@@ -185,7 +184,7 @@ public class mod_TickMonitor implements IMod, IStatsListener, IPlayerInstanceLis
 		jsonObj.addProperty("tickCounter", event.tickCounter);
 		jsonObj.addProperty("timeSinceLastTick", timeSinceLastTick);
 		jsonObj.addProperty("ticksSinceLastStatsAction", numTicks);
-		jsonObj.addProperty("time", BasicFormatter.dateFormat.format(new Date(currentTime)));
+		jsonObj.addProperty("time", Util.DATE_FORMAT_LOGS.format(new Date(currentTime)));
 		jsonObj.addProperty("statProfile", StatsAPI.statProfile);
 		
 		jsonObj.add("statsActionTime", gson.toJsonTree(statsActionTime));

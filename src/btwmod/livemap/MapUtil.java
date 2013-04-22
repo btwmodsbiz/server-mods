@@ -98,7 +98,7 @@ public class MapUtil {
 	
 	public static void setColorDataDefaults(BlockColor[][] blockColors) {
 		for (int i = 0, l = blockColors.length; i < l; i++) {
-			if (Block.blocksList[i] != null && Block.blocksList[i].getBlockName() != null) {
+			if (Block.blocksList[i] != null && Block.blocksList[i].getUnlocalizedName() != null) {
 				
 				boolean genericFound = false;
 				

@@ -22,21 +22,21 @@ import net.minecraft.src.ICommandSender;
 
 public class CommandDumpTracked extends CommandBase {
 	
-	private static Set[] trackedEntitiesSet = null;
+	private static Set[] trackedEntities = null;
 	
 	public CommandDumpTracked() {
-		Field trackedEntitiesSetField = ReflectionAPI.getPrivateField(EntityTracker.class, "trackedEntitySet");
+		Field trackedEntitiesField = ReflectionAPI.getPrivateField(EntityTracker.class, "trackedEntities");
 		
-		if (trackedEntitiesSetField == null) {
+		if (trackedEntitiesField == null) {
 			ModLoader.outputError(CommandDumpTracked.class.getSimpleName() + " failed to get " + EntityTracker.class.getName() + "#trackedEntitySet Field");
 		}
 		else {
 			try {
 				MinecraftServer server = MinecraftServer.getServer();
 				
-				trackedEntitiesSet = new Set[server.worldServers.length];
+				trackedEntities = new Set[server.worldServers.length];
 				for (int i = 0; i < server.worldServers.length; i++) {
-					trackedEntitiesSet[i] = (Set)trackedEntitiesSetField.get(server.worldServers[i].getEntityTracker());
+					trackedEntities[i] = (Set)trackedEntitiesField.get(server.worldServers[i].getEntityTracker());
 				}
 			} catch (IllegalAccessException e) {
 				ModLoader.outputError(e, CommandDumpTracked.class.getSimpleName() + " failed to get trackedEntitySet instance: " + e.getMessage());
@@ -51,17 +51,17 @@ public class CommandDumpTracked extends CommandBase {
 
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
-		if (trackedEntitiesSet == null)
+		if (trackedEntities == null)
 			return;
 		
-		int trackedEntities = 0;
+		int trackedEntityCount = 0;
 		File dump = new File(new File("."), "trackeddump.txt");
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < trackedEntitiesSet.length; i++) {
+		for (int i = 0; i < trackedEntities.length; i++) {
 			sb.append("World ").append(i).append(":\n");
-			Iterator trackedIterator = trackedEntitiesSet[i].iterator();
+			Iterator trackedIterator = trackedEntities[i].iterator();
 			while (trackedIterator.hasNext()) {
-				trackedEntities++;
+				trackedEntityCount++;
 				Object obj = ((EntityTrackerEntry)trackedIterator.next()).trackedEntity;
 				if (obj == null) {
 					sb.append("Tracking null!\n");
@@ -70,7 +70,7 @@ public class CommandDumpTracked extends CommandBase {
 					Entity entity = (Entity)obj;
 					sb.append("ID ")
 						.append(entity.entityId).append(": ")
-						.append(entity instanceof EntityItem ? ((EntityItem)entity).func_92059_d().getItemName() : entity.getEntityName())
+						.append(entity instanceof EntityItem ? ((EntityItem)entity).getEntityItem().getItemName() : entity.getEntityName())
 						.append(" (").append(entity.getClass().getSimpleName()).append(") in chunk ")
 						.append(entity.chunkCoordX).append(",").append(entity.chunkCoordZ)
 						.append(" at ").append((long)entity.posX).append("/").append((long)entity.posY).append("/").append((long)entity.posZ);
@@ -94,7 +94,7 @@ public class CommandDumpTracked extends CommandBase {
 			writer.write(sb.toString());
 			writer.flush();
 			writer.close();
-			sender.sendChatToPlayer("Dumped " + trackedEntities + " tracked entities.");
+			sender.sendChatToPlayer("Dumped " + trackedEntityCount + " tracked entities.");
 		} catch (IOException e) {
 			sender.sendChatToPlayer("Failed to dump tracked entities: " + e.getMessage());
 		}

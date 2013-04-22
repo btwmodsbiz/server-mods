@@ -60,7 +60,7 @@ public class mod_ThreadWatcher implements IMod, IStatsListener {
 				while (watcher == this) {
 					long timeSinceLastTick = System.currentTimeMillis() - lastTickEnd;
 					if (lastTickEnd >= 0 && timeSinceLastTick > secondsUntilWarning * 1000) {
-						net.minecraft.server.MinecraftServer.logger.warning("Main thread hasn't responded for " + Util.DECIMAL_FORMAT_3.format((double)timeSinceLastTick / 1000D) + " sec:\n" + Util.convertStackTrace(modLoaderThread.getStackTrace()));
+						net.minecraft.server.MinecraftServer.getServer().getLogAgent().getServerLogger().warning("Main thread hasn't responded for " + Util.DECIMAL_FORMAT_3.format((double)timeSinceLastTick / 1000D) + " sec:\n" + Util.convertStackTrace(modLoaderThread.getStackTrace()));
 					}
 					
 					try {
