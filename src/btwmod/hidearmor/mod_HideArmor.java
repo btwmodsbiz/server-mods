@@ -11,8 +11,8 @@ import net.minecraft.src.CommandBase;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityPlayerMP;
-import net.minecraft.src.FCItemRefinedArmor;
-import net.minecraft.src.FCItemSpecialArmor;
+import net.minecraft.src.FCItemArmorRefined;
+import net.minecraft.src.FCItemArmorSpecial;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
@@ -114,8 +114,8 @@ public class mod_HideArmor extends CommandBase implements IMod, IPacketHandlerLi
 	 */
 	public boolean isAlwaysVisible(ItemStack stack) {
 		if (stack != null &&
-			((plateAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemRefinedArmor)
-			|| (specialAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemSpecialArmor)))
+			((plateAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemArmorRefined)
+			|| (specialAlwaysVisible && Item.itemsList[stack.itemID] instanceof FCItemArmorSpecial)))
 			return true;
 		
 		return false;
