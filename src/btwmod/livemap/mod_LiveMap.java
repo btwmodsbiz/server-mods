@@ -143,7 +143,15 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 	
 	private void checkThread() {
 		if (chunkProcessor == null || !chunkProcessor.isRunning()) {
-			new Thread(chunkProcessor = new RenderingThread(this, mapManagers, unloadedChunkQueue, regionQueue), getName() + " Thread").start();
+			Thread thread = new Thread(
+				chunkProcessor = new RenderingThread(this, mapManagers, unloadedChunkQueue, regionQueue),
+				getName() + " Thread"
+			);
+			
+			// Make the thread slightly less priority than the evoking thread.
+			thread.setPriority(Math.min(Thread.MAX_PRIORITY, Thread.currentThread().getPriority() + 1));
+			
+			thread.start();
 		}
 	}
 	
