@@ -39,7 +39,9 @@ public class RenderingThread implements Runnable {
 			while (mod.isRenderingThread(this) && (chunk = getNextChunk()) != null) {
 				renderChunk(chunk);
 				count++;
-				debugCount++;
+				
+				if (mod.debugMessages)
+					debugCount++;
 				
 				if (System.currentTimeMillis() > nextSave) {
 					save(false);
