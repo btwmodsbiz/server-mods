@@ -1,3 +1,7 @@
+Version 4.83.0-c (vMC 1.5.1 BTW 4.83)
+
+  - Added global exception for web blocks to protected zones.
+    
 Version 4.83.0-b (vMC 1.5.1 BTW 4.83)
 
   - Changed the rendering thread in Live Map to be of a slightly lower
