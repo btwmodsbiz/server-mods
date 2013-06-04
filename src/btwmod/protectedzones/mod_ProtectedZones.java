@@ -168,6 +168,11 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 				return false;
 		}
 		
+		if (action == ACTION.DIG) {
+			if (block == Block.web)
+				return false;
+		}
+		
 		return true;
 	}
 	
