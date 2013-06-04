@@ -55,7 +55,7 @@ public class RenderingThread implements Runnable {
 				}
 				
 				try {
-					Thread.sleep(10L);
+					Thread.sleep(1L);
 				} catch (InterruptedException e) {
 
 				}
@@ -67,7 +67,7 @@ public class RenderingThread implements Runnable {
 				ModLoader.outputInfo(mod.getName() + " thread rendered " + count + " total chunks in " + (System.currentTimeMillis() - start) + "ms.");
 			
 			try {
-				Thread.sleep(1000L);
+				Thread.sleep(20L);
 			} catch (InterruptedException e) {
 
 			}
