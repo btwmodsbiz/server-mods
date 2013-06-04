@@ -149,7 +149,7 @@ public class mod_LiveMap implements IMod, IChunkListener, IServerStopListener {
 			);
 			
 			// Make the thread slightly less priority than the evoking thread.
-			thread.setPriority(Math.min(Thread.MAX_PRIORITY, Thread.currentThread().getPriority() + 1));
+			thread.setPriority(Math.max(Thread.MIN_PRIORITY, Thread.currentThread().getPriority() - 1));
 			
 			thread.start();
 		}
