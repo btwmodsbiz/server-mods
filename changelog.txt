@@ -1,3 +1,7 @@
+Version 4.84.0 (vMC 1.5.2 BTW 4.84)
+
+  - Fixed reference to mod_FCBetterThanWolves in Protected Zones. 
+
 Version 4.83.0-c (vMC 1.5.1 BTW 4.83)
 
   - Added global exception for web blocks to protected zones.
