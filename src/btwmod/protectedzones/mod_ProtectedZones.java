@@ -25,7 +25,7 @@ import net.minecraft.src.ServerCommandManager;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntitySkull;
 import net.minecraft.src.World;
-import net.minecraft.src.mod_FCBetterThanWolves;
+import net.minecraft.src.FCBetterThanWolves;
 import btwmods.CommandsAPI;
 import btwmods.EntityAPI;
 import btwmods.IMod;
@@ -146,7 +146,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			if (block == Block.workbench)
 				return false;
 			
-			if (block == mod_FCBetterThanWolves.fcAnvil)
+			if (block == FCBetterThanWolves.fcAnvil)
 				return false;
 			
 			if (block == Block.lever)
@@ -164,7 +164,7 @@ public class mod_ProtectedZones implements IMod, IPlayerBlockListener, IBlockLis
 			if (block == Block.bed)
 				return false;
 			
-			if (block == mod_FCBetterThanWolves.fcInfernalEnchanter)
+			if (block == FCBetterThanWolves.fcInfernalEnchanter)
 				return false;
 		}
 		
