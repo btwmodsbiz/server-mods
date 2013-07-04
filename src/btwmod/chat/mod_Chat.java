@@ -317,12 +317,12 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 	public void onPlayerChatAction(PlayerChatEvent event) {
 		if (event.type == PlayerChatEvent.TYPE.HANDLE_GLOBAL || event.type == PlayerChatEvent.TYPE.HANDLE_EMOTE) {
 			
-			String username = ChatAPI.getUsernameAliased(event.player.username);
+			String username = ChatAPI.getUsernameAliased(event.username);
 			if (username == null)
-				username = event.player.username;
+				username = event.username;
 			
 			// Attempt to get the user's setting.
-			String color = getPlayerColor(event.player.username);
+			String color = getPlayerColor(event.username);
 			
 			if (color != null)
 				color = getColorChar(color);
@@ -343,7 +343,7 @@ public class mod_Chat implements IMod, IPlayerChatListener, IPlayerInstanceListe
 				chatRestoreBuffer.pollFirst();
 		}
 		else if (event.type == PlayerChatEvent.TYPE.SEND_TO_PLAYER_ATTEMPT) {
-			if (isIgnoring(event.getTargetPlayer().username, event.player.username) || isIgnoring(event.getTargetPlayer().username, ChatAPI.getUsernameAliased(event.player.username))) {
+			if (isIgnoring(event.getTargetPlayer().username, event.username) || isIgnoring(event.getTargetPlayer().username, ChatAPI.getUsernameAliased(event.username))) {
 				event.markNotAllowed();
 			}
 		}
