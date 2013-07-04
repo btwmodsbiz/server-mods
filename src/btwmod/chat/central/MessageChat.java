@@ -27,14 +27,18 @@ public class MessageChat extends Message {
 	}
 
 	@Override
+	public boolean canSendMessage(ResourceConfig config) {
+		return super.canSendMessage(config) || ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(config.clientType);
+	}
+
+	@Override
 	public void handleMessage(ChatServer server, WebSocket conn, ResourceConfig config) {
 		JsonObject json = toJson();
 		
 		// Force user ID for those authenticated as users.
-		if ("user".equalsIgnoreCase(config.mode))
+		if ("user".equalsIgnoreCase(config.clientType))
 			json.addProperty("user", config.id);
 		
-		System.out.println(json.toString());
 		server.sendToAll(json.toString());
 	}
 }

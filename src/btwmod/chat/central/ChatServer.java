@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -28,26 +28,46 @@ public class ChatServer extends WebSocketServer {
 		System.out.println("Server started on " + server.getAddress().getHostName() + ":" + server.getPort());
 	}
 	
-	public Set<String> serverKeys = new HashSet<String>();
+	public static final String PROTOCOL_NAME = "btw-json";
+	
+	public final Map<String, String> userKeys = new HashMap<String, String>();
+	public final Map<String, String> serverKeys = new HashMap<String, String>();
 
 	public ChatServer() throws UnknownHostException {
 		super();
+		init();
 	}
 
 	public ChatServer(InetSocketAddress address, int decodercount, List<Draft> drafts) {
 		super(address, decodercount, drafts);
+		init();
 	}
 
 	public ChatServer(InetSocketAddress address, int decoders) {
 		super(address, decoders);
+		init();
 	}
 
 	public ChatServer(InetSocketAddress address, List<Draft> drafts) {
 		super(address, drafts);
+		init();
 	}
 
 	public ChatServer(InetSocketAddress address) {
 		super(address);
+		init();
+	}
+	
+	protected void init() {
+		loadKeys();
+	}
+	
+	public void loadKeys() {
+		userKeys.clear();
+		serverKeys.clear();
+		
+		userKeys.put("andrem", "502021");
+		serverKeys.put("bts1", "1234");
 	}
 
 	@Override
@@ -56,8 +76,8 @@ public class ChatServer extends WebSocketServer {
 		
 		System.out.println(conn.getRemoteSocketAddress().getAddress().getHostAddress() + " connected to " + conn.getResourceDescriptor());
 		
-		if (!"mc-chat".equalsIgnoreCase(protocol) && false) {
-			conn.close(CloseFrame.PROTOCOL_ERROR, "Protocol must be mc-chat");
+		if (!PROTOCOL_NAME.equalsIgnoreCase(protocol) && false) {
+			conn.close(CloseFrame.PROTOCOL_ERROR, "Protocol must be " + PROTOCOL_NAME);
 		}
 		else {
 			validateConn(conn, ResourceConfig.parse(conn.getResourceDescriptor()));
@@ -65,18 +85,26 @@ public class ChatServer extends WebSocketServer {
 	}
 	
 	public boolean validateUserKey(String id, String key) {
-		return "andrem".equals(id) && "502021".equals(key);
+		if (id == null || key == null)
+			return false;
+		
+		String storedKey = userKeys.get(id);
+		return key.equals(storedKey);
 	}
 	
 	public boolean validateServerKey(String id, String key) {
-		return "bts1".equals(id) && "1234".equals(key);
+		if (id == null || key == null)
+			return false;
+		
+		String storedKey = serverKeys.get(id);
+		return key.equals(storedKey);
 	}
 	
 	public boolean validateConn(WebSocket conn, ResourceConfig config) {
-		if ("user".equalsIgnoreCase(config.mode) && validateUserKey(config.id, config.key)) {
+		if ("user".equalsIgnoreCase(config.clientType) && validateUserKey(config.id, config.key)) {
 			return true;
 		}
-		else if ("server".equalsIgnoreCase(config.mode) && validateServerKey(config.id, config.key)) {
+		else if ("server".equalsIgnoreCase(config.clientType) && validateServerKey(config.id, config.key)) {
 			return true;
 		}
 		
@@ -86,19 +114,25 @@ public class ChatServer extends WebSocketServer {
 
 	@Override
 	public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-		System.out.println( conn.getRemoteSocketAddress().getAddress().getHostAddress() + " has disconnected" + (reason == null || reason.equals("") ? " (no reason)." : ": " + reason));
+		System.out.println(conn.getRemoteSocketAddress().getAddress().getHostAddress() + " has disconnected" + (reason == null || reason.equals("") ? " (no reason)." : ": " + reason));
 	}
 
 	@Override
-	public void onMessage(WebSocket conn, String message) {
+	public void onMessage(WebSocket conn, String rawMessage) {
 		ResourceConfig config = ResourceConfig.parse(conn.getResourceDescriptor());
 		if (validateConn(conn, config)) {
-			Message messageHandler = Message.parse(message);
-			if (messageHandler != null) {
-				messageHandler.handleMessage(this, conn, config);
+			Message message = Message.parse(rawMessage);
+			
+			if (message != null && message.canSendMessage(config)) {
+				System.out.println(conn.getRemoteSocketAddress() + " sent: " + message.toJson());
+				
+				if (message.canSendMessage(config))
+					message.handleMessage(this, conn, config);
 			}
 			else {
-				// TODO: Report error?
+				System.out.println(conn.getRemoteSocketAddress() + " sent invalid message (logged).");
+				conn.close(CloseFrame.PROTOCOL_ERROR, "Invalid message received.");
+				// TODO: Log invalid messages.
 			}
 		}
 	}

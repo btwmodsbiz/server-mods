@@ -35,10 +35,6 @@ public class MessageDisconnect extends Message {
 
 	@Override
 	public void handleMessage(ChatServer server, WebSocket conn, ResourceConfig config) {
-		// Users cannot send this message.
-		if ("user".equalsIgnoreCase(config.mode))
-			return;
-		
 		JsonObject json = toJson();
 		System.out.println(json.toString());
 		server.sendToAll(json.toString());

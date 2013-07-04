@@ -18,6 +18,11 @@ public abstract class Message {
 		return obj;
 	}
 	
+	@SuppressWarnings("static-method")
+	public boolean canSendMessage(ResourceConfig config) {
+		return ResourceConfig.CLIENTTYPE_SERVER.equalsIgnoreCase(config.clientType);
+	}
+	
 	public abstract void handleMessage(ChatServer server, WebSocket conn, ResourceConfig config);
 	
 	public static Message parse(String message) {
@@ -30,6 +35,9 @@ public abstract class Message {
 			
 			else if ("connect".equalsIgnoreCase(type))
 				return new MessageConnect(messageJson);
+			
+			else if ("disconnect".equalsIgnoreCase(type))
+				return new MessageDisconnect(messageJson);
 		}
 		catch (Exception e) {
 			

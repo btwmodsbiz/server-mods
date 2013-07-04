@@ -1,12 +1,16 @@
 package btwmod.chat.central;
 
 public class ResourceConfig {
-	public final String mode;
+	
+	public static final String CLIENTTYPE_USER = "user";
+	public static final String CLIENTTYPE_SERVER = "server";
+	
+	public final String clientType;
 	public final String id;
 	public final String key;
 	
-	protected ResourceConfig(String mode, String id, String key) {
-		this.mode = mode;
+	protected ResourceConfig(String clientType, String id, String key) {
+		this.clientType = clientType;
 		this.id = id;
 		this.key = key;
 	}
