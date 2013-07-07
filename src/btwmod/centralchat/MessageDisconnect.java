@@ -2,6 +2,7 @@ package btwmod.centralchat;
 
 import btwmods.Util;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class MessageDisconnect extends MessageConnect {
@@ -10,7 +11,9 @@ public class MessageDisconnect extends MessageConnect {
 
 	public MessageDisconnect(JsonObject json) {
 		super(json);
-		this.reason = json.get("reason").getAsString();
+		
+		JsonElement reason = json.get("reason");
+		this.reason = reason != null && reason.isJsonPrimitive() ? reason.getAsString() : null;
 	}
 
 	public MessageDisconnect(String username, String server, String reason, String color, String alias) {
@@ -31,12 +34,17 @@ public class MessageDisconnect extends MessageConnect {
 	@Override
 	public JsonObject toJson() {
 		JsonObject obj = super.toJson();
-		obj.addProperty("reason", this.reason);
+		
+		if (this.reason == null)
+			obj.remove("reason");
+		else
+			obj.addProperty("reason", this.reason);
+		
 		return obj;
 	}
 	
 	@Override
 	protected String getFormattedMessage() {
-		return Util.COLOR_YELLOW + getDisplayUsername(Util.COLOR_YELLOW) + " left chat on " + server + ".";
+		return Util.COLOR_YELLOW + getDisplayUsername(Util.COLOR_YELLOW) + " left chat" + (server == null ? "" : " on " + server) + ".";
 	}
 }

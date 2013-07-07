@@ -43,7 +43,8 @@ public abstract class Message {
 				return new MessageDisconnect(messageJson);
 		}
 		catch (Exception e) {
-			
+			System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());
+			e.printStackTrace();
 		}
 		
 		return null;

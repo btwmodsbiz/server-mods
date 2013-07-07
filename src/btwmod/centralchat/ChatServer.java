@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.java_websocket.WebSocket;
@@ -16,7 +14,6 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-import btwmods.Util;
 import btwmods.io.Settings;
 
 public class ChatServer extends WebSocketServer {
@@ -40,7 +37,7 @@ public class ChatServer extends WebSocketServer {
 		}
 	}
 	
-	public static final String PROTOCOL_NAME = "btw-json";
+	//public static final String PROTOCOL_NAME = "btw-json";
 	
 	private final Settings data;
 	private Set<String> chatColors = new HashSet<String>();
@@ -124,16 +121,16 @@ public class ChatServer extends WebSocketServer {
 
 	@Override
 	public void onOpen(WebSocket conn, ClientHandshake handshake) {
-		String protocol = handshake.getFieldValue("Sec-WebSocket-Protocol");
+		//String protocol = handshake.getFieldValue("Sec-WebSocket-Protocol");
 		
 		System.out.println(conn.getRemoteSocketAddress().getAddress().getHostAddress() + " connected to " + conn.getResourceDescriptor());
 		
-		if (!PROTOCOL_NAME.equalsIgnoreCase(protocol) && false) {
+		/*if (!PROTOCOL_NAME.equalsIgnoreCase(protocol) && false) {
 			conn.close(CloseFrame.PROTOCOL_ERROR, "Protocol must be " + PROTOCOL_NAME);
 		}
-		else {
+		else {*/
 			validateConn(conn, ResourceConfig.parse(conn.getResourceDescriptor()));
-		}
+		//}
 	}
 	
 	public boolean validateUserKey(String id, String key) {
@@ -183,6 +180,7 @@ public class ChatServer extends WebSocketServer {
 			}
 			else {
 				System.out.println(conn.getRemoteSocketAddress() + " sent invalid message (logged).");
+				System.err.println(">>" + rawMessage);
 				conn.close(CloseFrame.PROTOCOL_ERROR, "Invalid message received.");
 				// TODO: Log invalid messages.
 			}

@@ -16,7 +16,10 @@ import btwmods.io.Settings;
 
 public class mod_CentralChat implements IMod, IPlayerChatListener {
 	
+	private String serverUri = null;
+	private String serverName = null;
 	private MessageManager messageManager;
+	
 	public long reconnectWait = 1;
 	public long reconnectWaitLong = 10;
 	public int connectAttemptsBeforeFailover = 6;
@@ -28,8 +31,13 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
-		String serverUri = "ws://localhost:8585/server/bts1/1234"; //settings.get("serverUri");
+		serverUri = "ws://localhost:8585/server/bts1/1234"; //settings.get("serverUri");
+		serverName = "Alpha"; //settings.get("serverName");
+		
 		if (serverUri == null || serverUri.trim().length() == 0)
+			return;
+		
+		if (serverName == null || serverName.trim().length() == 0)
 			return;
 		
 		try {
@@ -60,26 +68,32 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 	public void onPlayerChatAction(PlayerChatEvent event) {
 		switch (event.type) {
 			case AUTO_COMPLETE:
-				break;
 			case GLOBAL:
-				break;
 			case HANDLE_CHAT:
+			case SEND_TO_PLAYER_ATTEMPT:
 				break;
+				
 			case HANDLE_DEATH_MESSAGE:
 				break;
-			case HANDLE_EMOTE:
-				messageManager.queueMessage(new MessageEmote(event.username, event.getMessage()));
-				event.markHandled();
-				break;
+				
 			case HANDLE_GLOBAL:
 				messageManager.queueMessage(new MessageChat(event.username, event.getMessage()));
 				event.markHandled();
 				break;
+				
+			case HANDLE_EMOTE:
+				messageManager.queueMessage(new MessageEmote(event.username, event.getMessage()));
+				event.markHandled();
+				break;
+				
 			case HANDLE_LOGIN_MESSAGE:
+				messageManager.queueMessage(new MessageConnect(event.username, serverName));
+				event.markHandled();
 				break;
+				
 			case HANDLE_LOGOUT_MESSAGE:
-				break;
-			case SEND_TO_PLAYER_ATTEMPT:
+				messageManager.queueMessage(new MessageDisconnect(event.username, serverName, null));
+				event.markHandled();
 				break;
 		}
 	}
