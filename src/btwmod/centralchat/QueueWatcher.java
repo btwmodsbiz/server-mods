@@ -1,8 +1,7 @@
-package btwmod.chat;
+package btwmod.centralchat;
 
 import java.util.concurrent.BlockingQueue;
 
-import btwmod.chat.central.Message;
 
 public class QueueWatcher implements Runnable {
 	

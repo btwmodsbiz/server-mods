@@ -1,4 +1,4 @@
-package btwmod.chat.central;
+package btwmod.centralchat;
 
 import java.net.URI;
 import java.util.Map;

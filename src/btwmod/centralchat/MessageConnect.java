@@ -1,27 +1,21 @@
-package btwmod.chat.central;
+package btwmod.centralchat;
 
 import org.java_websocket.WebSocket;
 
 import com.google.gson.JsonObject;
 
-public class MessageDisconnect extends Message {
+public class MessageConnect extends Message {
 	public final String user;
 	public final String server;
-	public final String reason;
 	
-	public MessageDisconnect(String user, String server) {
-		this(user, server, null);
-	}
-	
-	public MessageDisconnect(String user, String server, String reason) {
-		super("chat");
+	public MessageConnect(String user, String server) {
+		super("connect");
 		this.user = user;
 		this.server = server;
-		this.reason = reason;
 	}
 	
-	public MessageDisconnect(JsonObject json) {
-		this(json.get("user").getAsString(), json.get("server").getAsString(), json.has("reason") ? json.get("reason").getAsString() : null);
+	public MessageConnect(JsonObject json) {
+		this(json.get("user").getAsString(), json.get("server").getAsString());
 	}
 
 	@Override
@@ -29,7 +23,6 @@ public class MessageDisconnect extends Message {
 		JsonObject obj = super.toJson();
 		obj.addProperty("user", this.user);
 		obj.addProperty("server", this.server);
-		obj.addProperty("reason", this.reason);
 		return obj;
 	}
 

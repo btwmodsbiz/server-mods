@@ -1,4 +1,4 @@
-package btwmod.chat.central;
+package btwmod.centralchat;
 
 public class ResourceConfig {
 	

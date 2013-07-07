@@ -1,4 +1,4 @@
-package btwmod.chat.central;
+package btwmod.centralchat;
 
 import org.java_websocket.WebSocket;
 

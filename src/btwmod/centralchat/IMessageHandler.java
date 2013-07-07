@@ -1,6 +1,5 @@
-package btwmod.chat;
+package btwmod.centralchat;
 
-import btwmod.chat.central.Message;
 
 public interface IMessageHandler {
 	public void handleMesage(Message message);

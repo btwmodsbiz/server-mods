@@ -1,4 +1,4 @@
-package btwmod.chat.central;
+package btwmod.centralchat;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package btwmod.chat;
+package btwmod.centralchat;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -8,9 +8,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import net.minecraft.server.MinecraftServer;
 
-import btwmod.chat.central.ChatClient;
-import btwmod.chat.central.Message;
-import btwmod.chat.central.MessageChat;
 import btwmods.ChatAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
