@@ -5,13 +5,13 @@ import org.java_websocket.WebSocket;
 import com.google.gson.JsonObject;
 
 public class MessageAuth extends Message {
+	
 	public final String action;
 	public final String clientType;
 	public final String id;
 	public final String key;
 	
 	public MessageAuth(String action, String clientType, String id, String key) {
-		super("auth");
 		this.action = action;
 		this.clientType = clientType;
 		this.id = id;
@@ -28,6 +28,11 @@ public class MessageAuth extends Message {
 	}
 
 	@Override
+	public String getType() {
+		return "auth";
+	}
+
+	@Override
 	public JsonObject toJson() {
 		JsonObject obj = super.toJson();
 		obj.addProperty("action", this.action);
@@ -40,7 +45,7 @@ public class MessageAuth extends Message {
 	}
 
 	@Override
-	public void handleMessage(ChatServer server, WebSocket conn, ResourceConfig config) {
+	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
 		JsonObject json = toJson();
 		System.out.println(json.toString());
 		server.sendToAll(json.toString());

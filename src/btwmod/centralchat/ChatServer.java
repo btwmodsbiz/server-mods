@@ -179,7 +179,7 @@ public class ChatServer extends WebSocketServer {
 				System.out.println(conn.getRemoteSocketAddress() + " sent: " + message.toJson());
 				
 				if (message.canSendMessage(config))
-					message.handleMessage(this, conn, config);
+					message.handleAsServer(this, conn, config);
 			}
 			else {
 				System.out.println(conn.getRemoteSocketAddress() + " sent invalid message (logged).");

@@ -1,35 +1,47 @@
 package btwmod.centralchat;
 
-import org.java_websocket.WebSocket;
+import btwmods.ChatAPI;
+import btwmods.Util;
 
 import com.google.gson.JsonObject;
 
-public class MessageConnect extends Message {
-	public final String user;
-	public final String server;
+public class MessageConnect extends MessageUser {
 	
-	public MessageConnect(String user, String server) {
-		super("connect");
-		this.user = user;
+	public final String server;
+
+	public MessageConnect(JsonObject json) {
+		super(json);
+		this.server = json.get("server").getAsString();
+	}
+
+	public MessageConnect(String username, String server, String color, String alias) {
+		super(username, color, alias);
 		this.server = server;
 	}
-	
-	public MessageConnect(JsonObject json) {
-		this(json.get("user").getAsString(), json.get("server").getAsString());
+
+	public MessageConnect(String username, String server) {
+		super(username);
+		this.server = server;
+	}
+
+	@Override
+	public String getType() {
+		return "connect";
 	}
 
 	@Override
 	public JsonObject toJson() {
 		JsonObject obj = super.toJson();
-		obj.addProperty("user", this.user);
 		obj.addProperty("server", this.server);
 		return obj;
 	}
-
+	
 	@Override
-	public void handleMessage(ChatServer server, WebSocket conn, ResourceConfig config) {
-		JsonObject json = toJson();
-		System.out.println(json.toString());
-		server.sendToAll(json.toString());
+	public void handleAsClient() {
+		ChatAPI.sendChatToAllPlayers(getFormattedMessage());
+	}
+	
+	protected String getFormattedMessage() {
+		return Util.COLOR_YELLOW + getDisplayUsername(Util.COLOR_YELLOW) + " joined chat on " + server + ".";
 	}
 }
