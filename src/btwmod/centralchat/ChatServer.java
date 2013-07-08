@@ -166,10 +166,10 @@ public class ChatServer extends WebSocketServer {
 	}
 	
 	public boolean validateConn(WebSocket conn, ResourceConfig config) {
-		if ("user".equalsIgnoreCase(config.clientType) && validateUserKey(config.id, config.key)) {
+		if (ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(config.clientType) && validateUserKey(config.id, config.key)) {
 			return true;
 		}
-		else if ("server".equalsIgnoreCase(config.clientType) && validateServerKey(config.id, config.key)) {
+		else if (ResourceConfig.CLIENTTYPE_SERVER.equalsIgnoreCase(config.clientType) && validateServerKey(config.id, config.key)) {
 			return true;
 		}
 		
@@ -189,7 +189,7 @@ public class ChatServer extends WebSocketServer {
 			Message message = Message.parse(rawMessage);
 			
 			if (message != null && message.canSendMessage(config)) {
-				System.out.println(conn.getRemoteSocketAddress() + " sent: " + message.toJson());
+				System.out.println("<" + conn.getRemoteSocketAddress() + "> " + message.toJson());
 				
 				if (message.canSendMessage(config))
 					message.handleAsServer(this, conn, config);

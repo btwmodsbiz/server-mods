@@ -47,6 +47,9 @@ public abstract class Message {
 			
 			else if ("death".equalsIgnoreCase(type))
 				return new MessageDeath(messageJson);
+			
+			else if ("chatcolor".equalsIgnoreCase(type))
+				return new MessageChatColor(messageJson);
 		}
 		catch (Exception e) {
 			System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());

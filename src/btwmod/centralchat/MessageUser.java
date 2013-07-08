@@ -57,7 +57,7 @@ public abstract class MessageUser extends Message {
 	public String getDisplayUsername(String resetColorChar) {
 		String displayName = alias == null ? username : alias;
 		String colorChar = Message.getColorChar(color);
-		return colorChar == null ? displayName : color + displayName + resetColorChar;
+		return colorChar == null ? displayName : colorChar + displayName + resetColorChar;
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public abstract class MessageUser extends Message {
 		JsonObject json = toJson();
 		
 		// Force user ID for those authenticated as users.
-		if ("user".equalsIgnoreCase(config.clientType))
+		if (ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(config.clientType))
 			json.addProperty("username", username = config.id);
 		
 		// Set the user's chat color, if it has one.

@@ -17,10 +17,10 @@ public class ResourceConfig {
 	
 	public static ResourceConfig parse(String resourceDescriptor) {
 		String[] pathParts = resourceDescriptor.split("\\?")[0].replaceFirst("^/", "").split("/");
-		if (pathParts.length == 3 && pathParts[0].equalsIgnoreCase("user")) {
+		if (pathParts.length == 3 && ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(pathParts[0])) {
 			return new ResourceConfig(pathParts[0], pathParts[1], pathParts[2]);
 		}
-		else if (pathParts.length == 3 && pathParts[0].equalsIgnoreCase("server")) {
+		else if (pathParts.length == 3 && ResourceConfig.CLIENTTYPE_SERVER.equalsIgnoreCase(pathParts[0])) {
 			return new ResourceConfig(pathParts[0], pathParts[1], pathParts[2]);
 		}
 		else {
