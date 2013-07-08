@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 
 public class MessageChat extends MessageUser {
 	
+	public final String TYPE = "chat";
+	
 	public final String message;
 	
 	public MessageChat(JsonObject json) {
@@ -25,7 +27,7 @@ public class MessageChat extends MessageUser {
 
 	@Override
 	public String getType() {
-		return "chat";
+		return TYPE;
 	}
 
 	@Override

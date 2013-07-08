@@ -7,6 +7,8 @@ import com.google.gson.JsonObject;
 
 public class MessageChatColor extends Message {
 	
+	public final String TYPE = "chatcolor";
+	
 	public final String username;
 	public final String color;
 	
@@ -28,7 +30,7 @@ public class MessageChatColor extends Message {
 
 	@Override
 	public String getType() {
-		return "chatcolor";
+		return TYPE;
 	}
 
 	@Override

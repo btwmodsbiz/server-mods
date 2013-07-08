@@ -7,6 +7,8 @@ import com.google.gson.JsonObject;
 
 public class MessageAuth extends Message {
 	
+	public final String TYPE = "auth";
+	
 	public final String action;
 	public final String clientType;
 	public final String id;
@@ -30,7 +32,7 @@ public class MessageAuth extends Message {
 
 	@Override
 	public String getType() {
-		return "auth";
+		return TYPE;
 	}
 
 	@Override

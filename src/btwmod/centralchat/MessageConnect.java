@@ -8,6 +8,8 @@ import com.google.gson.JsonObject;
 
 public class MessageConnect extends MessageUser {
 	
+	public final String TYPE = "connect";
+	
 	public final String server;
 
 	public MessageConnect(JsonObject json) {
@@ -29,7 +31,7 @@ public class MessageConnect extends MessageUser {
 
 	@Override
 	public String getType() {
-		return "connect";
+		return TYPE;
 	}
 
 	@Override

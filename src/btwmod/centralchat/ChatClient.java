@@ -29,12 +29,11 @@ public class ChatClient extends WebSocketClient {
 
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
-		ModLoader.outputInfo("onOpen: " + Thread.currentThread().getId());
+		
 	}
 
 	@Override
 	public void onMessage(String rawMessage) {
-		ModLoader.outputInfo("onMessage: " + Thread.currentThread().getId());
 		Message message = Message.parse(rawMessage);
 		if (message == null) {
 			ModLoader.outputError("Invalid message received: " + rawMessage);

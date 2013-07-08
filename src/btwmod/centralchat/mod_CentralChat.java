@@ -16,13 +16,19 @@ import btwmods.io.Settings;
 
 public class mod_CentralChat implements IMod, IPlayerChatListener {
 	
+	private volatile ChatClient chatClient = null;
+	private volatile boolean doFailover = true;
+	
 	private String serverUri = null;
 	private String serverName = null;
-	private MessageManager messageManager;
 	
-	public long reconnectWait = 1;
-	public long reconnectWaitLong = 10;
-	public int connectAttemptsBeforeFailover = 6;
+	private long reconnectWait = 1;
+	private long reconnectWaitLong = 10;
+	private int connectAttemptsBeforeFailover = 6;
+	
+	private URI uri;
+	private final BlockingDeque<Message> messageQueue = new LinkedBlockingDeque<Message>();
+	private int connectAttempts = 0;
 
 	@Override
 	public String getName() {
@@ -41,12 +47,13 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 			return;
 		
 		try {
-			messageManager = new MessageManager(new URI(serverUri));
+			uri = new URI(serverUri); //messageManager = new MessageManager(new URI(serverUri));
 			
 			ChatAPI.addListener(this);
 			ServerAPI.addListener(this);
 			
-			messageManager.start();
+			startConnectionThread();
+			startQueueThread();
 		}
 		catch (URISyntaxException e) {
 			ModLoader.outputError(e, "Invalid URI: " + serverUri);
@@ -74,119 +81,105 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 				break;
 				
 			case HANDLE_DEATH_MESSAGE:
-				messageManager.queueMessage(new MessageDeath(event.username, event.getMessage()));
+				queueMessage(new MessageDeath(event.username, event.getMessage()));
 				event.markHandled();
 				break;
 				
 			case HANDLE_GLOBAL:
-				messageManager.queueMessage(new MessageChat(event.username, event.getMessage()));
+				queueMessage(new MessageChat(event.username, event.getMessage()));
 				event.markHandled();
 				break;
 				
 			case HANDLE_EMOTE:
-				messageManager.queueMessage(new MessageEmote(event.username, event.getMessage()));
+				queueMessage(new MessageEmote(event.username, event.getMessage()));
 				event.markHandled();
 				break;
 				
 			case HANDLE_LOGIN_MESSAGE:
-				messageManager.queueMessage(new MessageConnect(event.username, serverName));
+				queueMessage(new MessageConnect(event.username, serverName));
 				event.markHandled();
 				break;
 				
 			case HANDLE_LOGOUT_MESSAGE:
-				messageManager.queueMessage(new MessageDisconnect(event.username, serverName, null));
+				queueMessage(new MessageDisconnect(event.username, serverName, null));
 				event.markHandled();
 				break;
 		}
 	}
 	
-	private class MessageManager {
-		
-		private volatile ChatClient chatClient = null;
-		private volatile boolean doFailover = true;
-		
-		private final URI uri;
-		private final BlockingDeque<Message> messageQueue = new LinkedBlockingDeque<Message>();
-		private int connectAttempts = 0;
-
-		public MessageManager(URI uri) {
-			this.uri = uri;
-		}
-		
-		public MessageManager start() {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					while (!Thread.interrupted()) {
-						connectAttempts++;
-						ModLoader.outputInfo("Connecting to central chat server...");
-						chatClient = new ChatClient(uri);
+	public void queueMessage(Message message) {
+		messageQueue.add(message);
+	}
+	
+	private void startConnectionThread() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (!Thread.interrupted()) {
+					connectAttempts++;
+					ModLoader.outputInfo("Connecting to central chat server...");
+					chatClient = new ChatClient(uri);
+					
+					try {
+						if (chatClient.connectBlocking()) {
+							doFailover = false;
+							connectAttempts = 0;
+							ModLoader.outputInfo("Connected to central chat server.");
+							ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Connected to central chat server.");
+							
+							chatClient.awaitClose();
+							ModLoader.outputInfo("Disconnected from central chat server.");
+						}
+						else if (connectAttempts <= connectAttemptsBeforeFailover) {
+							Thread.sleep(reconnectWait * 1000L);
+						}
+						else {
+							doFailover = true;
+							if (connectAttempts == connectAttemptsBeforeFailover + 1) {
+								ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Disconnected from central chat server.");
+							}
+							
+							Thread.sleep(reconnectWaitLong * 1000L);
+						}
+					} catch (InterruptedException e) {
 						
-						try {
-							if (chatClient.connectBlocking()) {
-								doFailover = false;
-								connectAttempts = 0;
-								ModLoader.outputInfo("Connected to central chat server.");
-								ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Connected to central chat server.");
-								
-								chatClient.awaitClose();
-								ModLoader.outputInfo("Disconnected from central chat server.");
-							}
-							else if (connectAttempts <= connectAttemptsBeforeFailover) {
-								Thread.sleep(reconnectWait * 1000L);
-							}
-							else {
-								doFailover = true;
-								if (connectAttempts == connectAttemptsBeforeFailover + 1) {
-									ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Disconnected from central chat server.");
-								}
-								
-								Thread.sleep(reconnectWaitLong * 1000L);
-							}
-						} catch (InterruptedException e) {
-							
-						}
 					}
 				}
-			}, getName() + ": Connection Watcher").start();
-			
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					while (!Thread.interrupted()) {
-						try {
-							Message message = messageQueue.take();
-							
-							if (doFailover) {
-								message.handleAsClient();
-							}
-							else {
-								try {
-									chatClient.send(message.toJson().toString());
-								}
-								catch (Exception ex) {
-									messageQueue.addFirst(message);
-									
-									// Wait if sending it via the client failed.
-									try {
-										Thread.sleep(250L);
-									} catch (InterruptedException e) {
-										
-									}
-								}
-							}
-						} catch (InterruptedException e) {
-							
-						}
-					}
-				}
-			}, getName() + ": Queue Watcher").start();
-			
-			return this;
-		}
+			}
+		}, getName() + ": Connection Watcher").start();
+	}
 		
-		public void queueMessage(Message message) {
-			messageQueue.add(message);
-		}
+	private void startQueueThread() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (!Thread.interrupted()) {
+					try {
+						Message message = messageQueue.take();
+						
+						if (doFailover) {
+							message.handleAsClient();
+						}
+						else {
+							try {
+								chatClient.send(message.toJson().toString());
+							}
+							catch (Exception ex) {
+								messageQueue.addFirst(message);
+								
+								// Wait if sending it via the client failed.
+								try {
+									Thread.sleep(250L);
+								} catch (InterruptedException e) {
+									
+								}
+							}
+						}
+					} catch (InterruptedException e) {
+						
+					}
+				}
+			}
+		}, getName() + ": Queue Watcher").start();
 	}
 }

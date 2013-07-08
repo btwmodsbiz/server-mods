@@ -7,6 +7,8 @@ import com.google.gson.JsonObject;
 
 public class MessageChatAlias extends Message {
 	
+	public final String TYPE = "chatalias";
+	
 	public final String username;
 	public final String alias;
 	
@@ -28,7 +30,7 @@ public class MessageChatAlias extends Message {
 
 	@Override
 	public String getType() {
-		return "chatalias";
+		return TYPE;
 	}
 
 	@Override

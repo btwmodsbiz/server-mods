@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 
 public class MessageEmote extends MessageChat {
 	
+	public final String TYPE = "emote";
+	
 	public MessageEmote(JsonObject json) {
 		super(json);
 	}
@@ -18,7 +20,7 @@ public class MessageEmote extends MessageChat {
 
 	@Override
 	public String getType() {
-		return "emote";
+		return TYPE;
 	}
 	
 	@Override

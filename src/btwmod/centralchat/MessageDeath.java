@@ -5,6 +5,8 @@ import btwmods.ChatAPI;
 import com.google.gson.JsonObject;
 
 public class MessageDeath extends MessageChat {
+	
+	public final String TYPE = "death";
 
 	public MessageDeath(JsonObject json) {
 		super(json);
@@ -20,7 +22,7 @@ public class MessageDeath extends MessageChat {
 
 	@Override
 	public String getType() {
-		return "death";
+		return TYPE;
 	}
 
 	@Override

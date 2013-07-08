@@ -7,6 +7,8 @@ import com.google.gson.JsonObject;
 
 public class MessageDisconnect extends MessageConnect {
 	
+	public final String TYPE = "disconnect";
+	
 	public final String reason;
 
 	public MessageDisconnect(JsonObject json) {
@@ -28,7 +30,7 @@ public class MessageDisconnect extends MessageConnect {
 
 	@Override
 	public String getType() {
-		return "disconnect";
+		return TYPE;
 	}
 
 	@Override
