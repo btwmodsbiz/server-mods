@@ -74,6 +74,8 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 				break;
 				
 			case HANDLE_DEATH_MESSAGE:
+				messageManager.queueMessage(new MessageDeath(event.username, event.getMessage()));
+				event.markHandled();
 				break;
 				
 			case HANDLE_GLOBAL:
@@ -100,7 +102,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 	
 	private class MessageManager {
 		
-		private volatile MessageClient messageClient = null;
+		private volatile ChatClient chatClient = null;
 		private volatile boolean doFailover = true;
 		
 		private final URI uri;
@@ -118,16 +120,16 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 					while (!Thread.interrupted()) {
 						connectAttempts++;
 						ModLoader.outputInfo("Connecting to central chat server...");
-						messageClient = new MessageClient(uri);
+						chatClient = new ChatClient(uri);
 						
 						try {
-							if (messageClient.connectBlocking()) {
+							if (chatClient.connectBlocking()) {
 								doFailover = false;
 								connectAttempts = 0;
 								ModLoader.outputInfo("Connected to central chat server.");
 								ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Connected to central chat server.");
 								
-								messageClient.awaitClose();
+								chatClient.awaitClose();
 								ModLoader.outputInfo("Disconnected from central chat server.");
 							}
 							else if (connectAttempts <= connectAttemptsBeforeFailover) {
@@ -160,7 +162,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 							}
 							else {
 								try {
-									messageClient.send(message.toJson().toString());
+									chatClient.send(message.toJson().toString());
 								}
 								catch (Exception ex) {
 									messageQueue.addFirst(message);

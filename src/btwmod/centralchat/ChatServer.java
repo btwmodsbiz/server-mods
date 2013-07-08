@@ -103,8 +103,8 @@ public class ChatServer extends WebSocketServer {
 	}
 	
 	public void loadKeys() {
-		data.set("UserKeys", "andrem", "502021");
-		data.set("ServerKeys", "bts1", "1234");
+		addUserKey("andrem", "502021");
+		addServerKey("bts1", "1234");
 		data.set("ChatAliases", "andrem", "Butts");
 		data.set("ChatColors", "andrem", "teal");
 	}
@@ -133,12 +133,28 @@ public class ChatServer extends WebSocketServer {
 		//}
 	}
 	
+	public void addUserKey(String id, String key) {
+		data.set("UserKeys", id, key);
+	}
+	
+	public void removeUserKey(String id) {
+		data.removeKey("UserKeys", id);
+	}
+	
 	public boolean validateUserKey(String id, String key) {
 		if (id == null || key == null)
 			return false;
 		
 		String storedKey = data.get("UserKeys", id);
 		return key.equals(storedKey);
+	}
+	
+	public void addServerKey(String id, String key) {
+		data.set("ServerKeys", id, key);
+	}
+	
+	public void removeServerKey(String id) {
+		data.removeKey("ServerKeys", id);
 	}
 	
 	public boolean validateServerKey(String id, String key) {

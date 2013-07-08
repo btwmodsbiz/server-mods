@@ -4,6 +4,7 @@ import org.java_websocket.WebSocket;
 
 import btwmods.Util;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public abstract class MessageUser extends Message {
@@ -22,11 +23,12 @@ public abstract class MessageUser extends Message {
 	}
 	
 	public MessageUser(JsonObject json) {
-		this(
-			json.get("username").getAsString(),
-			json.has("color") ? json.get("color").getAsString() : null,
-			json.has("alias") ? json.get("alias").getAsString() : null
-		);
+		JsonElement color = json.get("color");
+		JsonElement alias = json.get("alias");
+		
+		this.username = json.get("username").getAsString();
+		this.color = color != null && color.isJsonPrimitive() ? color.getAsString() : null;
+		this.alias = alias != null && alias.isJsonPrimitive() ? alias.getAsString() : null;
 	}
 
 	@Override

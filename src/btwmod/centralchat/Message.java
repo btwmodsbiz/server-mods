@@ -36,11 +36,17 @@ public abstract class Message {
 			if ("chat".equalsIgnoreCase(type))
 				return new MessageChat(messageJson);
 			
+			else if ("emote".equalsIgnoreCase(type))
+				return new MessageEmote(messageJson);
+			
 			else if ("connect".equalsIgnoreCase(type))
 				return new MessageConnect(messageJson);
 			
 			else if ("disconnect".equalsIgnoreCase(type))
 				return new MessageDisconnect(messageJson);
+			
+			else if ("death".equalsIgnoreCase(type))
+				return new MessageDeath(messageJson);
 		}
 		catch (Exception e) {
 			System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());

@@ -2,6 +2,7 @@ package btwmod.centralchat;
 
 import org.java_websocket.WebSocket;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class MessageAuth extends Message {
@@ -19,12 +20,12 @@ public class MessageAuth extends Message {
 	}
 	
 	public MessageAuth(JsonObject json) {
-		this(
-			json.get("action").getAsString(),
-			json.get("clientType").getAsString(),
-			json.get("id").getAsString(),
-			json.get("key").getAsString()
-		);
+		this.action = json.get("action").getAsString();
+		this.clientType = json.get("clientType").getAsString();
+		this.id = json.get("id").getAsString();
+		
+		JsonElement key = json.get("key");
+		this.key = key != null && key.isJsonPrimitive() ? key.getAsString() : null;
 	}
 
 	@Override
@@ -39,15 +40,31 @@ public class MessageAuth extends Message {
 		obj.addProperty("clientType", this.clientType);
 		obj.addProperty("id", this.id);
 		
-		if (key != null)
-		obj.addProperty("key", this.key);
+		if (key == null)
+			obj.remove("key");
+		else
+			obj.addProperty("key", this.key);
+		
 		return obj;
 	}
 
 	@Override
 	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
-		JsonObject json = toJson();
-		System.out.println(json.toString());
-		server.sendToAll(json.toString());
+		if ("addKey".equalsIgnoreCase(action) && key != null) {
+			if (ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(clientType)) {
+				server.addUserKey(id, key);
+			}
+			else if (ResourceConfig.CLIENTTYPE_SERVER.equalsIgnoreCase(clientType)) {
+				server.addServerKey(id, key);
+			}
+		}
+		if ("removeKey".equalsIgnoreCase(action)) {
+			if (ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(clientType)) {
+				server.removeUserKey(id);
+			}
+			else if (ResourceConfig.CLIENTTYPE_SERVER.equalsIgnoreCase(clientType)) {
+				server.removeServerKey(id);
+			}
+		}
 	}
 }

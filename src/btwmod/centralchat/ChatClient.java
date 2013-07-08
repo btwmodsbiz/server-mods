@@ -11,19 +11,19 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import btwmods.ModLoader;
 
-public class MessageClient extends WebSocketClient {
+public class ChatClient extends WebSocketClient {
 
 	private final CountDownLatch closeLatch = new CountDownLatch(1);
 
-	public MessageClient(URI serverUri, Draft draft, Map<String, String> headers, int connecttimeout) {
+	public ChatClient(URI serverUri, Draft draft, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, draft, headers, connecttimeout);
 	}
 
-	public MessageClient(URI serverUri, Draft draft) {
+	public ChatClient(URI serverUri, Draft draft) {
 		super(serverUri, draft);
 	}
 
-	public MessageClient(URI serverURI) {
+	public ChatClient(URI serverURI) {
 		super(serverURI);
 	}
 
@@ -55,7 +55,7 @@ public class MessageClient extends WebSocketClient {
 	@Override
 	public void onError(Exception ex) {
 		if (ex.getClass() != ConnectException.class)
-			ModLoader.outputError(ex, "Thread: " + Thread.currentThread().getId() + " " + MessageClient.class.getSimpleName() + " onError (" + ex.getClass().getSimpleName() + "): " + ex.getMessage());
+			ModLoader.outputError(ex, "Thread: " + Thread.currentThread().getId() + " " + ChatClient.class.getSimpleName() + " onError (" + ex.getClass().getSimpleName() + "): " + ex.getMessage());
 	}
 
 	public void awaitClose() throws InterruptedException {
