@@ -19,7 +19,6 @@ import btwmods.io.Settings;
 public class ChatServer extends WebSocketServer {
 	
 	public static void main(String[] args) {
-		System.out.println("Main: " + Thread.currentThread().getName() + " # " + Thread.currentThread().getId());
 		System.out.println("Starting server...");
 		
 		InetSocketAddress address = new InetSocketAddress(8585);

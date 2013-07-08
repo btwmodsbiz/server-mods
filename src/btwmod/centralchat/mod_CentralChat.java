@@ -13,8 +13,10 @@ import btwmods.Util;
 import btwmods.chat.IPlayerChatListener;
 import btwmods.chat.PlayerChatEvent;
 import btwmods.io.Settings;
+import btwmods.server.ITickListener;
+import btwmods.server.TickEvent;
 
-public class mod_CentralChat implements IMod, IPlayerChatListener {
+public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener {
 	
 	private volatile ChatClient chatClient = null;
 	private volatile boolean doFailover = true;
@@ -29,6 +31,8 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 	private URI uri;
 	private final BlockingDeque<Message> messageQueue = new LinkedBlockingDeque<Message>();
 	private int connectAttempts = 0;
+	
+	private boolean startThreads = true;
 
 	@Override
 	public String getName() {
@@ -37,8 +41,8 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
-		serverUri = "ws://localhost:8585/server/bts1/1234"; //settings.get("serverUri");
-		serverName = "Alpha"; //settings.get("serverName");
+		serverUri = settings.get("serverUri");
+		serverName = settings.get("serverName");
 		
 		if (serverUri == null || serverUri.trim().length() == 0)
 			return;
@@ -47,13 +51,10 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 			return;
 		
 		try {
-			uri = new URI(serverUri); //messageManager = new MessageManager(new URI(serverUri));
+			uri = new URI(serverUri);
 			
 			ChatAPI.addListener(this);
 			ServerAPI.addListener(this);
-			
-			startConnectionThread();
-			startQueueThread();
 		}
 		catch (URISyntaxException e) {
 			ModLoader.outputError(e, "Invalid URI: " + serverUri);
@@ -117,7 +118,6 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 			public void run() {
 				while (!Thread.interrupted()) {
 					connectAttempts++;
-					ModLoader.outputInfo("Connecting to central chat server...");
 					chatClient = new ChatClient(uri);
 					
 					try {
@@ -181,5 +181,14 @@ public class mod_CentralChat implements IMod, IPlayerChatListener {
 				}
 			}
 		}, getName() + ": Queue Watcher").start();
+	}
+
+	@Override
+	public void onTick(TickEvent event) {
+		if (startThreads && event.getType() == TickEvent.TYPE.START) {
+			startThreads = false;
+			startConnectionThread();
+			startQueueThread();
+		}
 	}
 }
