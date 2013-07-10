@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -39,7 +37,6 @@ public class ChatServer extends WebSocketServer {
 	//public static final String PROTOCOL_NAME = "btw-json";
 	
 	private final Settings data;
-	private Set<String> chatColors = new HashSet<String>();
 
 	public ChatServer(File dataFile) throws IOException {
 		super();
@@ -73,49 +70,13 @@ public class ChatServer extends WebSocketServer {
 	
 	protected void init() {
 		
-		//addColor("black"); //, Util.COLOR_BLACK, "#000");
-		//addColor("navy"); //, Util.COLOR_NAVY, "#00A");
-		addColor("green"); //, Util.COLOR_GREEN, "#0A0");
-		addColor("teal"); //, Util.COLOR_TEAL, "#0AA");
-		addColor("maroon"); //, Util.COLOR_MAROON, "#A00");
-		addColor("purple"); //, Util.COLOR_PURPLE, "#A0A");
-		addColor("gold"); //, Util.COLOR_GOLD, "#FA0");
-		addColor("silver"); //, Util.COLOR_SILVER, "#AAA");
-		addColor("grey"); //, Util.COLOR_GREY, "#555");
-		addColor("blue"); //, Util.COLOR_BLUE, "#55F");
-		addColor("lime"); //, Util.COLOR_LIME, "#5F5");
-		addColor("aqua"); //, Util.COLOR_AQUA, "#5FF");
-		addColor("red"); //, Util.COLOR_RED, "#F55");
-		addColor("pink"); //, Util.COLOR_PINK, "#F5F");
-		addColor("yellow"); //, Util.COLOR_YELLOW, "#FF5");
-		addColor("white"); //, Util.COLOR_WHITE, "#FFF");
-		addColor("off"); //, Util.COLOR_WHITE, "#FFF");
-		
-		loadKeys();
 	}
 	
 	public static Settings loadSettings(File file) throws IOException {
 		if (file.isFile())
 			return Settings.readSavableSettings(file);
 		else
-			return new Settings();
-	}
-	
-	public void loadKeys() {
-		addUserKey("andrem", "502021");
-		addServerKey("bts1", "1234");
-		data.set("ChatAliases", "andrem", "Butts");
-		data.set("ChatColors", "andrem", "teal");
-	}
-	
-	private void addColor(String color) {
-		//if (!bannedColors.contains(color)) {
-			chatColors.add(color.toLowerCase());
-		//}
-	}
-	
-	public boolean isValidColor(String color) {
-		return color.equalsIgnoreCase("off") || chatColors.contains(color.toLowerCase());
+			return new Settings(file);
 	}
 
 	@Override
