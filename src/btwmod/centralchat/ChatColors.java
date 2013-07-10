@@ -29,4 +29,30 @@ public enum ChatColors {
 		this.colorChar = colorChar;
 		this.colorHex = colorHex;
 	}
+	
+	public static String getChar(String color) {
+		ChatColors match = get(color);
+		return match == null ? null : match.colorChar;
+	}
+	
+	public static String getHex(String color) {
+		ChatColors match = get(color);
+		return match == null ? null : match.colorHex;
+	}
+	
+	public static ChatColors get(String color) {
+		if (color == null)
+			return null;
+		
+		try {
+			return Enum.valueOf(ChatColors.class, color.toUpperCase());
+		}
+		catch (IllegalArgumentException e) {
+			return null;
+		}
+	}
+	
+	public static boolean isValid(String color) {
+		return get(color) != null;
+	}
 }
