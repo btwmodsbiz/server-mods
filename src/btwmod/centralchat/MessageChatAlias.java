@@ -44,5 +44,6 @@ public class MessageChatAlias extends Message {
 	@Override
 	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
 		server.setChatAlias(username, alias);
+		server.save();
 	}
 }

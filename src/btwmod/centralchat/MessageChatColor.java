@@ -55,6 +55,7 @@ public class MessageChatColor extends Message {
 			username = config.id;
 		
 		server.setChatColor(username, color);
+		server.save();
 	}
 
 }
