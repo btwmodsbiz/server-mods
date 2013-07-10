@@ -1,5 +1,6 @@
 package btwmod.centralchat;
 
+import net.minecraft.server.MinecraftServer;
 import btwmods.ChatAPI;
 
 import com.google.gson.JsonObject;
@@ -39,10 +40,15 @@ public class MessageChat extends MessageUser {
 	
 	@Override
 	public void handleAsClient() {
+		MinecraftServer.getServer().getLogAgent().func_98233_a(getLoggedMessage());
 		ChatAPI.sendChatToAllPlayers(username, getFormattedMessage());
 	}
 	
 	protected String getFormattedMessage() {
 		return "<" + getDisplayUsername() + "> " + message;
+	}
+	
+	protected String getLoggedMessage() {
+		return "<" + username + "> " + message;
 	}
 }

@@ -27,4 +27,9 @@ public class MessageEmote extends MessageChat {
 	protected String getFormattedMessage() {
 		return "* " + getDisplayUsername() + " " + message;
 	}
+	
+	@Override
+	protected String getLoggedMessage() {
+		return "* " + username + " " + message;
+	}
 }
