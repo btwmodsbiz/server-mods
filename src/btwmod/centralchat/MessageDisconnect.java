@@ -49,4 +49,9 @@ public class MessageDisconnect extends MessageConnect {
 	protected String getFormattedMessage() {
 		return Util.COLOR_YELLOW + getDisplayUsername(Util.COLOR_YELLOW) + " left chat" + (server == null ? "" : " on " + server) + ".";
 	}
+	
+	@Override
+	protected String getLoggedMessage() {
+		return username + " left chat" + (server == null ? "" : " on " + server) + ".";
+	}
 }

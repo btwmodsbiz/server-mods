@@ -1,5 +1,6 @@
 package btwmod.centralchat;
 
+import net.minecraft.server.MinecraftServer;
 import btwmods.ChatAPI;
 import btwmods.Util;
 
@@ -48,10 +49,15 @@ public class MessageConnect extends MessageUser {
 	
 	@Override
 	public void handleAsClient() {
+		MinecraftServer.getServer().getLogAgent().func_98233_a(getLoggedMessage());
 		ChatAPI.sendChatToAllPlayers(getFormattedMessage());
 	}
 	
 	protected String getFormattedMessage() {
 		return Util.COLOR_YELLOW + getDisplayUsername(Util.COLOR_YELLOW) + " joined chat" + (server == null ? "" : " on " + server) + ".";
+	}
+	
+	protected String getLoggedMessage() {
+		return username + " joined chat" + (server == null ? "" : " on " + server) + ".";
 	}
 }
