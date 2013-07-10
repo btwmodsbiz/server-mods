@@ -1,6 +1,5 @@
 package btwmod.centralchat;
 
-import java.net.ConnectException;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -45,16 +44,12 @@ public class ChatClient extends WebSocketClient {
 
 	@Override
 	public void onClose(int code, String reason, boolean remote) {
-		if (!reason.equals("Connection refused"))
-				ModLoader.outputInfo("onClose: " + Thread.currentThread().getId() + ", " + code + ", " + reason);
-				
 		closeLatch.countDown();
 	}
 
 	@Override
 	public void onError(Exception ex) {
-		if (ex.getClass() != ConnectException.class)
-			ModLoader.outputError(ex, "Thread: " + Thread.currentThread().getId() + " " + ChatClient.class.getSimpleName() + " onError (" + ex.getClass().getSimpleName() + "): " + ex.getMessage());
+		
 	}
 
 	public void awaitClose() throws InterruptedException {
