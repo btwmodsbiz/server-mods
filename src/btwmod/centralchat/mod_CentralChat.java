@@ -6,6 +6,7 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import btwmods.ChatAPI;
+import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.ServerAPI;
@@ -33,6 +34,8 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	private int connectAttempts = 0;
 	
 	private boolean startThreads = true;
+	private CommandChatColor commandChatColor;
+	private CommandChatAlias commandChatAlias;
 
 	@Override
 	public String getName() {
@@ -55,6 +58,8 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 			
 			ChatAPI.addListener(this);
 			ServerAPI.addListener(this);
+			CommandsAPI.registerCommand(commandChatColor = new CommandChatColor(this), this);
+			CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
 		}
 		catch (URISyntaxException e) {
 			ModLoader.outputError(e, "Invalid URI: " + serverUri);
@@ -65,6 +70,8 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	public void unload() throws Exception {
 		ChatAPI.removeListener(this);
 		ServerAPI.removeListener(this);
+		CommandsAPI.unregisterCommand(commandChatColor);
+		CommandsAPI.unregisterCommand(commandChatAlias);
 	}
 
 	@Override
