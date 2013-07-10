@@ -9,14 +9,16 @@ public class MessageChatColor extends Message {
 	
 	public final String TYPE = "chatcolor";
 	
+	public final String action;
 	public final String username;
 	public final String color;
 	
-	public MessageChatColor(String username) {
-		this(username, null);
+	public MessageChatColor(String action, String username) {
+		this(action, username, null);
 	}
 	
-	public MessageChatColor(String username, String color) {
+	public MessageChatColor(String action, String username, String color) {
+		this.action = action;
 		this.username = username;
 		this.color = color;
 	}
@@ -24,6 +26,7 @@ public class MessageChatColor extends Message {
 	public MessageChatColor(JsonObject json) {
 		JsonElement color = json.get("color");
 		
+		this.action = json.get("action").getAsString();
 		this.username = json.get("username").getAsString();
 		this.color = color != null && color.isJsonPrimitive() ? color.getAsString() : null;
 	}
@@ -36,6 +39,7 @@ public class MessageChatColor extends Message {
 	@Override
 	public JsonObject toJson() {
 		JsonObject obj = super.toJson();
+		obj.addProperty("action", this.action);
 		obj.addProperty("username", this.username);
 		obj.addProperty("color", this.color);
 		return obj;
@@ -48,14 +52,23 @@ public class MessageChatColor extends Message {
 
 	@Override
 	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
+		JsonObject json = toJson();
 		String username = this.username;
 		
 		// Force user ID for those authenticated as users.
 		if (ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(config.clientType))
 			username = config.id;
 		
-		server.setChatColor(username, color);
-		server.save();
+		if ("set".equalsIgnoreCase(action)) {
+			server.setChatColor(username, color);
+			server.save();
+		}
+		
+		// Fail if not action is not 'get' instead of 'set'.
+		else if (!"get".equalsIgnoreCase(action))
+			return;
+		
+		json.addProperty("color", server.getChatColor(username));
 	}
 
 }

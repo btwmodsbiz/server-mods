@@ -8,15 +8,17 @@ import com.google.gson.JsonObject;
 public class MessageChatAlias extends Message {
 	
 	public final String TYPE = "chatalias";
-	
+
+	public final String action;
 	public final String username;
 	public final String alias;
 	
-	public MessageChatAlias(String username) {
-		this(username, null);
+	public MessageChatAlias(String action, String username) {
+		this(action, username, null);
 	}
 	
-	public MessageChatAlias(String username, String alias) {
+	public MessageChatAlias(String action, String username, String alias) {
+		this.action = action;
 		this.username = username;
 		this.alias = alias;
 	}
@@ -24,6 +26,7 @@ public class MessageChatAlias extends Message {
 	public MessageChatAlias(JsonObject json) {
 		JsonElement alias = json.get("alias");
 		
+		this.action = json.get("action").getAsString();
 		this.username = json.get("username").getAsString();
 		this.alias = alias != null && alias.isJsonPrimitive() ? alias.getAsString() : null;
 	}
@@ -36,6 +39,7 @@ public class MessageChatAlias extends Message {
 	@Override
 	public JsonObject toJson() {
 		JsonObject obj = super.toJson();
+		obj.addProperty("action", this.action);
 		obj.addProperty("username", this.username);
 		obj.addProperty("alias", this.alias);
 		return obj;
@@ -43,7 +47,18 @@ public class MessageChatAlias extends Message {
 
 	@Override
 	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
-		server.setChatAlias(username, alias);
-		server.save();
+		JsonObject json = toJson();
+		String username = this.username;
+		
+		if ("set".equalsIgnoreCase(action)) {
+			server.setChatAlias(username, alias);
+			server.save();
+		}
+		
+		// Fail if not action is not 'get' instead of 'set'.
+		else if (!"get".equalsIgnoreCase(action))
+			return;
+		
+		json.addProperty("color", server.getChatColor(username));
 	}
 }
