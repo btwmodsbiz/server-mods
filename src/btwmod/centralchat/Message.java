@@ -17,7 +17,7 @@ public abstract class Message {
 	
 	@SuppressWarnings("static-method")
 	public boolean canSendMessage(ResourceConfig config) {
-		return ResourceConfig.CLIENTTYPE_SERVER.equalsIgnoreCase(config.clientType);
+		return config.clientType == ClientType.SERVER;
 	}
 	
 	public abstract void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config);

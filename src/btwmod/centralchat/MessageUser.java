@@ -47,7 +47,7 @@ public abstract class MessageUser extends Message {
 
 	@Override
 	public boolean canSendMessage(ResourceConfig config) {
-		return super.canSendMessage(config) || ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(config.clientType);
+		return config.clientType == ClientType.USER || super.canSendMessage(config);
 	}
 	
 	public String getDisplayUsername() {
@@ -66,7 +66,7 @@ public abstract class MessageUser extends Message {
 		JsonObject json = toJson();
 		
 		// Force user ID for those authenticated as users.
-		if (ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(config.clientType))
+		if (config.clientType == ClientType.USER)
 			json.addProperty("username", username = config.id);
 		
 		// Set the user's chat color, if it has one.

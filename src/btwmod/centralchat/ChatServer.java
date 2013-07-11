@@ -126,10 +126,10 @@ public class ChatServer extends WebSocketServer {
 	}
 	
 	public boolean validateConn(WebSocket conn, ResourceConfig config) {
-		if (ResourceConfig.CLIENTTYPE_USER.equalsIgnoreCase(config.clientType) && validateUserKey(config.id, config.key)) {
+		if (config.clientType == ClientType.USER && validateUserKey(config.id, config.key)) {
 			return true;
 		}
-		else if (ResourceConfig.CLIENTTYPE_SERVER.equalsIgnoreCase(config.clientType) && validateServerKey(config.id, config.key)) {
+		else if (config.clientType == ClientType.SERVER && validateServerKey(config.id, config.key)) {
 			return true;
 		}
 		
