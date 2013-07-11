@@ -144,22 +144,27 @@ public class ChatServer extends WebSocketServer {
 
 	@Override
 	public void onMessage(WebSocket conn, String rawMessage) {
-		ResourceConfig config = ResourceConfig.parse(conn.getResourceDescriptor());
-		if (validateConn(conn, config)) {
-			Message message = Message.parse(rawMessage);
-			
-			if (message != null && message.canSendMessage(config)) {
-				System.out.println("<" + conn.getRemoteSocketAddress() + "> " + message.toJson());
+		try {
+			ResourceConfig config = ResourceConfig.parse(conn.getResourceDescriptor());
+			if (validateConn(conn, config)) {
+				Message message = Message.parse(rawMessage);
 				
-				if (message.canSendMessage(config))
-					message.handleAsServer(this, conn, config);
+				if (message != null && message.canSendMessage(config)) {
+					System.out.println("<" + conn.getRemoteSocketAddress() + "> " + message.toJson());
+					
+					if (message.canSendMessage(config))
+						message.handleAsServer(this, conn, config);
+				}
+				else {
+					System.err.println(conn.getRemoteSocketAddress() + " sent invalid message.");
+					System.err.println(">>" + rawMessage);
+					conn.close(CloseFrame.PROTOCOL_ERROR, "Invalid message received.");
+				}
 			}
-			else {
-				System.out.println(conn.getRemoteSocketAddress() + " sent invalid message (logged).");
-				System.err.println(">>" + rawMessage);
-				conn.close(CloseFrame.PROTOCOL_ERROR, "Invalid message received.");
-				// TODO: Log invalid messages.
-			}
+		}
+		catch (RuntimeException e) {
+			System.err.println(conn.getRemoteSocketAddress() + " sent a message that caused an exception (" + e.getClass().getSimpleName() + "): " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
@@ -172,7 +177,13 @@ public class ChatServer extends WebSocketServer {
 		Collection<WebSocket> connections = this.connections();
 		synchronized (connections) {
 			for (WebSocket connection : connections) {
-				connection.send(message);
+				try {
+					connection.send(message);
+				}
+				catch (RuntimeException e) {
+					System.err.println("An exception (" + e.getClass().getSimpleName() + ") was raised while sending a message to a connection: " + e.getMessage());
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -185,7 +196,13 @@ public class ChatServer extends WebSocketServer {
 				if (config.clientType == ClientType.SERVER
 						|| (config.clientType == ClientType.USER && config.id.equalsIgnoreCase(username))) {
 					
-					connection.send(message);
+					try {
+						connection.send(message);
+					}
+					catch (RuntimeException e) {
+						System.err.println("An exception (" + e.getClass().getSimpleName() + ") was raised while sending a message to a connection: " + e.getMessage());
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -197,7 +214,13 @@ public class ChatServer extends WebSocketServer {
 			for (WebSocket connection : connections) {
 				ResourceConfig config = ResourceConfig.parse(connection.getResourceDescriptor());
 				if (config.clientType == ClientType.SERVER) {
-					connection.send(message);
+					try {
+						connection.send(message);
+					}
+					catch (RuntimeException e) {
+						System.err.println("An exception (" + e.getClass().getSimpleName() + ") was raised while sending a message to a connection: " + e.getMessage());
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -252,12 +275,18 @@ public class ChatServer extends WebSocketServer {
 	}
 
 	public boolean setChatAlias(String username, String alias) {
-		alias = alias.trim();
-		if (alias.length() < 1 || alias.length() > 16)
-			return false;
-		
-		data.set("ChatAliases", username, alias);
-		return true;
+		if (alias == null) {
+			data.removeKey("ChatAliases", username);
+			return true;
+		}
+		else {
+			alias = alias.trim();
+			if (alias.length() < 1 || alias.length() > 16)
+				return false;
+			
+			data.set("ChatAliases", username, alias);
+			return true;
+		}
 	}
 	
 	public boolean save() {

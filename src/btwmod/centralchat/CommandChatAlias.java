@@ -24,21 +24,12 @@ public class CommandChatAlias extends CommandBaseExtended {
 	public void processCommand(ICommandSender sender, String[] args) {
 		if (args.length == 3 && isStringMatch(args, 0, "set")) {
 			mod.queueMessage(new MessageChatAlias("set", args[1], args[2]));
-			/*if (mod.setAlias(args[1], args[2])) {
-				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Set alias for player " + args[1].toLowerCase().trim() + " to " + args[2] + ".");
-			}
-			else {
-				sender.sendChatToPlayer(Util.COLOR_RED + "Failed to set alias for player " + args[1].toLowerCase().trim() + " to " + args[2] + ".");
-			}*/
 		}
 		else if (args.length == 2 && isStringMatch(args, 0, "remove")) {
 			mod.queueMessage(new MessageChatAlias("set", args[1]));
-			/*if (mod.removeAlias(args[1])) {
-				sender.sendChatToPlayer(Util.COLOR_YELLOW + "Removed alias for player " + args[1].toLowerCase().trim());
-			}
-			else {
-				sender.sendChatToPlayer(Util.COLOR_RED + "Player " + args[1] + " does not have an alias set.");
-			}*/
+		}
+		else if (args.length == 1) {
+			mod.queueMessage(new MessageChatAlias("get", args[0]));
 		}
 		else {
 			throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
@@ -47,7 +38,7 @@ public class CommandChatAlias extends CommandBaseExtended {
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/" + getCommandName() + " ( ( set <username> <alias> ) | ( remove <username> ) )";
+		return "/" + getCommandName() + " <username> | ( set <username> <alias> ) | ( remove <username> )";
 	}
 
 	@Override

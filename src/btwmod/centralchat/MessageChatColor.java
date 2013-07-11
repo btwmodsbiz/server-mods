@@ -1,6 +1,11 @@
 package btwmod.centralchat;
 
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.src.EntityPlayerMP;
+
 import org.java_websocket.WebSocket;
+
+import btwmods.Util;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -75,6 +80,57 @@ public class MessageChatColor extends Message {
 	public boolean canSendMessage(ResourceConfig config) {
 		return config.clientType == ClientType.USER || super.canSendMessage(config);
 	}
+	
+	@Override
+	public void handleAsClient() {
+		System.out.println(toJson().toString());
+		EntityPlayerMP player = MinecraftServer.getServer().getConfigurationManager().getPlayerEntity(username);
+		if (player != null) {
+			String message = getFormattedMessage();
+			if (message != null) {
+				player.sendChatToPlayer(message);
+			}
+		}
+	}
+	
+	protected String getFormattedMessage() {
+		String colorChar = ChatColors.getChar(color);
+		if (colorChar == null) colorChar = "";
+		
+		String oldColorChar = ChatColors.getChar(oldColor);
+		if (oldColorChar == null) oldColorChar = "";
+		
+		if ("set".equalsIgnoreCase(action) && success != null) {
+			if (success.booleanValue()) {
+				if (color == null && oldColor == null)
+					return Util.COLOR_YELLOW + "Your chat color is already the default.";
+				
+				else if (color == null)
+					return Util.COLOR_YELLOW + "Chat color changed from " + oldColorChar + oldColor + Util.COLOR_YELLOW + " back to the default.";
+				
+				else if (oldColor == null)
+					return Util.COLOR_YELLOW + "Set chat color to " + colorChar + color + Util.COLOR_YELLOW + ".";
+				
+				else if (color.equalsIgnoreCase(oldColor))
+					return Util.COLOR_YELLOW + "Chat color is already set to " + colorChar + color + Util.COLOR_YELLOW + ".";
+				
+				else
+					return Util.COLOR_YELLOW + "Set chat color from " + oldColorChar + oldColor + Util.COLOR_YELLOW + " to " + colorChar + color + Util.COLOR_YELLOW + ".";
+			}
+			else {
+				return Util.COLOR_YELLOW + color + " is not a valid color.";
+			}
+		}
+		else if ("get".equalsIgnoreCase(action)) {
+			if (color == null)
+				return Util.COLOR_YELLOW + "You does not have a chat color set.";
+			
+			else
+				return Util.COLOR_YELLOW + "Your chat color is " + colorChar + color + Util.COLOR_YELLOW + ".";
+		}
+		
+		return null;
+	}
 
 	@Override
 	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
@@ -89,7 +145,7 @@ public class MessageChatColor extends Message {
 		if ("set".equalsIgnoreCase(action)) {
 			if (server.setChatColor(username, color)) {
 				json.addProperty("success", true);
-				json.addProperty("oldColor", oldColor == null ? ChatColors.WHITE.toString() : oldColor);
+				json.addProperty("oldColor", oldColor);
 				server.save();
 			}
 			else {

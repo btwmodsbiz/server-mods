@@ -1,6 +1,11 @@
 package btwmod.centralchat;
 
+import net.minecraft.server.MinecraftServer;
+
 import org.java_websocket.WebSocket;
+
+import btwmods.ChatAPI;
+import btwmods.Util;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -56,7 +61,11 @@ public class MessageChatAlias extends Message {
 		JsonObject obj = super.toJson();
 		obj.addProperty("action", action);
 		obj.addProperty("username", username);
-		obj.addProperty("alias", alias);
+		
+		if (alias == null)
+			obj.remove("alias");
+		else
+			obj.addProperty("alias", alias);
 		
 		if (success == null)
 			obj.remove("success");
@@ -70,6 +79,46 @@ public class MessageChatAlias extends Message {
 		
 		return obj;
 	}
+	
+	@Override
+	public void handleAsClient() {
+		System.out.println(toJson().toString());
+		String message = getFormattedMessage();
+		if (message != null) {
+			MinecraftServer.getServer().getLogAgent().func_98233_a("[" + message.replace(Util.COLOR_YELLOW, "").replace(Util.COLOR_WHITE, "") + "]");
+			ChatAPI.sendChatToAllAdmins(message);
+		}
+	}
+	
+	protected String getFormattedMessage() {
+		if ("set".equalsIgnoreCase(action) && success != null) {
+			if (success.booleanValue()) {
+				if (alias == null && oldAlias == null)
+					return Util.COLOR_YELLOW + username + " does not have an alias set.";
+				
+				else if (alias == null)
+					return Util.COLOR_YELLOW + "Removed " + username + "'s alias of " + Util.COLOR_WHITE + oldAlias;
+				
+				else if (oldAlias == null)
+					return Util.COLOR_YELLOW + "Set " + username + "'s alias to " + Util.COLOR_WHITE + alias;
+				
+				else if (oldAlias == null)
+					return Util.COLOR_YELLOW + "Set " + username + "'s alias from " + Util.COLOR_WHITE + oldAlias + Util.COLOR_YELLOW + " to " + Util.COLOR_WHITE + alias;
+			}
+			else {
+				return Util.COLOR_WHITE + alias + Util.COLOR_YELLOW + " is not a valid alias.";
+			}
+		}
+		else if ("get".equalsIgnoreCase(action)) {
+			if (alias == null)
+				return Util.COLOR_YELLOW + username + " does not have an alias.";
+			
+			else
+				return Util.COLOR_YELLOW + username + "'s alias is " + Util.COLOR_WHITE + alias;
+		}
+		
+		return null;
+	}
 
 	@Override
 	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
@@ -80,7 +129,7 @@ public class MessageChatAlias extends Message {
 		if ("set".equalsIgnoreCase(action)) {
 			if (server.setChatAlias(username, alias)) {
 				json.addProperty("success", true);
-				json.addProperty("oldAlias", oldAlias == null ? username : oldAlias);
+				json.addProperty("oldAlias", oldAlias);
 				server.save();
 			}
 			else {
@@ -92,7 +141,7 @@ public class MessageChatAlias extends Message {
 		else if (!"get".equalsIgnoreCase(action))
 			return;
 		
-		json.addProperty("color", server.getChatColor(username));
+		json.addProperty("alias", server.getChatAlias(username));
 		
 		server.sendToAllServers(json.toString());
 	}
