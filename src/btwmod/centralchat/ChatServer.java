@@ -234,16 +234,30 @@ public class ChatServer extends WebSocketServer {
 		return data.get("ChatColors", username);
 	}
 
-	public void setChatColor(String username, String color) {
-		data.set("ChatColors", username, color);
+	public boolean setChatColor(String username, String color) {
+		ChatColors chatColor = ChatColors.get(color);
+		if (color != null && chatColor == null)
+			return false;
+		
+		if (color == null || chatColor.isDefault)
+			data.removeKey("ChatColors", username);
+		else
+			data.set("ChatColors", username, color);
+		
+		return true;
 	}
 
 	public String getChatAlias(String username) {
 		return data.get("ChatAliases", username);
 	}
 
-	public void setChatAlias(String username, String alias) {
+	public boolean setChatAlias(String username, String alias) {
+		alias = alias.trim();
+		if (alias.length() < 1 || alias.length() > 16)
+			return false;
+		
 		data.set("ChatAliases", username, alias);
+		return true;
 	}
 	
 	public boolean save() {
