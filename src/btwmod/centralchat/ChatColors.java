@@ -4,8 +4,8 @@ import btwmods.Util;
 
 public enum ChatColors {
 
-	BLACK(Util.COLOR_BLACK, "#000"),
-	NAVY(Util.COLOR_NAVY, "#00A"),
+	//BLACK(Util.COLOR_BLACK, "#000"),
+	//NAVY(Util.COLOR_NAVY, "#00A"),
 	GREEN(Util.COLOR_GREEN, "#0A0"),
 	TEAL(Util.COLOR_TEAL, "#0AA"),
 	MAROON(Util.COLOR_MAROON, "#A00"),
