@@ -177,6 +177,32 @@ public class ChatServer extends WebSocketServer {
 		}
 	}
 	
+	public void sendToAllForUser(String message, String username) {
+		Collection<WebSocket> connections = this.connections();
+		synchronized (connections) {
+			for (WebSocket connection : connections) {
+				ResourceConfig config = ResourceConfig.parse(connection.getResourceDescriptor());
+				if (config.clientType == ClientType.SERVER
+						|| (config.clientType == ClientType.USER && config.id.equalsIgnoreCase(username))) {
+					
+					connection.send(message);
+				}
+			}
+		}
+	}
+	
+	public void sendToAllServers(String message) {
+		Collection<WebSocket> connections = this.connections();
+		synchronized (connections) {
+			for (WebSocket connection : connections) {
+				ResourceConfig config = ResourceConfig.parse(connection.getResourceDescriptor());
+				if (config.clientType == ClientType.SERVER) {
+					connection.send(message);
+				}
+			}
+		}
+	}
+	
 	public void attachShutDownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(new ServerShutdownHook(this), "ShutdownHook Thread"));
 	}
