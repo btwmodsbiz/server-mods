@@ -17,7 +17,7 @@ public class ResourceConfig {
 		
 		return new ResourceConfig(
 			pathParts.length >= 1 ? ClientType.get(pathParts[0]) : null,
-			pathParts.length >= 1 ? pathParts[0] : null,
-			pathParts.length >= 1 ? pathParts[0] : null);
+			pathParts.length >= 1 ? pathParts[1] : null,
+			pathParts.length >= 1 ? pathParts[2] : null);
 	}
 }
