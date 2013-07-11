@@ -19,15 +19,21 @@ public enum ChatColors {
 	RED(Util.COLOR_RED, "#F55"),
 	PINK(Util.COLOR_PINK, "#F5F"),
 	YELLOW(Util.COLOR_YELLOW, "#FF5"),
-	WHITE(Util.COLOR_WHITE, "#FFF"),
-	OFF(Util.COLOR_WHITE, "#FFF");
+	WHITE(Util.COLOR_WHITE, "#FFF", true),
+	OFF(Util.COLOR_WHITE, "#FFF", true);
 	
 	public final String colorChar;
 	public final String colorHex;
+	public final boolean isDefault;
 	
-	private ChatColors(String colorChar, String colorHex) {
+	private ChatColors(String colorChar, String colorHex, boolean isDefault) {
 		this.colorChar = colorChar;
 		this.colorHex = colorHex;
+		this.isDefault = isDefault;
+	}
+	
+	private ChatColors(String colorChar, String colorHex) {
+		this(colorChar, colorHex, false);
 	}
 	
 	public static String getChar(String color) {
