@@ -83,7 +83,6 @@ public class MessageChatColor extends Message {
 	
 	@Override
 	public void handleAsClient() {
-		System.out.println(toJson().toString());
 		EntityPlayerMP player = MinecraftServer.getServer().getConfigurationManager().getPlayerEntity(username);
 		if (player != null) {
 			String message = getFormattedMessage();
