@@ -11,6 +11,12 @@ import btwmods.ChatAPI;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+/**
+ * A list of users connected to the chat server.
+ * Only sent from server to client when the client first connects.
+ * 
+ * @author amekkawi
+ */
 public class MessageUserList extends Message {
 	
 	public static final String TYPE = "userlist";
@@ -47,7 +53,7 @@ public class MessageUserList extends Message {
 
 	@Override
 	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
-		
+		// Does not handle this kind of message.
 	}
 	
 	@Override
