@@ -3,8 +3,12 @@ package btwmod.centralchat;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -37,6 +41,7 @@ public class ChatServer extends WebSocketServer {
 	//public static final String PROTOCOL_NAME = "btw-json";
 	
 	private final Settings data;
+	private final Map<String, Map<String, String>> loggedInUsers = new HashMap<String, Map<String, String>>();
 
 	public ChatServer(File dataFile) throws IOException {
 		super();
@@ -81,16 +86,21 @@ public class ChatServer extends WebSocketServer {
 
 	@Override
 	public void onOpen(WebSocket conn, ClientHandshake handshake) {
-		//String protocol = handshake.getFieldValue("Sec-WebSocket-Protocol");
-		
 		System.out.println(conn.getRemoteSocketAddress().getAddress().getHostAddress() + " connected to " + conn.getResourceDescriptor());
 		
-		/*if (!PROTOCOL_NAME.equalsIgnoreCase(protocol) && false) {
+		/*String protocol = handshake.getFieldValue("Sec-WebSocket-Protocol");
+		if (!PROTOCOL_NAME.equalsIgnoreCase(protocol) && false) {
 			conn.close(CloseFrame.PROTOCOL_ERROR, "Protocol must be " + PROTOCOL_NAME);
+			return
+		}*/
+		
+		ResourceConfig config = ResourceConfig.parse(conn.getResourceDescriptor());
+		if (validateConn(conn, config)) {
+			if (config.clientType == ClientType.USER)
+				new MessageConnect(config.id, null).handleAsServer(this, conn, config);
+			
+			conn.send(getUserList().toJson().toString());
 		}
-		else {*/
-			validateConn(conn, ResourceConfig.parse(conn.getResourceDescriptor()));
-		//}
 	}
 	
 	public void addUserKey(String id, String key) {
@@ -126,20 +136,26 @@ public class ChatServer extends WebSocketServer {
 	}
 	
 	public boolean validateConn(WebSocket conn, ResourceConfig config) {
-		if (config.clientType == ClientType.USER && validateUserKey(config.id, config.key)) {
-			return true;
-		}
-		else if (config.clientType == ClientType.SERVER && validateServerKey(config.id, config.key)) {
-			return true;
+		if (!isValidConfig(config)) {
+			conn.close(CloseFrame.NORMAL, "Invalid resource descriptor: " + conn.getResourceDescriptor());
+			return false;
 		}
 		
-		conn.close(CloseFrame.NORMAL, "Invalid resource descriptor: " + conn.getResourceDescriptor());
-		return false;
+		return true;
+	}
+	
+	public boolean isValidConfig(ResourceConfig config) {
+		return (config.clientType == ClientType.USER && validateUserKey(config.id, config.key))
+				|| (config.clientType == ClientType.SERVER && validateServerKey(config.id, config.key));
 	}
 
 	@Override
 	public void onClose(WebSocket conn, int code, String reason, boolean remote) {
 		System.out.println(conn.getRemoteSocketAddress().getAddress().getHostAddress() + " has disconnected" + (reason == null || reason.equals("") ? " (no reason)." : ": " + reason));
+
+		ResourceConfig config = ResourceConfig.parse(conn.getResourceDescriptor());
+		if (isValidConfig(config) && config.clientType == ClientType.USER)
+			new MessageDisconnect(config.id, null, null).handleAsServer(this, conn, config);
 	}
 
 	@Override
@@ -300,5 +316,37 @@ public class ChatServer extends WebSocketServer {
 		}
 		
 		return false;
+	}
+
+	public void onConnectMessage(MessageConnect messageConnect) {
+		synchronized (loggedInUsers) {
+			String key = messageConnect.server;
+			Map<String, String> serverList = loggedInUsers.get(key);
+			if (serverList == null)
+				loggedInUsers.put(key, serverList = new HashMap<String, String>());
+			
+			serverList.put(messageConnect.username.toLowerCase(), messageConnect.username);
+		}
+	}
+
+	public void onDisconnectMessage(MessageDisconnect messageDisconnect) {
+		synchronized (loggedInUsers) {
+			String key = messageDisconnect.server;
+			Map<String, String> serverList = loggedInUsers.get(key);
+			if (serverList != null)
+				serverList.remove(messageDisconnect.username.toLowerCase());
+		}
+	}
+	
+	public MessageUserList getUserList() {
+		synchronized (loggedInUsers) {
+			List<MessageUserList.MessageUserEntry> messageList = new ArrayList<MessageUserList.MessageUserEntry>();
+			for (Entry<String, Map<String, String>> serverList : loggedInUsers.entrySet()) {
+				for (Entry<String, String> userEntry : serverList.getValue().entrySet()) {
+					messageList.add(new MessageUserList.MessageUserEntry(userEntry.getValue(), serverList.getKey(), getChatColor(userEntry.getValue()), getChatAlias(userEntry.getValue())));
+				}
+			}
+			return new MessageUserList(messageList.toArray(new MessageUserList.MessageUserEntry[messageList.size()]));
+		}
 	}
 }

@@ -1,5 +1,7 @@
 package btwmod.centralchat;
 
+import org.java_websocket.WebSocket;
+
 import net.minecraft.server.MinecraftServer;
 import btwmods.ChatAPI;
 import btwmods.Util;
@@ -45,6 +47,16 @@ public class MessageConnect extends MessageUser {
 			obj.addProperty("server", this.server);
 		
 		return obj;
+	}
+	
+	@Override
+	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
+		super.handleAsServer(server, conn, config);
+		toServer(server);
+	}
+	
+	protected void toServer(ChatServer server) {
+		server.onConnectMessage(this);
 	}
 	
 	@Override
