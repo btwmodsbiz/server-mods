@@ -35,7 +35,7 @@ public class MessageDeath extends MessageChat {
 	}
 	
 	protected String getFormattedMessage() {
-		return message.replace(username, getDisplayUsername());
+		return message.replace(username, getDisplayUsername(false));
 	}
 	
 	@Override

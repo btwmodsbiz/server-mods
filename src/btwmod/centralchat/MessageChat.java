@@ -46,7 +46,7 @@ public class MessageChat extends MessageUser {
 	}
 	
 	protected String getFormattedMessage() {
-		return "<" + getDisplayUsername() + "> " + message;
+		return "<" + getDisplayUsername(true) + "> " + message;
 	}
 	
 	protected String getLoggedMessage() {

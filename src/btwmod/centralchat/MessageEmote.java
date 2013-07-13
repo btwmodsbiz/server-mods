@@ -25,7 +25,7 @@ public class MessageEmote extends MessageChat {
 	
 	@Override
 	protected String getFormattedMessage() {
-		return "* " + getDisplayUsername() + " " + message;
+		return "* " + getDisplayUsername(true) + " " + message;
 	}
 	
 	@Override

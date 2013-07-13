@@ -50,12 +50,15 @@ public abstract class MessageUser extends Message {
 		return config.clientType == ClientType.USER || super.canSendMessage(config);
 	}
 	
-	public String getDisplayUsername() {
-		return getDisplayUsername(Util.COLOR_WHITE);
+	public String getDisplayUsername(boolean withColor) {
+		return getDisplayUsername(withColor, Util.COLOR_RESET);
 	}
 	
-	public String getDisplayUsername(String resetColorChar) {
+	public String getDisplayUsername(boolean withColor, String resetColorChar) {
 		String displayName = alias == null ? username : alias;
+		if (!withColor)
+			return displayName;
+		
 		String colorChar = Message.getColorChar(color);
 		return colorChar == null ? displayName : colorChar + displayName + resetColorChar;
 	}

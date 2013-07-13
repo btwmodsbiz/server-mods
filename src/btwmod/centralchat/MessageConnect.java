@@ -56,7 +56,7 @@ public class MessageConnect extends MessageUser {
 	}
 	
 	protected String getFormattedMessage() {
-		return Util.COLOR_YELLOW + getDisplayUsername(Util.COLOR_YELLOW) + " joined chat" + (server == null ? "" : " on " + server) + ".";
+		return Util.COLOR_YELLOW + getDisplayUsername(false) + " joined chat" + (server == null ? "" : " on " + server) + ".";
 	}
 	
 	protected String getLoggedMessage() {
