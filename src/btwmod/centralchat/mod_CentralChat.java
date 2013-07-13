@@ -215,6 +215,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 						
 						chatClient.awaitClose();
 						ModLoader.outputInfo("Disconnected from central chat server.");
+						ChatAPI.removeAllAliases();
 					}
 					else if (connectAttempts <= connectAttemptsBeforeFailover) {
 						Thread.sleep(reconnectWait * 1000L);
