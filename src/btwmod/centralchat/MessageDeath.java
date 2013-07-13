@@ -27,9 +27,11 @@ public class MessageDeath extends MessageChat {
 	}
 
 	@Override
-	public void handleAsClient() {
+	public void handleAsClient(IMessageClient messageClient) {
 		MinecraftServer.getServer().getLogAgent().func_98233_a(getLoggedMessage());
-		ChatAPI.sendChatToAllPlayers(getFormattedMessage());
+		String message = getFormattedMessage();
+		ChatAPI.sendChatToAllPlayers(message);
+		messageClient.addRestorableChat(message);
 	}
 	
 	protected String getFormattedMessage() {

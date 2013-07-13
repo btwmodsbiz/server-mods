@@ -22,7 +22,8 @@ public abstract class Message {
 	
 	public abstract void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config);
 	
-	public void handleAsClient() {
+	@SuppressWarnings("unused")
+	public void handleAsClient(IMessageClient messageClient) {
 		
 	}
 	

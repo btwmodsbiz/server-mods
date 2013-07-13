@@ -81,7 +81,7 @@ public class MessageChatAlias extends Message {
 	}
 	
 	@Override
-	public void handleAsClient() {
+	public void handleAsClient(IMessageClient messageClient) {
 		String message = getFormattedMessage();
 		if (message != null) {
 			MinecraftServer.getServer().getLogAgent().func_98233_a("[" + message.replace(Util.COLOR_YELLOW, "").replace(Util.COLOR_WHITE, "") + "]");

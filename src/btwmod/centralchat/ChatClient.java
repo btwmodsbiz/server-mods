@@ -12,18 +12,22 @@ import btwmods.ModLoader;
 
 public class ChatClient extends WebSocketClient {
 
+	private final IMessageClient messageClient;
 	private final CountDownLatch closeLatch = new CountDownLatch(1);
 
-	public ChatClient(URI serverUri, Draft draft, Map<String, String> headers, int connecttimeout) {
+	public ChatClient(IMessageClient messageClient, URI serverUri, Draft draft, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, draft, headers, connecttimeout);
+		this.messageClient = messageClient;
 	}
 
-	public ChatClient(URI serverUri, Draft draft) {
+	public ChatClient(IMessageClient messageClient, URI serverUri, Draft draft) {
 		super(serverUri, draft);
+		this.messageClient = messageClient;
 	}
 
-	public ChatClient(URI serverURI) {
+	public ChatClient(IMessageClient messageClient, URI serverURI) {
 		super(serverURI);
+		this.messageClient = messageClient;
 	}
 
 	@Override
@@ -38,7 +42,7 @@ public class ChatClient extends WebSocketClient {
 			ModLoader.outputError("Invalid message received: " + rawMessage);
 		}
 		else {
-			message.handleAsClient();
+			message.handleAsClient(messageClient);
 		}
 	}
 
