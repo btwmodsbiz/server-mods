@@ -1,6 +1,12 @@
 package btwmod.centralchat;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.java_websocket.WebSocket;
+
+import btwmods.ChatAPI;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -46,7 +52,17 @@ public class MessageUserList extends Message {
 	
 	@Override
 	public void handleAsClient(IMessageClient messageClient) {
+		Map<String, String> aliasMap = new HashMap<String, String>();
+		for (MessageUserEntry entry : users)
+			aliasMap.put(entry.username.toLowerCase(), entry.alias);
 		
+		for (Entry<String, String> entry : aliasMap.entrySet())
+			if (entry.getValue() != null)
+				ChatAPI.setAlias(entry.getKey(), entry.getValue());
+		
+		int len = aliasMap.size();
+		if (len > 0)
+			ChatAPI.sendChatToAllPlayers(aliasMap.size() + " user" + (len == 1 ? "" : "s") + " available via the chat server.");
 	}
 
 	public static class MessageUserEntry extends MessageConnect {
