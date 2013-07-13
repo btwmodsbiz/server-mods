@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 
 public class MessageUserList extends Message {
 	
-	public final String TYPE = "userlist";
+	public static final String TYPE = "userlist";
 	
 	public final MessageUserEntry[] users;
 

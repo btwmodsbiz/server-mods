@@ -52,6 +52,9 @@ public abstract class Message {
 			
 			else if ("chatalias".equalsIgnoreCase(type))
 				return new MessageChatAlias(messageJson);
+			
+			else if (MessageUserList.TYPE.equalsIgnoreCase(type))
+				return new MessageUserList(messageJson);
 		}
 		catch (Exception e) {
 			System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());
