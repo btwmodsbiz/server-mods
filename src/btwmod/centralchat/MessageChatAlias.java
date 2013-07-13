@@ -86,6 +86,7 @@ public class MessageChatAlias extends Message {
 		if (message != null) {
 			MinecraftServer.getServer().getLogAgent().func_98233_a("[" + message.replace(Util.COLOR_YELLOW, "").replace(Util.COLOR_WHITE, "") + "]");
 			ChatAPI.sendChatToAllAdmins(message);
+			messageClient.setAlias(username, alias);
 		}
 	}
 	

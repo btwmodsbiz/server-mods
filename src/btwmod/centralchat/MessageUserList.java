@@ -58,7 +58,7 @@ public class MessageUserList extends Message {
 		
 		for (Entry<String, String> entry : aliasMap.entrySet())
 			if (entry.getValue() != null)
-				ChatAPI.setAlias(entry.getKey(), entry.getValue());
+				messageClient.setAlias(entry.getKey(), entry.getValue());
 		
 		int len = aliasMap.size();
 		if (len > 0)
