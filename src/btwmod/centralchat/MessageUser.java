@@ -65,12 +65,10 @@ public abstract class MessageUser extends Message {
 
 	@Override
 	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
-		String username = this.username;
 		JsonObject json = toJson();
 		
 		// Force user ID for those authenticated as users.
-		if (config.clientType == ClientType.USER)
-			json.addProperty("username", username = config.id);
+		json.addProperty("username", config.clientType == ClientType.USER ? server.getActualUsername(config.id) : username);
 		
 		// Set the user's chat color, if it has one.
 		json.addProperty("color", server.getChatColor(username));
