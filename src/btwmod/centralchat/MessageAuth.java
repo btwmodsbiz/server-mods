@@ -55,6 +55,7 @@ public class MessageAuth extends Message {
 		if ("addKey".equalsIgnoreCase(action) && key != null) {
 			if (clientType == ClientType.USER) {
 				server.addUserKey(id, key);
+				server.addActualUsername(id);
 			}
 			else if (clientType == ClientType.SERVER) {
 				server.addServerKey(id, key);
