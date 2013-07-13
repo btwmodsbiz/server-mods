@@ -103,6 +103,19 @@ public class ChatServer extends WebSocketServer {
 		}
 	}
 	
+	public void addActualUsername(String username) {
+		data.set("ActualUsernames", username, username);
+	}
+	
+	public String getActualUsername(String username) {
+		return getActualUsername(username, null);
+	}
+	
+	public String getActualUsername(String username, String defaultValue) {
+		String actualUsername = data.get("ActualUsernames", username);
+		return actualUsername == null ? defaultValue : actualUsername;
+	}
+	
 	public void addUserKey(String id, String key) {
 		data.set("UserKeys", id, key);
 	}
