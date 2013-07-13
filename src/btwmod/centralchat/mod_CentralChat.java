@@ -273,4 +273,22 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 			}
 		}
 	}
+
+	@Override
+	public void onConnect(MessageConnect connect) {
+		
+	}
+
+	@Override
+	public void onDisconnect(MessageDisconnect disconnect) {
+		
+	}
+	
+	@Override
+	public void setAlias(String username, String alias) {
+		if (alias == null)
+			ChatAPI.removeAlias(username);
+		else
+			ChatAPI.setAlias(username, alias);
+	}
 }
