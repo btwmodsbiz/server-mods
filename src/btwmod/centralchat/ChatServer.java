@@ -150,7 +150,7 @@ public class ChatServer extends WebSocketServer {
 	
 	public boolean validateConn(WebSocket conn, ResourceConfig config) {
 		if (!isValidConfig(config)) {
-			conn.close(CloseFrame.NORMAL, "Invalid resource descriptor: " + conn.getResourceDescriptor());
+			conn.close(CloseFrame.NORMAL, CloseMessage.INVALID_CREDENTIALS.toString());
 			return false;
 		}
 		
