@@ -56,7 +56,7 @@ public class MessageConnect extends MessageUser {
 	}
 	
 	protected void toServer(ChatServer server) {
-		server.onConnectMessage(this);
+		server.addLoggedInUser(this.server, username);
 	}
 	
 	@Override

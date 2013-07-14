@@ -341,23 +341,28 @@ public class ChatServer extends WebSocketServer {
 		return false;
 	}
 
-	public void onConnectMessage(MessageConnect messageConnect) {
+	public void addLoggedInUser(String server, String username) {
+		addLoggedInUser(server, new String[] { username });
+	}
+
+	public void addLoggedInUser(String server, String[] usernames) {
 		synchronized (loggedInUsers) {
-			String key = messageConnect.server;
+			String key = server;
 			Map<String, String> serverList = loggedInUsers.get(key);
 			if (serverList == null)
 				loggedInUsers.put(key, serverList = new HashMap<String, String>());
 			
-			serverList.put(messageConnect.username.toLowerCase(), messageConnect.username);
+			for (String username : usernames)
+				serverList.put(username.toLowerCase(), username);
 		}
 	}
 
-	public void onDisconnectMessage(MessageDisconnect messageDisconnect) {
+	public void removeLoggedInUser(String server, String username) {
 		synchronized (loggedInUsers) {
-			String key = messageDisconnect.server;
+			String key = server;
 			Map<String, String> serverList = loggedInUsers.get(key);
 			if (serverList != null)
-				serverList.remove(messageDisconnect.username.toLowerCase());
+				serverList.remove(username.toLowerCase());
 		}
 	}
 	
