@@ -255,6 +255,16 @@ public class ChatServer extends WebSocketServer {
 		}
 	}
 	
+	public void disconnectSameClient(ResourceConfig config) {
+		Collection<WebSocket> connections = this.connections();
+		synchronized (connections) {
+			for (WebSocket connection : connections) {
+				if (config.isSameClient(ResourceConfig.parse(connection.getResourceDescriptor())))
+					connection.close(CloseFrame.NORMAL, CloseMessage.LOGIN_OTHER_LOCATION.toString());
+			}
+		}
+	}
+	
 	public void attachShutDownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(new ServerShutdownHook(this), "ShutdownHook Thread"));
 	}

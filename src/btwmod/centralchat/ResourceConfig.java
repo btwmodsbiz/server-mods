@@ -20,4 +20,15 @@ public class ResourceConfig {
 			pathParts.length >= 1 ? pathParts[1] : null,
 			pathParts.length >= 1 ? pathParts[2] : null);
 	}
+	
+	public boolean isSameClient(String resourceDescriptor) {
+		return isSameClient(ResourceConfig.parse(resourceDescriptor));
+	}
+	
+	public boolean isSameClient(ResourceConfig config) {
+		if (config == null)
+			return false;
+		
+		return clientType == config.clientType && id.equalsIgnoreCase(config.id);
+	}
 }
