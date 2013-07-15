@@ -32,12 +32,12 @@ public class ServerController implements IServer {
 		}
 	}
 	
-	protected final ChatServer wsServer;
+	protected final WSServer wsServer;
 	protected final Settings data;
 	protected final Map<String, Map<String, String>> loggedInUsers = new HashMap<String, Map<String, String>>();
 	
 	public ServerController(File dataFile, InetSocketAddress address) throws IOException {
-		wsServer = new ChatServer(this, address);
+		wsServer = new WSServer(this, address);
 		this.data = loadSettings(dataFile);
 	}
 	
@@ -281,9 +281,9 @@ public class ServerController implements IServer {
 	}
 	
 	protected class ServerShutdownHook implements Runnable {
-		private final ChatServer server;
+		private final WSServer server;
 
-		public ServerShutdownHook(ChatServer server) {
+		public ServerShutdownHook(WSServer server) {
 			this.server = server;
 		}
 

@@ -31,4 +31,9 @@ public class ResourceConfig {
 		
 		return clientType == config.clientType && id.equalsIgnoreCase(config.id);
 	}
+
+	@Override
+	public String toString() {
+		return "ResourceConfig [clientType=" + clientType + ", id=" + id + ", key=" + key + "]";
+	}
 }

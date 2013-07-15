@@ -10,37 +10,37 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-public class ChatServer extends WebSocketServer {
+public class WSServer extends WebSocketServer {
 	
 	//public static final String PROTOCOL_NAME = "btw-json";
 	
 	private final IServer serverController;
 
-	public ChatServer(IServer serverController) throws IOException {
+	public WSServer(IServer serverController) throws IOException {
 		super();
 		this.serverController = serverController;
 		init();
 	}
 
-	public ChatServer(IServer serverController, InetSocketAddress address, int decodercount, List<Draft> drafts) {
+	public WSServer(IServer serverController, InetSocketAddress address, int decodercount, List<Draft> drafts) {
 		super(address, decodercount, drafts);
 		this.serverController = serverController;
 		init();
 	}
 
-	public ChatServer(IServer serverController, InetSocketAddress address, int decoders) {
+	public WSServer(IServer serverController, InetSocketAddress address, int decoders) {
 		super(address, decoders);
 		this.serverController = serverController;
 		init();
 	}
 
-	public ChatServer(IServer serverController, InetSocketAddress address, List<Draft> drafts) {
+	public WSServer(IServer serverController, InetSocketAddress address, List<Draft> drafts) {
 		super(address, drafts);
 		this.serverController = serverController;
 		init();
 	}
 
-	public ChatServer(IServer serverController, InetSocketAddress address) {
+	public WSServer(IServer serverController, InetSocketAddress address) {
 		super(address);
 		this.serverController = serverController;
 		init();
