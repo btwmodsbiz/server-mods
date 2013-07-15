@@ -62,12 +62,19 @@ public class WSServer extends WebSocketServer {
 		
 		ResourceConfig config = ResourceConfig.parse(conn.getResourceDescriptor());
 		if (validateConn(conn, config)) {
-			serverController.disconnectSameClient(conn, config);
 			
-			if (config.clientType == ClientType.USER)
-				new MessageConnect(config.id, null).handleAsServer(serverController, conn, config);
+			// More than one server key cannot be used at the same time.
+			if (config.clientType == ClientType.SERVER && serverController.hasConnectedClient(config)) {
+				conn.close(CloseFrame.NORMAL, CloseMessage.ALREADY_CONNECTED.toString());
+			}
 			
-			conn.send(serverController.getLoggedInUserList().toJson().toString());
+			else {
+				if (config.clientType == ClientType.USER)
+					new MessageConnect(config.id, null).handleAsServer(serverController, conn, config);
+				
+				// Sent the client a list of connected users.
+				conn.send(serverController.getLoggedInUserList().toJson().toString());
+			}
 		}
 	}
 	
