@@ -57,7 +57,9 @@ public class ServerController implements IServer {
 	@Override
 	public boolean saveSettings() {
 		try {
-			data.saveSettings();
+			synchronized (data) {
+				data.saveSettings();
+			}
 			return true;
 			
 		} catch (IOException e) {
@@ -70,7 +72,9 @@ public class ServerController implements IServer {
 
 	@Override
 	public void addActualUsername(String username) {
-		data.set("ActualUsernames", username, username);
+		synchronized (data) {
+			data.set("ActualUsernames", username, username);
+		}
 	}
 
 	@Override
@@ -80,37 +84,49 @@ public class ServerController implements IServer {
 	
 	@Override
 	public String getActualUsername(String username, String defaultValue) {
-		String actualUsername = data.get("ActualUsernames", username);
-		return actualUsername == null ? defaultValue : actualUsername;
+		synchronized (data) {
+			String actualUsername = data.get("ActualUsernames", username);
+			return actualUsername == null ? defaultValue : actualUsername;
+		}
 	}
 	
 	@Override
 	public void addUserKey(String id, String key) {
-		data.set("UserKeys", id, key);
+		synchronized (data) {
+			data.set("UserKeys", id, key);
+		}
 	}
 	
 	@Override
 	public void removeUserKey(String id) {
-		data.removeKey("UserKeys", id);
+		synchronized (data) {
+			data.removeKey("UserKeys", id);
+		}
 	}
 	
 	@Override
 	public boolean validateUserKey(String id, String key) {
 		if (id == null || key == null)
 			return false;
-		
-		String storedKey = data.get("UserKeys", id);
-		return key.equals(storedKey);
+
+		synchronized (data) {
+			String storedKey = data.get("UserKeys", id);
+			return key.equals(storedKey);
+		}
 	}
 	
 	@Override
 	public void addServerKey(String id, String key) {
-		data.set("ServerKeys", id, key);
+		synchronized (data) {
+			data.set("ServerKeys", id, key);
+		}
 	}
 	
 	@Override
 	public void removeServerKey(String id) {
-		data.removeKey("ServerKeys", id);
+		synchronized (data) {
+			data.removeKey("ServerKeys", id);
+		}
 	}
 	
 	@Override
@@ -118,8 +134,10 @@ public class ServerController implements IServer {
 		if (id == null || key == null)
 			return false;
 
-		String storedKey = data.get("ServerKeys", id);
-		return key.equals(storedKey);
+		synchronized (data) {
+			String storedKey = data.get("ServerKeys", id);
+			return key.equals(storedKey);
+		}
 	}
 
 	@Override
@@ -186,7 +204,9 @@ public class ServerController implements IServer {
 
 	@Override
 	public String getChatColor(String username) {
-		return data.get("ChatColors", username);
+		synchronized (data) {
+			return data.get("ChatColors", username);
+		}
 	}
 
 	@Override
@@ -194,33 +214,39 @@ public class ServerController implements IServer {
 		ChatColors chatColor = ChatColors.get(color);
 		if (color != null && chatColor == null)
 			return false;
-		
-		if (color == null || chatColor.isDefault)
-			data.removeKey("ChatColors", username);
-		else
-			data.set("ChatColors", username, color);
+
+		synchronized (data) {
+			if (color == null || chatColor.isDefault)
+				data.removeKey("ChatColors", username);
+			else
+				data.set("ChatColors", username, color);
+		}
 		
 		return true;
 	}
 
 	@Override
 	public String getChatAlias(String username) {
-		return data.get("ChatAliases", username);
+		synchronized (data) {
+			return data.get("ChatAliases", username);
+		}
 	}
 
 	@Override
 	public boolean setChatAlias(String username, String alias) {
-		if (alias == null) {
-			data.removeKey("ChatAliases", username);
-			return true;
-		}
-		else {
-			alias = alias.trim();
-			if (alias.length() < 1 || alias.length() > 16)
-				return false;
-			
-			data.set("ChatAliases", username, alias);
-			return true;
+		synchronized (data) {
+			if (alias == null) {
+				data.removeKey("ChatAliases", username);
+				return true;
+			}
+			else {
+				alias = alias.trim();
+				if (alias.length() < 1 || alias.length() > 16)
+					return false;
+				
+				data.set("ChatAliases", username, alias);
+				return true;
+			}
 		}
 	}
 
