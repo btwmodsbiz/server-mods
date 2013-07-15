@@ -302,6 +302,19 @@ public class ServerController implements IServer {
 		}
 	}
 	
+	@Override
+	public boolean hasConnectedClient(ResourceConfig config) {
+		Collection<WebSocket> connections = wsServer.connections();
+		synchronized (connections) {
+			for (WebSocket connection : connections) {
+				if (config.isSameClient(ResourceConfig.parse(connection.getResourceDescriptor())))
+					return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	protected void attachShutDownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(new ServerShutdownHook(wsServer), "ShutdownHook Thread"));
 	}

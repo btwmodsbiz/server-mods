@@ -35,5 +35,6 @@ public interface IServer {
 	
 	public MessageUserList getLoggedInUserList();
 	
+	public boolean hasConnectedClient(ResourceConfig config);
 	public void disconnectSameClient(WebSocket conn, ResourceConfig config);
 }
