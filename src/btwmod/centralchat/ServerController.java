@@ -279,7 +279,7 @@ public class ServerController implements IServer {
 	}
 	
 	@Override
-	public MessageUserList getUserList() {
+	public MessageUserList getLoggedInUserList() {
 		synchronized (loggedInUsers) {
 			List<MessageUserList.MessageUserEntry> messageList = new ArrayList<MessageUserList.MessageUserEntry>();
 			for (Entry<String, Map<String, String>> serverList : loggedInUsers.entrySet()) {

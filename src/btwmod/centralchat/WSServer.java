@@ -67,7 +67,7 @@ public class WSServer extends WebSocketServer {
 			if (config.clientType == ClientType.USER)
 				new MessageConnect(config.id, null).handleAsServer(serverController, conn, config);
 			
-			conn.send(serverController.getUserList().toJson().toString());
+			conn.send(serverController.getLoggedInUserList().toJson().toString());
 		}
 	}
 	

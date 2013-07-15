@@ -33,7 +33,7 @@ public interface IServer {
 	public void addLoggedInUser(String server, String[] usernames);
 	public void removeLoggedInUser(String server, String username);
 	
-	public MessageUserList getUserList();
+	public MessageUserList getLoggedInUserList();
 	
 	public void disconnectSameClient(WebSocket conn, ResourceConfig config);
 }
