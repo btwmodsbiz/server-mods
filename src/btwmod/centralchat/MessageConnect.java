@@ -13,23 +13,23 @@ public class MessageConnect extends MessageUser {
 	
 	public final String TYPE = "connect";
 	
-	public final String server;
+	public final String gateway;
 
 	public MessageConnect(JsonObject json) {
 		super(json);
 		
-		JsonElement server = json.get("server");
-		this.server = server != null && server.isJsonPrimitive() ? server.getAsString() : null;
+		JsonElement gateway = json.get("gateway");
+		this.gateway = gateway != null && gateway.isJsonPrimitive() ? gateway.getAsString() : null;
 	}
 
-	public MessageConnect(String username, String server, String color, String alias) {
+	public MessageConnect(String username, String gateway, String color, String alias) {
 		super(username, color, alias);
-		this.server = server;
+		this.gateway = gateway;
 	}
 
-	public MessageConnect(String username, String server) {
+	public MessageConnect(String username, String gateway) {
 		super(username);
-		this.server = server;
+		this.gateway = gateway;
 	}
 
 	@Override
@@ -41,10 +41,10 @@ public class MessageConnect extends MessageUser {
 	public JsonObject toJson() {
 		JsonObject obj = super.toJson();
 		
-		if (this.server == null)
-			obj.remove("server");
+		if (this.gateway == null)
+			obj.remove("gateway");
 		else
-			obj.addProperty("server", this.server);
+			obj.addProperty("gateway", this.gateway);
 		
 		return obj;
 	}
@@ -56,22 +56,22 @@ public class MessageConnect extends MessageUser {
 	}
 	
 	protected void toServer(IServer server) {
-		server.addLoggedInUser(this.server, username);
+		server.addLoggedInUser(this.gateway, username);
 	}
 	
 	@Override
-	public void handleAsClient(IMessageClient messageClient) {
+	public void handleAsGateway(IGateway gateway) {
 		MinecraftServer.getServer().getLogAgent().func_98233_a(getLoggedMessage());
 		String message = getFormattedMessage();
 		ChatAPI.sendChatToAllPlayers(message);
-		messageClient.addRestorableChat(message);
+		gateway.addRestorableChat(message);
 	}
 	
 	protected String getFormattedMessage() {
-		return Util.COLOR_YELLOW + getDisplayUsername(false) + " joined chat" + (server == null ? "" : " on " + server) + ".";
+		return Util.COLOR_YELLOW + getDisplayUsername(false) + " joined chat" + (gateway == null ? "" : " on " + gateway) + ".";
 	}
 	
 	protected String getLoggedMessage() {
-		return username + " joined chat" + (server == null ? "" : " on " + server) + ".";
+		return username + " joined chat" + (gateway == null ? "" : " on " + gateway) + ".";
 	}
 }

@@ -27,9 +27,9 @@ import btwmods.server.ITickListener;
 import btwmods.server.TickEvent;
 import btwmods.util.ValuePair;
 
-public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener, IMessageClient, IPlayerInstanceListener {
+public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener, IGateway, IPlayerInstanceListener {
 	
-	private volatile WSClient wSClient = null;
+	private volatile WSGateway wSGateway = null;
 	private volatile boolean doFailover = true;
 	
 	private String serverUri = null;
@@ -194,26 +194,26 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	
 	private class ConnectionWatcher implements Runnable {
 		
-		private final IMessageClient messageClient;
+		private final IGateway gateway;
 		
-		public ConnectionWatcher(IMessageClient messageClient) {
-			this.messageClient = messageClient;
+		public ConnectionWatcher(IGateway gateway) {
+			this.gateway = gateway;
 		}
 
 		@Override
 		public void run() {
 			while (!Thread.interrupted()) {
 				connectAttempts++;
-				wSClient = new WSClient(messageClient, uri);
+				wSGateway = new WSGateway(gateway, uri);
 				
 				try {
-					if (wSClient.connectBlocking()) {
+					if (wSGateway.connectBlocking()) {
 						doFailover = false;
 						connectAttempts = 0;
 						ModLoader.outputInfo("Connected to central chat server.");
 						ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Connected to central chat server.");
 						
-						wSClient.awaitClose();
+						wSGateway.awaitClose();
 						ModLoader.outputInfo("Disconnected from central chat server.");
 						ChatAPI.removeAllAliases();
 					}
@@ -237,10 +237,10 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	
 	private class QueueWatcher implements Runnable {
 		
-		private final IMessageClient messageClient;
+		private final IGateway gateway;
 		
-		public QueueWatcher(IMessageClient messageClient) {
-			this.messageClient = messageClient;
+		public QueueWatcher(IGateway gateway) {
+			this.gateway = gateway;
 		}
 
 		@Override
@@ -250,11 +250,11 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 					Message message = messageQueue.take();
 					
 					if (doFailover) {
-						message.handleAsClient(messageClient);
+						message.handleAsGateway(gateway);
 					}
 					else {
 						try {
-							wSClient.send(message.toJson().toString());
+							wSGateway.send(message.toJson().toString());
 						}
 						catch (Exception ex) {
 							messageQueue.addFirst(message);

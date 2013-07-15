@@ -12,7 +12,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
- * A list of users connected to the chat server.
+ * A list of users connected to the server.
  * Only sent from server to client when the client first connects.
  * 
  * @author amekkawi
@@ -57,14 +57,14 @@ public class MessageUserList extends Message {
 	}
 	
 	@Override
-	public void handleAsClient(IMessageClient messageClient) {
+	public void handleAsGateway(IGateway gateway) {
 		Map<String, String> aliasMap = new HashMap<String, String>();
 		for (MessageUserEntry entry : users)
 			aliasMap.put(entry.username.toLowerCase(), entry.alias);
 		
 		for (Entry<String, String> entry : aliasMap.entrySet())
 			if (entry.getValue() != null)
-				messageClient.setAlias(entry.getKey(), entry.getValue());
+				gateway.setAlias(entry.getKey(), entry.getValue());
 		
 		int len = aliasMap.size();
 		if (len > 0)
@@ -80,12 +80,12 @@ public class MessageUserList extends Message {
 			return TYPE;
 		}
 
-		public MessageUserEntry(String username, String server) {
-			super(username, server);
+		public MessageUserEntry(String username, String gateway) {
+			super(username, gateway);
 		}
 
-		public MessageUserEntry(String username, String server, String color, String alias) {
-			super(username, server, color, alias);
+		public MessageUserEntry(String username, String gateway, String color, String alias) {
+			super(username, gateway, color, alias);
 		}
 		
 		public MessageUserEntry(JsonObject json) {

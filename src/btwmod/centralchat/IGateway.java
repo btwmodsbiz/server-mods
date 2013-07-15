@@ -1,6 +1,6 @@
 package btwmod.centralchat;
 
-public interface IMessageClient {
+public interface IGateway {
 	public void addRestorableChat(String chat);
 	public void onConnect(MessageConnect connect);
 	public void onDisconnect(MessageDisconnect disconnect);

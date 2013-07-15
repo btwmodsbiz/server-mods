@@ -10,24 +10,24 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import btwmods.ModLoader;
 
-public class WSClient extends WebSocketClient {
+public class WSGateway extends WebSocketClient {
 
-	private final IMessageClient messageClient;
+	private final IGateway gateway;
 	private final CountDownLatch closeLatch = new CountDownLatch(1);
 
-	public WSClient(IMessageClient messageClient, URI serverUri, Draft draft, Map<String, String> headers, int connecttimeout) {
+	public WSGateway(IGateway gateway, URI serverUri, Draft draft, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, draft, headers, connecttimeout);
-		this.messageClient = messageClient;
+		this.gateway = gateway;
 	}
 
-	public WSClient(IMessageClient messageClient, URI serverUri, Draft draft) {
+	public WSGateway(IGateway gateway, URI serverUri, Draft draft) {
 		super(serverUri, draft);
-		this.messageClient = messageClient;
+		this.gateway = gateway;
 	}
 
-	public WSClient(IMessageClient messageClient, URI serverURI) {
+	public WSGateway(IGateway gateway, URI serverURI) {
 		super(serverURI);
-		this.messageClient = messageClient;
+		this.gateway = gateway;
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class WSClient extends WebSocketClient {
 			ModLoader.outputError("Invalid message received: " + rawMessage);
 		}
 		else {
-			message.handleAsClient(messageClient);
+			message.handleAsGateway(gateway);
 		}
 	}
 

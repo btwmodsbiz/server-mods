@@ -18,13 +18,13 @@ public class MessageDisconnect extends MessageConnect {
 		this.reason = reason != null && reason.isJsonPrimitive() ? reason.getAsString() : null;
 	}
 
-	public MessageDisconnect(String username, String server, String reason, String color, String alias) {
-		super(username, server, color, alias);
+	public MessageDisconnect(String username, String gateway, String reason, String color, String alias) {
+		super(username, gateway, color, alias);
 		this.reason = reason;
 	}
 
-	public MessageDisconnect(String username, String server, String reason) {
-		super(username, server);
+	public MessageDisconnect(String username, String gateway, String reason) {
+		super(username, gateway);
 		this.reason = reason;
 	}
 
@@ -47,16 +47,16 @@ public class MessageDisconnect extends MessageConnect {
 	
 	@Override
 	protected void toServer(IServer server) {
-		server.removeLoggedInUser(this.server, username);
+		server.removeLoggedInUser(this.gateway, username);
 	}
 	
 	@Override
 	protected String getFormattedMessage() {
-		return Util.COLOR_YELLOW + getDisplayUsername(false) + " left chat" + (server == null ? "" : " on " + server) + ".";
+		return Util.COLOR_YELLOW + getDisplayUsername(false) + " left chat" + (gateway == null ? "" : " on " + gateway) + ".";
 	}
 	
 	@Override
 	protected String getLoggedMessage() {
-		return username + " left chat" + (server == null ? "" : " on " + server) + ".";
+		return username + " left chat" + (gateway == null ? "" : " on " + gateway) + ".";
 	}
 }

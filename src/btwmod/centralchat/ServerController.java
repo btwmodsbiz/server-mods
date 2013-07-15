@@ -143,7 +143,7 @@ public class ServerController implements IServer {
 	@Override
 	public boolean isValidConfig(ResourceConfig config) {
 		return (config.clientType == ClientType.USER && validateUserKey(config.id, config.key))
-				|| (config.clientType == ClientType.SERVER && validateServerKey(config.id, config.key));
+				|| (config.clientType == ClientType.GATEWAY && validateServerKey(config.id, config.key));
 	}
 
 	@Override
@@ -168,7 +168,7 @@ public class ServerController implements IServer {
 		synchronized (connections) {
 			for (WebSocket connection : connections) {
 				ResourceConfig config = ResourceConfig.parse(connection.getResourceDescriptor());
-				if (config.clientType == ClientType.SERVER
+				if (config.clientType == ClientType.GATEWAY
 						|| (config.clientType == ClientType.USER && config.id.equalsIgnoreCase(username))) {
 					
 					try {
@@ -189,7 +189,7 @@ public class ServerController implements IServer {
 		synchronized (connections) {
 			for (WebSocket connection : connections) {
 				ResourceConfig config = ResourceConfig.parse(connection.getResourceDescriptor());
-				if (config.clientType == ClientType.SERVER) {
+				if (config.clientType == ClientType.GATEWAY) {
 					try {
 						connection.send(message);
 					}

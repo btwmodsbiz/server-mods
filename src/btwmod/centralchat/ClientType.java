@@ -2,7 +2,7 @@ package btwmod.centralchat;
 
 public enum ClientType {
 
-	SERVER("server"), USER("user");
+	GATEWAY("gateway"), USER("user");
 	
 	private final String asString;
 	

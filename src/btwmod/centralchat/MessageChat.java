@@ -39,10 +39,10 @@ public class MessageChat extends MessageUser {
 	}
 	
 	@Override
-	public void handleAsClient(IMessageClient messageClient) {
+	public void handleAsGateway(IGateway gateway) {
 		MinecraftServer.getServer().getLogAgent().func_98233_a(getLoggedMessage());
 		ChatAPI.sendChatToAllPlayers(username, getFormattedMessage());
-		messageClient.addRestorableChat(getFormattedMessage());
+		gateway.addRestorableChat(getFormattedMessage());
 	}
 	
 	protected String getFormattedMessage() {

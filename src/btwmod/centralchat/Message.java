@@ -17,13 +17,13 @@ public abstract class Message {
 	
 	@SuppressWarnings("static-method")
 	public boolean canSendMessage(ResourceConfig config) {
-		return config.clientType == ClientType.SERVER;
+		return config.clientType == ClientType.GATEWAY;
 	}
 	
 	public abstract void handleAsServer(IServer server, WebSocket conn, ResourceConfig config);
 	
 	@SuppressWarnings("unused")
-	public void handleAsClient(IMessageClient messageClient) {
+	public void handleAsGateway(IGateway gateway) {
 		
 	}
 	
