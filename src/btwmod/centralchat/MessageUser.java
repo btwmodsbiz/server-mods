@@ -64,7 +64,7 @@ public abstract class MessageUser extends Message {
 	}
 
 	@Override
-	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
+	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		JsonObject json = toJson();
 		
 		// Force user ID for those authenticated as users.

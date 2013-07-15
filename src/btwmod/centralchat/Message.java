@@ -20,7 +20,7 @@ public abstract class Message {
 		return config.clientType == ClientType.SERVER;
 	}
 	
-	public abstract void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config);
+	public abstract void handleAsServer(IServer server, WebSocket conn, ResourceConfig config);
 	
 	@SuppressWarnings("unused")
 	public void handleAsClient(IMessageClient messageClient) {

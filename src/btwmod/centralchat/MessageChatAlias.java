@@ -121,7 +121,7 @@ public class MessageChatAlias extends Message {
 	}
 
 	@Override
-	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
+	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		JsonObject json = toJson();
 		String username = this.username;
 		String oldAlias = server.getChatAlias(username);
@@ -130,7 +130,7 @@ public class MessageChatAlias extends Message {
 			if (server.setChatAlias(username, alias)) {
 				json.addProperty("success", true);
 				json.addProperty("oldAlias", oldAlias);
-				server.save();
+				server.saveSettings();
 			}
 			else {
 				json.addProperty("success", false);

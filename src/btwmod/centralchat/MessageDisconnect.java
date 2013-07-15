@@ -46,7 +46,7 @@ public class MessageDisconnect extends MessageConnect {
 	}
 	
 	@Override
-	protected void toServer(ChatServer server) {
+	protected void toServer(IServer server) {
 		server.removeLoggedInUser(this.server, username);
 	}
 	

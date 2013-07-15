@@ -132,7 +132,7 @@ public class MessageChatColor extends Message {
 	}
 
 	@Override
-	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
+	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		JsonObject json = toJson();
 		String username = this.username;
 		String oldColor = server.getChatColor(username);
@@ -145,7 +145,7 @@ public class MessageChatColor extends Message {
 			if (server.setChatColor(username, color)) {
 				json.addProperty("success", true);
 				json.addProperty("oldColor", oldColor);
-				server.save();
+				server.saveSettings();
 			}
 			else {
 				json.addProperty("success", false);

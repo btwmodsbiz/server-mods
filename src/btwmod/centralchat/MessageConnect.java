@@ -50,12 +50,12 @@ public class MessageConnect extends MessageUser {
 	}
 	
 	@Override
-	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
+	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		super.handleAsServer(server, conn, config);
 		toServer(server);
 	}
 	
-	protected void toServer(ChatServer server) {
+	protected void toServer(IServer server) {
 		server.addLoggedInUser(this.server, username);
 	}
 	

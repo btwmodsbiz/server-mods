@@ -51,7 +51,7 @@ public class MessageAuth extends Message {
 	}
 
 	@Override
-	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
+	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		if ("addKey".equalsIgnoreCase(action) && key != null) {
 			if (clientType == ClientType.USER) {
 				server.addUserKey(id, key);

@@ -52,7 +52,7 @@ public class MessageUserList extends Message {
 	}
 
 	@Override
-	public void handleAsServer(ChatServer server, WebSocket conn, ResourceConfig config) {
+	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		// Does not handle this kind of message.
 	}
 	
