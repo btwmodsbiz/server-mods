@@ -143,6 +143,6 @@ public class MessageChatAlias extends Message {
 		
 		json.addProperty("alias", server.getChatAlias(username));
 		
-		server.sendToAllServers(json.toString());
+		server.sendToAllGateways(json.toString());
 	}
 }

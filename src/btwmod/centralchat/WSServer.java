@@ -63,7 +63,7 @@ public class WSServer extends WebSocketServer {
 		ResourceConfig config = ResourceConfig.parse(conn.getResourceDescriptor());
 		if (validateConn(conn, config)) {
 			
-			// More than one server key cannot be used at the same time.
+			// More than one gateway key cannot be used at the same time.
 			if (config.clientType == ClientType.GATEWAY && serverController.hasConnectedClient(config)) {
 				conn.close(CloseFrame.NORMAL, CloseMessage.ALREADY_CONNECTED.toString());
 			}

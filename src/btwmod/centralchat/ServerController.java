@@ -116,26 +116,26 @@ public class ServerController implements IServer {
 	}
 	
 	@Override
-	public void addServerKey(String id, String key) {
+	public void addGatewayKey(String id, String key) {
 		synchronized (data) {
-			data.set("ServerKeys", id, key);
+			data.set("GatewayKeys", id, key);
 		}
 	}
 	
 	@Override
-	public void removeServerKey(String id) {
+	public void removeGatewayKey(String id) {
 		synchronized (data) {
-			data.removeKey("ServerKeys", id);
+			data.removeKey("GatewayKeys", id);
 		}
 	}
 	
 	@Override
-	public boolean validateServerKey(String id, String key) {
+	public boolean validateGatewayKey(String id, String key) {
 		if (id == null || key == null)
 			return false;
 
 		synchronized (data) {
-			String storedKey = data.get("ServerKeys", id);
+			String storedKey = data.get("GatewayKeys", id);
 			return key.equals(storedKey);
 		}
 	}
@@ -143,7 +143,7 @@ public class ServerController implements IServer {
 	@Override
 	public boolean isValidConfig(ResourceConfig config) {
 		return (config.clientType == ClientType.USER && validateUserKey(config.id, config.key))
-				|| (config.clientType == ClientType.GATEWAY && validateServerKey(config.id, config.key));
+				|| (config.clientType == ClientType.GATEWAY && validateGatewayKey(config.id, config.key));
 	}
 
 	@Override
@@ -184,7 +184,7 @@ public class ServerController implements IServer {
 	}
 	
 	@Override
-	public void sendToAllServers(String message) {
+	public void sendToAllGateways(String message) {
 		Collection<WebSocket> connections = wsServer.connections();
 		synchronized (connections) {
 			for (WebSocket connection : connections) {

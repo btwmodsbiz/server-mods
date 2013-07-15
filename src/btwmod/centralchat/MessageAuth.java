@@ -58,7 +58,7 @@ public class MessageAuth extends Message {
 				server.addActualUsername(id);
 			}
 			else if (clientType == ClientType.GATEWAY) {
-				server.addServerKey(id, key);
+				server.addGatewayKey(id, key);
 			}
 		}
 		if ("removeKey".equalsIgnoreCase(action)) {
@@ -66,7 +66,7 @@ public class MessageAuth extends Message {
 				server.removeUserKey(id);
 			}
 			else if (clientType == ClientType.GATEWAY) {
-				server.removeServerKey(id);
+				server.removeGatewayKey(id);
 			}
 		}
 	}
