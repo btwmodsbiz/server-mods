@@ -29,7 +29,7 @@ import btwmods.util.ValuePair;
 
 public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener, IMessageClient, IPlayerInstanceListener {
 	
-	private volatile ChatClient chatClient = null;
+	private volatile WSClient wSClient = null;
 	private volatile boolean doFailover = true;
 	
 	private String serverUri = null;
@@ -204,16 +204,16 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 		public void run() {
 			while (!Thread.interrupted()) {
 				connectAttempts++;
-				chatClient = new ChatClient(messageClient, uri);
+				wSClient = new WSClient(messageClient, uri);
 				
 				try {
-					if (chatClient.connectBlocking()) {
+					if (wSClient.connectBlocking()) {
 						doFailover = false;
 						connectAttempts = 0;
 						ModLoader.outputInfo("Connected to central chat server.");
 						ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Connected to central chat server.");
 						
-						chatClient.awaitClose();
+						wSClient.awaitClose();
 						ModLoader.outputInfo("Disconnected from central chat server.");
 						ChatAPI.removeAllAliases();
 					}
@@ -254,7 +254,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 					}
 					else {
 						try {
-							chatClient.send(message.toJson().toString());
+							wSClient.send(message.toJson().toString());
 						}
 						catch (Exception ex) {
 							messageQueue.addFirst(message);

@@ -10,22 +10,22 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import btwmods.ModLoader;
 
-public class ChatClient extends WebSocketClient {
+public class WSClient extends WebSocketClient {
 
 	private final IMessageClient messageClient;
 	private final CountDownLatch closeLatch = new CountDownLatch(1);
 
-	public ChatClient(IMessageClient messageClient, URI serverUri, Draft draft, Map<String, String> headers, int connecttimeout) {
+	public WSClient(IMessageClient messageClient, URI serverUri, Draft draft, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, draft, headers, connecttimeout);
 		this.messageClient = messageClient;
 	}
 
-	public ChatClient(IMessageClient messageClient, URI serverUri, Draft draft) {
+	public WSClient(IMessageClient messageClient, URI serverUri, Draft draft) {
 		super(serverUri, draft);
 		this.messageClient = messageClient;
 	}
 
-	public ChatClient(IMessageClient messageClient, URI serverURI) {
+	public WSClient(IMessageClient messageClient, URI serverURI) {
 		super(serverURI);
 		this.messageClient = messageClient;
 	}
