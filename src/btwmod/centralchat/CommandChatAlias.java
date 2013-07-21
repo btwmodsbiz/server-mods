@@ -23,13 +23,13 @@ public class CommandChatAlias extends CommandBaseExtended {
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
 		if (args.length == 3 && isStringMatch(args, 0, "set")) {
-			mod.queueMessage(new MessageChatAlias("set", args[1], args[2]));
+			mod.queueMessage(MessageChatAlias.buildSet(args[1], args[2], sender.getCommandSenderName()));
 		}
 		else if (args.length == 2 && isStringMatch(args, 0, "remove")) {
-			mod.queueMessage(new MessageChatAlias("set", args[1]));
+			mod.queueMessage(MessageChatAlias.buildSet(args[1], null, sender.getCommandSenderName()));
 		}
 		else if (args.length == 1) {
-			mod.queueMessage(new MessageChatAlias("get", args[0]));
+			mod.queueMessage(MessageChatAlias.buildGet(args[0], sender.getCommandSenderName()));
 		}
 		else {
 			throw new WrongUsageException(getCommandUsage(sender), new Object[0]);
