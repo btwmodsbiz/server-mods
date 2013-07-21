@@ -15,6 +15,11 @@ public abstract class Message {
 		return obj;
 	}
 	
+	@SuppressWarnings("unused")
+	public JsonObject toJsonCleaned(IServer server, ResourceConfig config) {
+		return toJson();
+	}
+	
 	@SuppressWarnings("static-method")
 	public boolean canSendMessage(ResourceConfig config) {
 		return config.clientType == ClientType.GATEWAY;
