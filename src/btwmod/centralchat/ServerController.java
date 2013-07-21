@@ -299,30 +299,28 @@ public class ServerController implements IServer {
 	}
 
 	@Override
-	public void addLoggedInUser(String server, String username) {
-		addLoggedInUser(server, new String[] { username });
+	public void addLoggedInUser(String gateway, String username) {
+		addLoggedInUser(gateway, new String[] { username });
 	}
 
 	@Override
-	public void addLoggedInUser(String server, String[] usernames) {
+	public void addLoggedInUser(String gateway, String[] usernames) {
 		synchronized (loggedInUsers) {
-			String key = server;
-			Map<String, String> serverList = loggedInUsers.get(key);
-			if (serverList == null)
-				loggedInUsers.put(key, serverList = new HashMap<String, String>());
+			Map<String, String> gatewayList = loggedInUsers.get(gateway);
+			if (gatewayList == null)
+				loggedInUsers.put(gateway, gatewayList = new HashMap<String, String>());
 			
 			for (String username : usernames)
-				serverList.put(username.toLowerCase(), username);
+				gatewayList.put(username.toLowerCase(), username);
 		}
 	}
 
 	@Override
-	public void removeLoggedInUser(String server, String username) {
+	public void removeLoggedInUser(String gateway, String username) {
 		synchronized (loggedInUsers) {
-			String key = server;
-			Map<String, String> serverList = loggedInUsers.get(key);
-			if (serverList != null)
-				serverList.remove(username.toLowerCase());
+			Map<String, String> gatewayList = loggedInUsers.get(gateway);
+			if (gatewayList != null)
+				gatewayList.remove(username.toLowerCase());
 		}
 	}
 
