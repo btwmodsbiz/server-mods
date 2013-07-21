@@ -42,6 +42,6 @@ public interface IServer {
 	public User[] getLoggedInUserList();
 	public User[] getLoggedInUserList(String gateway);
 	
-	public boolean hasConnectedClient(ResourceConfig config);
+	public boolean hasConnectedClient(WebSocket conn, ResourceConfig config);
 	public void disconnectSameClient(WebSocket conn, ResourceConfig config);
 }

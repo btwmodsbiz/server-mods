@@ -371,11 +371,11 @@ public class ServerController implements IServer {
 	}
 	
 	@Override
-	public boolean hasConnectedClient(ResourceConfig config) {
+	public boolean hasConnectedClient(WebSocket conn, ResourceConfig config) {
 		Collection<WebSocket> connections = wsServer.connections();
 		synchronized (connections) {
 			for (WebSocket connection : connections) {
-				if (config.isSameClient(ResourceConfig.parse(connection.getResourceDescriptor())))
+				if (conn != connection && config.isSameClient(ResourceConfig.parse(connection.getResourceDescriptor())))
 					return true;
 			}
 		}
