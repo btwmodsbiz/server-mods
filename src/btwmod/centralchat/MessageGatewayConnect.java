@@ -39,11 +39,13 @@ public class MessageGatewayConnect extends Message {
 		JsonObject obj = super.toJson();
 		obj.addProperty("gateway", gateway);
 
-		JsonArray userArray = new JsonArray();
-		for (MessageUserInfo user : users) {
-			userArray.add(user.toJson());
+		if (users != null) {
+			JsonArray userArray = new JsonArray();
+			for (MessageUserInfo user : users) {
+				userArray.add(user.toJson());
+			}
+			obj.add("users", userArray);
 		}
-		obj.add("users", userArray);
 		
 		return obj;
 	}
@@ -74,7 +76,7 @@ public class MessageGatewayConnect extends Message {
 	@Override
 	public void handleAsGateway(IGateway gateway) {
 		if (!gateway.getId().equalsIgnoreCase(this.gateway)) {
-			int len = users.length;
+			int len = users == null ? 0 : users.length;
 			ChatAPI.sendChatToAllPlayers("Server " + this.gateway + " connected" + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " available for chat" : "") + ".");
 		}
 	}

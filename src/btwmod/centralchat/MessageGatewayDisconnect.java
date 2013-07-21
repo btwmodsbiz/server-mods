@@ -37,7 +37,7 @@ public class MessageGatewayDisconnect extends MessageGatewayConnect {
 	@Override
 	public void handleAsGateway(IGateway gateway) {
 		if (!gateway.getId().equalsIgnoreCase(this.gateway)) {
-			int len = users.length;
+			int len = users == null ? 0 : users.length;
 			ChatAPI.sendChatToAllPlayers("Server " + this.gateway + " disconnected" + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " no longer available for chat" : "") + ".");
 		}
 	}
