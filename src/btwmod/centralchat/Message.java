@@ -37,26 +37,38 @@ public abstract class Message {
 			JsonObject messageJson = new JsonParser().parse(message).getAsJsonObject();
 			String type = messageJson.get("type").getAsString();
 			
-			if (MessageChat.TYPE.equalsIgnoreCase(type))
+			if (MessageAuth.TYPE.equalsIgnoreCase(type))
+				return new MessageAuth(messageJson);
+			
+			else if (MessageChat.TYPE.equalsIgnoreCase(type))
 				return new MessageChat(messageJson);
 			
-			else if (MessageEmote.TYPE.equalsIgnoreCase(type))
-				return new MessageEmote(messageJson);
-			
-			else if (MessageConnect.TYPE.equalsIgnoreCase(type))
-				return new MessageConnect(messageJson);
-			
-			else if (MessageDisconnect.TYPE.equalsIgnoreCase(type))
-				return new MessageDisconnect(messageJson);
-			
-			else if (MessageDeath.TYPE.equalsIgnoreCase(type))
-				return new MessageDeath(messageJson);
+			else if (MessageChatAlias.TYPE.equalsIgnoreCase(type))
+				return new MessageChatAlias(messageJson);
 			
 			else if (MessageChatColor.TYPE.equalsIgnoreCase(type))
 				return new MessageChatColor(messageJson);
 			
-			else if (MessageChatAlias.TYPE.equalsIgnoreCase(type))
-				return new MessageChatAlias(messageJson);
+			else if (MessageConnect.TYPE.equalsIgnoreCase(type))
+				return new MessageConnect(messageJson);
+			
+			else if (MessageDeath.TYPE.equalsIgnoreCase(type))
+				return new MessageDeath(messageJson);
+			
+			else if (MessageDisconnect.TYPE.equalsIgnoreCase(type))
+				return new MessageDisconnect(messageJson);
+			
+			else if (MessageEmote.TYPE.equalsIgnoreCase(type))
+				return new MessageEmote(messageJson);
+			
+			else if (MessageGatewayConnect.TYPE.equalsIgnoreCase(type))
+				return new MessageGatewayConnect(messageJson);
+			
+			else if (MessageGatewayDisconnect.TYPE.equalsIgnoreCase(type))
+				return new MessageGatewayDisconnect(messageJson);
+			
+			else if (MessageUserInfo.TYPE.equalsIgnoreCase(type))
+				return new MessageUserInfo(messageJson);
 			
 			else if (MessageUserInfoList.TYPE.equalsIgnoreCase(type))
 				return new MessageUserInfoList(messageJson);

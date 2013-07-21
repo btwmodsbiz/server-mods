@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 
 public class MessageAuth extends Message {
 	
-	public final String TYPE = "auth";
+	public static final String TYPE = "auth";
 	
 	public final String action;
 	public final ClientType clientType;
