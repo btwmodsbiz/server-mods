@@ -23,6 +23,16 @@ public class MessageDeath extends MessageChat {
 		return TYPE;
 	}
 	
+	@Override
+	public JsonObject toJsonCleaned(IServer server, ResourceConfig config) {
+		JsonObject json = super.toJsonCleaned(server, config);
+		
+		if (message != null)
+			json.addProperty("message", server.replaceUsernamesWithAliases(message));
+		
+		return json;
+	}
+	
 	protected String getFormattedMessage() {
 		return message;
 	}
