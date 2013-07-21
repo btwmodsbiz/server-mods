@@ -17,8 +17,8 @@ public class ResourceConfig {
 		
 		return new ResourceConfig(
 			pathParts.length >= 1 ? ClientType.get(pathParts[0]) : null,
-			pathParts.length >= 1 ? pathParts[1] : null,
-			pathParts.length >= 1 ? pathParts[2] : null);
+			pathParts.length >= 2 ? pathParts[1] : null,
+			pathParts.length >= 3 ? pathParts[2] : null);
 	}
 	
 	public boolean isSameClient(String resourceDescriptor) {
