@@ -12,6 +12,22 @@ import com.google.gson.JsonObject;
 
 public class MessageChatAlias extends Message {
 	
+	public static MessageChatAlias buildGet(String username, String requestedBy) {
+		return new MessageChatAlias("get", username, null, null, null, requestedBy);
+	}
+	
+	public static MessageChatAlias buildSet(String username, String alias, String requestedBy) {
+		return new MessageChatAlias("set", username, alias, null, null, requestedBy);
+	}
+	
+	public static MessageChatAlias buildSuccess(String username, String alias, String oldAlias) {
+		return new MessageChatAlias("set", username, alias, Boolean.TRUE, oldAlias, null);
+	}
+	
+	public static MessageChatAlias buildFail(String username, String alias, String requestedBy) {
+		return new MessageChatAlias("set", username, alias, Boolean.FALSE, null, requestedBy);
+	}
+	
 	public final static String TYPE = "chatalias";
 
 	public final String action;
@@ -21,34 +37,32 @@ public class MessageChatAlias extends Message {
 	// Only for responses
 	public final Boolean success;
 	public final String oldAlias;
+	public final String requestedBy;
 	
-	public MessageChatAlias(String action, String username) {
-		this(action, username, null);
-	}
-	
-	public MessageChatAlias(String action, String username, String alias) {
-		this(action, username, alias, null, null);
-	}
-	
-	public MessageChatAlias(String action, String username, String alias, Boolean success, String oldAlias) {
+	protected MessageChatAlias(String action, String username, String alias, Boolean success, String oldAlias, String requestedBy) {
 		this.action = action;
 		this.username = username;
 		this.alias = alias;
 		this.success = success;
 		this.oldAlias = oldAlias;
+		this.requestedBy = requestedBy;
 	}
 	
 	public MessageChatAlias(JsonObject json) {
-		JsonElement alias = json.get("alias");
-		JsonElement success = json.get("success");
-		JsonElement oldAlias = json.get("oldAlias");
-		
 		this.action = json.get("action").getAsString();
 		this.username = json.get("username").getAsString();
+		
+		JsonElement alias = json.get("alias");
 		this.alias = alias == null || !alias.isJsonPrimitive() ? null : alias.getAsString();
 		
+		JsonElement success = json.get("success");
 		this.success = success == null || !success.isJsonPrimitive() ? null : Boolean.valueOf(success.getAsBoolean());
+
+		JsonElement oldAlias = json.get("oldAlias");
 		this.oldAlias = oldAlias == null || !oldAlias.isJsonPrimitive() ? null : oldAlias.getAsString();
+
+		JsonElement requestedBy = json.get("requestedBy");
+		this.requestedBy = requestedBy == null || !requestedBy.isJsonPrimitive() ? null : requestedBy.getAsString();
 	}
 
 	@Override
@@ -91,9 +105,19 @@ public class MessageChatAlias extends Message {
 	public void handleAsGateway(IGateway gateway) {
 		String message = getFormattedMessage();
 		if (message != null) {
-			MinecraftServer.getServer().getLogAgent().func_98233_a("[" + message.replace(Util.COLOR_YELLOW, "").replace(Util.COLOR_WHITE, "") + "]");
-			ChatAPI.sendChatToAllAdmins(message);
-			gateway.setAlias(username, alias);
+			if ("set".equalsIgnoreCase(action)) {
+				if (success == Boolean.TRUE) {
+					MinecraftServer.getServer().getLogAgent().func_98233_a("[" + message.replace(Util.COLOR_YELLOW, "").replace(Util.COLOR_WHITE, "") + "]");
+					ChatAPI.sendChatToAllPlayers(message);
+				}
+				else
+					ChatAPI.sendChatToAllAdmins(message);
+				
+				gateway.setAlias(username, alias);
+			}
+			else if ("get".equalsIgnoreCase(action)) {
+				
+			}
 		}
 	}
 	
