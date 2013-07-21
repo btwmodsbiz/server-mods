@@ -13,6 +13,12 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import net.minecraft.src.EntityPlayer;
 
+import btwmod.centralchat.message.Message;
+import btwmod.centralchat.message.MessageChat;
+import btwmod.centralchat.message.MessageConnect;
+import btwmod.centralchat.message.MessageDeath;
+import btwmod.centralchat.message.MessageDisconnect;
+import btwmod.centralchat.message.MessageEmote;
 import btwmods.ChatAPI;
 import btwmods.CommandsAPI;
 import btwmods.IMod;

@@ -10,6 +10,7 @@ import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.Packet3Chat;
 import net.minecraft.src.WrongUsageException;
+import btwmod.centralchat.message.MessageChatColor;
 import btwmods.Util;
 import btwmods.commands.CommandBaseExtended;
 

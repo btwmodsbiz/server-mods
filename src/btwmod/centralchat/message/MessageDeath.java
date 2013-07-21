@@ -1,4 +1,7 @@
-package btwmod.centralchat;
+package btwmod.centralchat.message;
+
+import btwmod.centralchat.IServer;
+import btwmod.centralchat.ResourceConfig;
 
 import com.google.gson.JsonObject;
 

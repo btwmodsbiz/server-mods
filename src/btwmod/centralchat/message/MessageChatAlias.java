@@ -1,9 +1,12 @@
-package btwmod.centralchat;
+package btwmod.centralchat.message;
 
 import net.minecraft.server.MinecraftServer;
 
 import org.java_websocket.WebSocket;
 
+import btwmod.centralchat.IGateway;
+import btwmod.centralchat.IServer;
+import btwmod.centralchat.ResourceConfig;
 import btwmods.ChatAPI;
 import btwmods.Util;
 

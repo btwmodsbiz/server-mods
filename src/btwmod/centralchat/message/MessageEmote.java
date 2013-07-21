@@ -1,4 +1,4 @@
-package btwmod.centralchat;
+package btwmod.centralchat.message;
 
 import com.google.gson.JsonObject;
 

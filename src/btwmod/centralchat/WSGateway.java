@@ -8,6 +8,9 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ServerHandshake;
 
+import btwmod.centralchat.message.Message;
+import btwmod.centralchat.message.MessageGatewayConnect;
+import btwmod.centralchat.message.MessageUserInfo;
 import btwmods.ModLoader;
 
 public class WSGateway extends WebSocketClient {

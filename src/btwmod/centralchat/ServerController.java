@@ -17,8 +17,8 @@ import java.util.Set;
 import org.java_websocket.WebSocket;
 import org.java_websocket.framing.CloseFrame;
 
-import btwmod.centralchat.list.User;
-import btwmod.centralchat.list.UserAlias;
+import btwmod.centralchat.struct.User;
+import btwmod.centralchat.struct.UserAlias;
 import btwmods.io.Settings;
 import btwmods.util.CaselessKey;
 

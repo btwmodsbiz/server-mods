@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.WrongUsageException;
+import btwmod.centralchat.message.MessageChatAlias;
 import btwmods.commands.CommandBaseExtended;
 
 public class CommandChatAlias extends CommandBaseExtended {

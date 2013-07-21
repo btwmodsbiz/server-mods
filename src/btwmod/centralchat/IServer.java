@@ -2,8 +2,8 @@ package btwmod.centralchat;
 
 import org.java_websocket.WebSocket;
 
-import btwmod.centralchat.list.User;
-import btwmod.centralchat.list.UserAlias;
+import btwmod.centralchat.struct.User;
+import btwmod.centralchat.struct.UserAlias;
 
 public interface IServer {
 	public boolean saveSettings();

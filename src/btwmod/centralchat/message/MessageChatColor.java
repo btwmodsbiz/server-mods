@@ -1,10 +1,15 @@
-package btwmod.centralchat;
+package btwmod.centralchat.message;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.EntityPlayerMP;
 
 import org.java_websocket.WebSocket;
 
+import btwmod.centralchat.ChatColors;
+import btwmod.centralchat.ClientType;
+import btwmod.centralchat.IGateway;
+import btwmod.centralchat.IServer;
+import btwmod.centralchat.ResourceConfig;
 import btwmods.Util;
 
 import com.google.gson.JsonElement;

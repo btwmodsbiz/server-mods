@@ -1,5 +1,8 @@
 package btwmod.centralchat;
 
+import btwmod.centralchat.message.MessageConnect;
+import btwmod.centralchat.message.MessageDisconnect;
+
 public interface IGateway {
 	public String getId();
 	public void addRestorableChat(String chat);

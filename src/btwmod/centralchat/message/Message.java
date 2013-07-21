@@ -1,6 +1,12 @@
-package btwmod.centralchat;
+package btwmod.centralchat.message;
 
 import org.java_websocket.WebSocket;
+
+import btwmod.centralchat.ChatColors;
+import btwmod.centralchat.ClientType;
+import btwmod.centralchat.IGateway;
+import btwmod.centralchat.IServer;
+import btwmod.centralchat.ResourceConfig;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
