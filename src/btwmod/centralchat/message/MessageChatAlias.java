@@ -36,11 +36,11 @@ public class MessageChatAlias extends Message {
 	public final String action;
 	public final String username;
 	public final String alias;
+	public final String requestedBy;
 	
 	// Only for responses
 	public final Boolean success;
 	public final String oldAlias;
-	public final String requestedBy;
 	
 	protected MessageChatAlias(String action, String username, String alias, Boolean success, String oldAlias, String requestedBy) {
 		this.action = action;

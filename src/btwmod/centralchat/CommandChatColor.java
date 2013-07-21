@@ -47,7 +47,7 @@ public class CommandChatColor extends CommandBaseExtended {
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
 		if (args.length == 0 && sender instanceof EntityPlayer) {
-			mod.queueMessage(new MessageChatColor("get", sender.getCommandSenderName()));
+			mod.queueMessage(MessageChatColor.buildGet(sender.getCommandSenderName(), sender.getCommandSenderName()));
 		}
 		else if (isStringMatch(args, 0, "show")) {
 			ChatColors[] colors = ChatColors.values();
@@ -80,7 +80,7 @@ public class CommandChatColor extends CommandBaseExtended {
 		}
 		else if (((args.length == 1 && sender instanceof EntityPlayer) || (args.length == 2 && isFullUsageAllowed(sender))) && ChatColors.isValid(args[0])) {
 			String username = args.length == 2 ? args[1] : sender.getCommandSenderName();
-			mod.queueMessage(new MessageChatColor("set", username, args[0]));
+			mod.queueMessage(MessageChatColor.buildSet(username, args[0], sender.getCommandSenderName()));
 		}
 		else {
 			throw new WrongUsageException(getCommandUsage(sender), new Object[0]);

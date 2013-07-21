@@ -17,42 +17,56 @@ import com.google.gson.JsonObject;
 
 public class MessageChatColor extends Message {
 	
+	public static MessageChatColor buildGet(String username, String requestedBy) {
+		return new MessageChatColor("get", username, null, null, null, requestedBy);
+	}
+	
+	public static MessageChatColor buildSet(String username, String color, String requestedBy) {
+		return new MessageChatColor("set", username, color, null, null, requestedBy);
+	}
+	
+	public static MessageChatColor buildSuccess(String username, String color, String oldColor) {
+		return new MessageChatColor("set", username, color, Boolean.TRUE, oldColor, null);
+	}
+	
+	public static MessageChatColor buildFail(String username, String color, String requestedBy) {
+		return new MessageChatColor("set", username, color, Boolean.FALSE, null, requestedBy);
+	}
+	
 	public final static String TYPE = "chatcolor";
 	
 	public final String action;
 	public final String username;
 	public final String color;
+	public final String requestedBy;
 	
 	// Only for responses
 	public final Boolean success;
 	public final String oldColor;
 	
-	public MessageChatColor(String action, String username) {
-		this(action, username, null);
-	}
-	
-	public MessageChatColor(String action, String username, String color) {
-		this(action, username, color, null, null);
-	}
-	
-	public MessageChatColor(String action, String username, String color, Boolean success, String oldColor) {
+	protected MessageChatColor(String action, String username, String color, Boolean success, String oldColor, String requestedBy) {
 		this.action = action;
 		this.username = username;
 		this.color = color;
+		this.requestedBy = requestedBy;
 		this.success = success;
 		this.oldColor = oldColor;
 	}
 	
 	public MessageChatColor(JsonObject json) {
-		JsonElement color = json.get("color");
-		JsonElement success = json.get("success");
-		JsonElement oldColor = json.get("oldColor");
-		
 		this.action = json.get("action").getAsString();
 		this.username = json.get("username").getAsString();
+		
+		JsonElement requestedBy = json.get("requestedBy");
+		this.requestedBy = requestedBy == null || !requestedBy.isJsonPrimitive() ? null : requestedBy.getAsString();
+		
+		JsonElement color = json.get("color");
 		this.color = color != null && color.isJsonPrimitive() ? color.getAsString() : null;
 		
+		JsonElement success = json.get("success");
 		this.success = success == null || !success.isJsonPrimitive() ? null : Boolean.valueOf(success.getAsBoolean());
+		
+		JsonElement oldColor = json.get("oldColor");
 		this.oldColor = oldColor == null || !oldColor.isJsonPrimitive() ? null : oldColor.getAsString();
 	}
 
