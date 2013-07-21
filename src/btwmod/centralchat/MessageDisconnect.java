@@ -1,11 +1,13 @@
 package btwmod.centralchat;
 
+import org.java_websocket.WebSocket;
+
 import btwmods.Util;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class MessageDisconnect extends MessageConnect {
+public class MessageDisconnect extends MessageUserMessage {
 	
 	public final String TYPE = "disconnect";
 	
@@ -46,7 +48,8 @@ public class MessageDisconnect extends MessageConnect {
 	}
 	
 	@Override
-	protected void toServer(IServer server) {
+	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
+		super.handleAsServer(server, conn, config);
 		server.removeLoggedInUser(gateway, username);
 	}
 	

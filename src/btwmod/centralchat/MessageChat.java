@@ -1,13 +1,10 @@
 package btwmod.centralchat;
 
-import net.minecraft.server.MinecraftServer;
-import btwmods.ChatAPI;
-
 import com.google.gson.JsonObject;
 
-public class MessageChat extends MessageUser {
+public class MessageChat extends MessageUserMessage {
 	
-	public final String TYPE = "chat";
+	public static final String TYPE = "chat";
 	
 	public final String message;
 	
@@ -16,13 +13,13 @@ public class MessageChat extends MessageUser {
 		this.message = json.get("message").getAsString();
 	}
 
-	public MessageChat(String username, String message, String color, String alias) {
-		super(username, color, alias);
+	public MessageChat(String username, String gateway, String message, String color, String alias) {
+		super(username, gateway, color, alias);
 		this.message = message;
 	}
 
-	public MessageChat(String username, String message) {
-		super(username);
+	public MessageChat(String username, String gateway, String message) {
+		super(username, gateway, null, null);
 		this.message = message;
 	}
 
@@ -30,26 +27,19 @@ public class MessageChat extends MessageUser {
 	public String getType() {
 		return TYPE;
 	}
-
-	@Override
-	public JsonObject toJson() {
-		JsonObject obj = super.toJson();
-		obj.addProperty("message", this.message);
-		return obj;
-	}
 	
 	@Override
-	public void handleAsGateway(IGateway gateway) {
-		MinecraftServer.getServer().getLogAgent().func_98233_a(getLoggedMessage());
-		ChatAPI.sendChatToAllPlayers(username, getFormattedMessage());
-		gateway.addRestorableChat(getFormattedMessage());
-	}
-	
 	protected String getFormattedMessage() {
 		return "<" + getDisplayUsername(true) + "> " + message;
 	}
 	
+	@Override
 	protected String getLoggedMessage() {
 		return "<" + username + "> " + message;
+	}
+	
+	@Override
+	public boolean canSendMessage(ResourceConfig config) {
+		return config.clientType == ClientType.USER || super.canSendMessage(config);
 	}
 }

@@ -10,12 +10,12 @@ public class MessageEmote extends MessageChat {
 		super(json);
 	}
 
-	public MessageEmote(String username, String message, String color, String alias) {
-		super(username, message, color, alias);
+	public MessageEmote(String username, String gateway, String message, String color, String alias) {
+		super(username, gateway, message, color, alias);
 	}
 
-	public MessageEmote(String username, String message) {
-		super(username, message);
+	public MessageEmote(String username, String gateway, String message) {
+		super(username, gateway, message);
 	}
 
 	@Override
