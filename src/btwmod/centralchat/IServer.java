@@ -2,6 +2,9 @@ package btwmod.centralchat;
 
 import org.java_websocket.WebSocket;
 
+import btwmod.centralchat.list.User;
+import btwmod.centralchat.list.UserAlias;
+
 public interface IServer {
 	public boolean saveSettings();
 	
@@ -28,12 +31,16 @@ public interface IServer {
 	
 	public String getChatAlias(String username);
 	public boolean setChatAlias(String username, String alias);
+	public UserAlias[] getChatAliases();
+	public String replaceUsernamesWithAliases(String message);
 	
 	public void addLoggedInUser(String gateway, String username);
 	public void addLoggedInUser(String gateway, String[] usernames);
 	public void removeLoggedInUser(String gateway, String username);
+	public void removeLoggedInUsers(String gateway);
 	
-	public MessageUserList getLoggedInUserList();
+	public User[] getLoggedInUserList();
+	public User[] getLoggedInUserList(String gateway);
 	
 	public boolean hasConnectedClient(ResourceConfig config);
 	public void disconnectSameClient(WebSocket conn, ResourceConfig config);
