@@ -149,12 +149,15 @@ public class MessageChatAlias extends Message {
 			return;
 		
 		json.addProperty("alias", server.getChatAlias(username));
-		
-		if (onlyGateways) {
-			server.sendToAllGateways(json.toString());
+
+		if ("set".equalsIgnoreCase(action)) {
+			if (onlyGateways)
+				server.sendToAllGateways(json.toString());
+			else
+				server.sendToAll(json.toString());
 		}
-		else {
-			server.sendToAll(json.toString());
+		else if ("get".equalsIgnoreCase(action)) {
+			server.sendToAllForUser(json.toString(), username);
 		}
 	}
 }
