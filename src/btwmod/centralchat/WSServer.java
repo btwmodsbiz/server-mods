@@ -104,7 +104,15 @@ public class WSServer extends WebSocketServer {
 				new MessageDisconnect(config.id, null, null).handleAsServer(serverController, conn, config);
 			 }
 			 else if (config.clientType == ClientType.GATEWAY) {
-				 new MessageGatewayDisconnect(config.id, null).handleAsServer(serverController, conn, config);
+				User[] users = serverController.getLoggedInUserList(config.id);
+				serverController.removeLoggedInUsers(config.id);
+				
+				MessageUserInfo[] cleanedUsers = new MessageUserInfo[users.length];
+				for (int i = 0, len = users.length; i < len; i++) {
+					cleanedUsers[i] = new MessageUserInfo(serverController.getActualUsername(users[i].username), null, null, null);
+				}
+				 
+				 new MessageGatewayDisconnect(config.id, cleanedUsers).handleAsServer(serverController, conn, config);
 			 }
 		}
 	}
