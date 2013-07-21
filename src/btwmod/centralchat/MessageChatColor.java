@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 
 public class MessageChatColor extends Message {
 	
-	public final String TYPE = "chatcolor";
+	public final static String TYPE = "chatcolor";
 	
 	public final String action;
 	public final String username;

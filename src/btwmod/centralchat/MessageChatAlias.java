@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 
 public class MessageChatAlias extends Message {
 	
-	public final String TYPE = "chatalias";
+	public final static String TYPE = "chatalias";
 
 	public final String action;
 	public final String username;

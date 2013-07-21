@@ -32,29 +32,29 @@ public abstract class Message {
 			JsonObject messageJson = new JsonParser().parse(message).getAsJsonObject();
 			String type = messageJson.get("type").getAsString();
 			
-			if ("chat".equalsIgnoreCase(type))
+			if (MessageChat.TYPE.equalsIgnoreCase(type))
 				return new MessageChat(messageJson);
 			
-			else if ("emote".equalsIgnoreCase(type))
+			else if (MessageEmote.TYPE.equalsIgnoreCase(type))
 				return new MessageEmote(messageJson);
 			
-			else if ("connect".equalsIgnoreCase(type))
+			else if (MessageConnect.TYPE.equalsIgnoreCase(type))
 				return new MessageConnect(messageJson);
 			
-			else if ("disconnect".equalsIgnoreCase(type))
+			else if (MessageDisconnect.TYPE.equalsIgnoreCase(type))
 				return new MessageDisconnect(messageJson);
 			
-			else if ("death".equalsIgnoreCase(type))
+			else if (MessageDeath.TYPE.equalsIgnoreCase(type))
 				return new MessageDeath(messageJson);
 			
-			else if ("chatcolor".equalsIgnoreCase(type))
+			else if (MessageChatColor.TYPE.equalsIgnoreCase(type))
 				return new MessageChatColor(messageJson);
 			
-			else if ("chatalias".equalsIgnoreCase(type))
+			else if (MessageChatAlias.TYPE.equalsIgnoreCase(type))
 				return new MessageChatAlias(messageJson);
 			
-			else if (MessageUserList.TYPE.equalsIgnoreCase(type))
-				return new MessageUserList(messageJson);
+			else if (MessageUserInfoList.TYPE.equalsIgnoreCase(type))
+				return new MessageUserInfoList(messageJson);
 		}
 		catch (Exception e) {
 			System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());

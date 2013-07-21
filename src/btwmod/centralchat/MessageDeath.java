@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 
 public class MessageDeath extends MessageChat {
 	
-	public final String TYPE = "death";
+	public final static String TYPE = "death";
 
 	public MessageDeath(JsonObject json) {
 		super(json);

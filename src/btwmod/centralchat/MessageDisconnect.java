@@ -9,7 +9,7 @@ import com.google.gson.JsonObject;
 
 public class MessageDisconnect extends MessageUserMessage {
 	
-	public final String TYPE = "disconnect";
+	public static final String TYPE = "disconnect";
 	
 	public final String reason;
 
