@@ -10,6 +10,8 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
+import btwmod.centralchat.list.User;
+
 public class WSServer extends WebSocketServer {
 	
 	//public static final String PROTOCOL_NAME = "btw-json";
@@ -72,8 +74,13 @@ public class WSServer extends WebSocketServer {
 				if (config.clientType == ClientType.USER)
 					new MessageConnect(config.id, null).handleAsServer(serverController, conn, config);
 				
-				// Sent the client a list of connected users.
-				conn.send(serverController.getLoggedInUserList().toJson().toString());
+				// Sent the client a list of connected users and the full list of aliases.
+				User[] users = serverController.getLoggedInUserList();
+				MessageUserInfo[] usersInfo = new MessageUserInfo[users.length];
+				for (int i = 0, len = users.length; i < len; i++) {
+					usersInfo[i] = new MessageUserInfo(users[i].username, users[i].gateway, serverController.getChatAlias(users[i].username), serverController.getChatColor(users[i].username));
+				}
+				conn.send(new MessageUserInfoList(usersInfo).toJson().toString());
 			}
 		}
 	}
@@ -97,7 +104,7 @@ public class WSServer extends WebSocketServer {
 				new MessageDisconnect(config.id, null, null).handleAsServer(serverController, conn, config);
 			 }
 			 else if (config.clientType == ClientType.GATEWAY) {
-				 
+				 new MessageGatewayDisconnect(config.id, null).handleAsServer(serverController, conn, config);
 			 }
 		}
 	}
