@@ -81,6 +81,13 @@ public class MessageChatAlias extends Message {
 	}
 	
 	@Override
+	public JsonObject toJsonCleaned(IServer server, ResourceConfig config) {
+		JsonObject json = super.toJsonCleaned(server, config);
+		json.addProperty("username", server.getActualUsername(username));
+		return json;
+	}
+	
+	@Override
 	public void handleAsGateway(IGateway gateway) {
 		String message = getFormattedMessage();
 		if (message != null) {
@@ -123,8 +130,7 @@ public class MessageChatAlias extends Message {
 	@Override
 	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		boolean onlyGateways = false;
-		JsonObject json = toJson();
-		String username = this.username;
+		JsonObject json = toJsonCleaned(server, config);
 		String oldAlias = server.getChatAlias(username);
 		
 		if ("set".equalsIgnoreCase(action)) {
