@@ -88,7 +88,7 @@ public class ServerController implements IServer {
 
 	@Override
 	public String getActualUsername(String username) {
-		return getActualUsername(username, null);
+		return getActualUsername(username, username);
 	}
 	
 	@Override
