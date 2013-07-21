@@ -49,11 +49,12 @@ public abstract class MessageUser extends Message {
 		return obj;
 	}
 	
+	@Override
 	public JsonObject toJsonCleaned(IServer server, ResourceConfig config) {
-		JsonObject json = toJson();
+		JsonObject json = super.toJsonCleaned(server, config);
 		
 		// Force user ID for those authenticated as users.
-		json.addProperty("username", config.clientType == ClientType.USER ? server.getActualUsername(config.id) : username);
+		json.addProperty("username", server.getActualUsername(config.clientType == ClientType.USER ? config.id : username));
 		
 		// USER clients should not have a gateway.
 		if (config.clientType == ClientType.USER && json.has("gateway"))
