@@ -35,8 +35,9 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	private volatile WSGateway wSGateway = null;
 	private volatile boolean doFailover = true;
 	
-	private String serverUri = null;
-	private String serverName = null;
+	private String serverHost = null;
+	private String serverId = null;
+	private String serverKey = null;
 	
 	private long reconnectWait = 1;
 	private long reconnectWaitLong = 10;
@@ -64,19 +65,24 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 
 	@Override
 	public void init(Settings settings, Settings data) throws Exception {
-		serverUri = settings.get("serverUri");
-		serverName = settings.get("serverName");
+		serverHost = settings.get("serverHost");
+		serverId = settings.get("serverId");
+		serverKey = settings.get("serverKey");
 		chatRestoreLines = settings.getInt("chatRestoreLines", chatRestoreLines);
 		chatRestoreTimeout = settings.getLong("chatRestoreTimeout", chatRestoreTimeout);
 		
-		if (serverUri == null || serverUri.trim().length() == 0)
+		if (serverHost == null || serverHost.trim().length() == 0)
 			return;
 		
-		if (serverName == null || serverName.trim().length() == 0)
+		if (serverId == null || serverId.trim().length() == 0)
 			return;
 		
+		if (serverKey == null || serverKey.trim().length() == 0)
+			return;
+		
+		String urlString = "ws://" + serverHost + "/gateway/" + serverId + "/" + serverKey;
 		try {
-			uri = new URI(serverUri);
+			uri = new URI(urlString);
 			
 			ChatAPI.addListener(this);
 			ServerAPI.addListener(this);
@@ -85,7 +91,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 			CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
 		}
 		catch (URISyntaxException e) {
-			ModLoader.outputError(e, "Invalid URI: " + serverUri);
+			ModLoader.outputError(e, "Invalid URI: " + urlString);
 		}
 	}
 
@@ -113,17 +119,17 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 				break;
 				
 			case HANDLE_DEATH_MESSAGE:
-				queueMessage(new MessageDeath(event.username, serverName, event.getMessage()));
+				queueMessage(new MessageDeath(event.username, serverId, event.getMessage()));
 				event.markHandled();
 				break;
 				
 			case HANDLE_GLOBAL:
-				queueMessage(new MessageChat(event.username, serverName, event.getMessage()));
+				queueMessage(new MessageChat(event.username, serverId, event.getMessage()));
 				event.markHandled();
 				break;
 				
 			case HANDLE_EMOTE:
-				queueMessage(new MessageEmote(event.username, serverName, event.getMessage()));
+				queueMessage(new MessageEmote(event.username, serverId, event.getMessage()));
 				event.markHandled();
 				break;
 				
@@ -132,7 +138,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 					usernames.add(new CaselessKey(event.username));
 				}
 				
-				queueMessage(new MessageConnect(event.username, serverName));
+				queueMessage(new MessageConnect(event.username, serverId));
 				event.markHandled();
 				break;
 				
@@ -141,7 +147,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 					usernames.remove(new CaselessKey(event.username));
 				}
 				
-				queueMessage(new MessageDisconnect(event.username, serverName, null));
+				queueMessage(new MessageDisconnect(event.username, serverId, null));
 				event.markHandled();
 				break;
 		}
@@ -170,7 +176,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	
 	@Override
 	public String getId() {
-		return serverName;
+		return serverId;
 	}
 
 	@Override
