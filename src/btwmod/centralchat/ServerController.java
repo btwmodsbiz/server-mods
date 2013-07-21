@@ -9,13 +9,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.Set;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.framing.CloseFrame;
 
+import btwmod.centralchat.list.User;
+import btwmod.centralchat.list.UserAlias;
 import btwmods.io.Settings;
+import btwmods.util.CaselessKey;
 
 public class ServerController implements IServer {
+	
+	public static final Pattern pattern = Pattern.compile("/\\$\\{([A-Za-z0-9_]{1,16})\\}/");
 	
 	public static void main(String[] args) {
 		System.out.println("Starting server...");
@@ -249,6 +258,45 @@ public class ServerController implements IServer {
 			}
 		}
 	}
+	
+	@Override
+	public UserAlias[] getChatAliases() {
+		
+		Set<CaselessKey> usernames = data.getSectionKeys("ChatAliases");
+		UserAlias[] aliases = new UserAlias[usernames.size()];
+		int i = 0;
+		for (CaselessKey username : usernames) { 
+			aliases[i++] = new UserAlias(username.key, data.get("ChatAliases", username.key));
+		}
+		return aliases;
+	}
+	
+	@Override
+	public String replaceUsernamesWithAliases(String message) {
+		int i = 0;
+		StringBuilder ret = new StringBuilder();
+		
+		Matcher matcher = pattern.matcher(message);
+        while (matcher.find()) {
+            MatchResult matchResult = matcher.toMatchResult();
+            
+            if (matchResult.start() > i)
+            	ret.append(message.substring(i, matchResult.start()));
+            
+            String username = matchResult.group(1);
+            String replacement = getChatAlias(username);
+            ret.append(replacement == null ? username : replacement);
+            
+            message = message.substring(0, matchResult.start()) + (replacement == null ? username : replacement) + message.substring(matchResult.end());
+            matcher.reset(message);
+            i = matcher.end();
+        }
+        
+        if (!matcher.hitEnd())
+        	ret.append(message.substring(i));
+        
+        return message;
+	}
 
 	@Override
 	public void addLoggedInUser(String server, String username) {
@@ -277,18 +325,40 @@ public class ServerController implements IServer {
 				serverList.remove(username.toLowerCase());
 		}
 	}
+
+	@Override
+	public void removeLoggedInUsers(String gateway) {
+		synchronized (loggedInUsers) {
+			loggedInUsers.remove(gateway);
+		}
+	}
 	
 	@Override
-	public MessageUserList getLoggedInUserList() {
+	public User[] getLoggedInUserList() {
+		List<User> userList = new ArrayList<User>();
 		synchronized (loggedInUsers) {
-			List<MessageUserList.MessageUserEntry> messageList = new ArrayList<MessageUserList.MessageUserEntry>();
-			for (Entry<String, Map<String, String>> serverList : loggedInUsers.entrySet()) {
-				for (Entry<String, String> userEntry : serverList.getValue().entrySet()) {
-					messageList.add(new MessageUserList.MessageUserEntry(userEntry.getValue(), serverList.getKey(), getChatColor(userEntry.getValue()), getChatAlias(userEntry.getValue())));
+			for (Entry<String, Map<String, String>> gatewayList : loggedInUsers.entrySet()) {
+				for (Entry<String, String> userEntry : gatewayList.getValue().entrySet()) {
+					userList.add(new User(userEntry.getValue(), gatewayList.getKey()));
 				}
 			}
-			return new MessageUserList(messageList.toArray(new MessageUserList.MessageUserEntry[messageList.size()]));
 		}
+		return userList.toArray(new User[userList.size()]);
+	}
+	
+	@Override
+	public User[] getLoggedInUserList(String gateway) {
+		List<User> userList = new ArrayList<User>();
+		synchronized (loggedInUsers) {
+			for (Entry<String, Map<String, String>> gatewayList : loggedInUsers.entrySet()) {
+				if (gateway == gatewayList.getKey() || gateway != null && gateway.equalsIgnoreCase(gatewayList.getKey())) {
+					for (Entry<String, String> userEntry : gatewayList.getValue().entrySet()) {
+						userList.add(new User(userEntry.getValue(), gatewayList.getKey()));
+					}
+				}
+			}
+		}
+		return userList.toArray(new User[userList.size()]);
 	}
 	
 	@Override
