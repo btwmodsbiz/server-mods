@@ -122,6 +122,7 @@ public class MessageChatAlias extends Message {
 
 	@Override
 	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
+		boolean onlyGateways = false;
 		JsonObject json = toJson();
 		String username = this.username;
 		String oldAlias = server.getChatAlias(username);
@@ -133,6 +134,7 @@ public class MessageChatAlias extends Message {
 				server.saveSettings();
 			}
 			else {
+				onlyGateways = true;
 				json.addProperty("success", false);
 			}
 		}
@@ -143,6 +145,11 @@ public class MessageChatAlias extends Message {
 		
 		json.addProperty("alias", server.getChatAlias(username));
 		
-		server.sendToAllGateways(json.toString());
+		if (onlyGateways) {
+			server.sendToAllGateways(json.toString());
+		}
+		else {
+			server.sendToAll(json.toString());
+		}
 	}
 }
