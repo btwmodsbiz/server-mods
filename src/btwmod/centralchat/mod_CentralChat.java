@@ -5,7 +5,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -25,6 +27,7 @@ import btwmods.player.IPlayerInstanceListener;
 import btwmods.player.PlayerInstanceEvent;
 import btwmods.server.ITickListener;
 import btwmods.server.TickEvent;
+import btwmods.util.CaselessKey;
 import btwmods.util.ValuePair;
 
 public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener, IGateway, IPlayerInstanceListener {
@@ -52,6 +55,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	private Deque<ValuePair<String, Long>> chatRestoreBuffer = new ArrayDeque<ValuePair<String, Long>>();
 	private Map<String, Long> loginTime = new HashMap<String, Long>();
 	private Map<String, Long> logoutTime = new HashMap<String, Long>();
+	private volatile Set<CaselessKey> usernames = new HashSet<CaselessKey>();
 	
 	@Override
 	public String getName() {
@@ -124,11 +128,19 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 				break;
 				
 			case HANDLE_LOGIN_MESSAGE:
+				synchronized (usernames) {
+					usernames.add(new CaselessKey(event.username));
+				}
+				
 				queueMessage(new MessageConnect(event.username, serverName));
 				event.markHandled();
 				break;
 				
 			case HANDLE_LOGOUT_MESSAGE:
+				synchronized (usernames) {
+					usernames.remove(new CaselessKey(event.username));
+				}
+				
 				queueMessage(new MessageDisconnect(event.username, serverName, null));
 				event.markHandled();
 				break;
@@ -154,6 +166,11 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 			startConnectionThread();
 			startQueueThread();
 		}
+	}
+	
+	@Override
+	public String getId() {
+		return serverName;
 	}
 
 	@Override
@@ -282,6 +299,23 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	@Override
 	public void onDisconnect(MessageDisconnect disconnect) {
 		
+	}
+	
+	@Override
+	public String[] getUsernames() {
+		int len;
+		CaselessKey[] list;
+		
+		synchronized (usernames) {
+			len = usernames.size();
+			list = usernames.toArray(new CaselessKey[len]);
+		}
+
+		String[] ret = new String[len];
+		for (int i = 0; i < len; i++) {
+			ret[i] = list[i].key;
+		}
+		return ret;
 	}
 	
 	@Override
