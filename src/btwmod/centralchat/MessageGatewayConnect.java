@@ -54,6 +54,8 @@ public class MessageGatewayConnect extends Message {
 	public JsonObject toJsonCleaned(IServer server, ResourceConfig config) {
 		JsonObject json = super.toJsonCleaned(server, config);
 		
+		json.addProperty("gateway", config.id);
+		
 		MessageUserInfo[] cleanedUsers = new MessageUserInfo[users.length];
 		for (int i = 0, len = users.length; i < len; i++) {
 			cleanedUsers[i] = new MessageUserInfo(server.getActualUsername(users[i].username), null, server.getChatColor(users[i].username), server.getChatAlias(users[i].username));
@@ -70,6 +72,15 @@ public class MessageGatewayConnect extends Message {
 
 	@Override
 	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
+		if (users != null) {
+			int len = users.length;
+			String[] usernames = new String[len];
+			for (int i = 0; i < len; i++) {
+				usernames[i] = users[i].username;
+			}
+			server.addLoggedInUser(config.id, usernames);
+		}
+	
 		server.sendToAll(toJsonCleaned(server, config).toString());
 	}
 	
