@@ -27,11 +27,17 @@ public class ServerController implements IServer {
 	public static final Pattern pattern = Pattern.compile("/\\$\\{([A-Za-z0-9_]{1,16})\\}/");
 	
 	public static void main(String[] args) {
+		File config = new File(new File("."), "chatserver.dat");
 		System.out.println("Starting server...");
+		try {
+			System.out.println("Loading config from " + config.getCanonicalPath());
+		} catch (IOException e1) {
+			System.out.println("Loading config from " + config.toString());
+		}
 		
 		try {
 			InetSocketAddress address = new InetSocketAddress(8585);
-			ServerController controller = new ServerController(new File(new File("."), "chatserver.dat"), address);
+			ServerController controller = new ServerController(config, address);
 			controller.start();
 			
 		} catch (IOException e) {
