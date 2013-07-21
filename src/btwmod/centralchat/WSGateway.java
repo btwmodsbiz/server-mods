@@ -32,7 +32,17 @@ public class WSGateway extends WebSocketClient {
 
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
-		
+		try {
+			String[] usernames = gateway.getUsernames();
+			MessageUserInfo[] users = new MessageUserInfo[usernames.length];
+			for (int i = 0, len = usernames.length; i < len; i++) {
+				users[i] = new MessageUserInfo(usernames[i], null);
+			}
+			send(new MessageGatewayConnect(gateway.getId(), users).toJson().toString());
+		}
+		catch (RuntimeException e) {
+			
+		}
 	}
 
 	@Override
