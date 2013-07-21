@@ -99,7 +99,7 @@ public class MessageChatAlias extends Message {
 	
 	protected String getFormattedMessage() {
 		if ("set".equalsIgnoreCase(action) && success != null) {
-			if (success.booleanValue()) {
+			if (success == Boolean.TRUE) {
 				if (alias == null && oldAlias == null)
 					return Util.COLOR_YELLOW + username + " does not have an alias set.";
 				
@@ -112,14 +112,13 @@ public class MessageChatAlias extends Message {
 				else if (oldAlias == null)
 					return Util.COLOR_YELLOW + "Set " + username + "'s alias from " + Util.COLOR_WHITE + oldAlias + Util.COLOR_YELLOW + " to " + Util.COLOR_WHITE + alias;
 			}
-			else {
+			else if (success == Boolean.FALSE) {
 				return Util.COLOR_WHITE + alias + Util.COLOR_YELLOW + " is not a valid alias.";
 			}
 		}
 		else if ("get".equalsIgnoreCase(action)) {
 			if (alias == null)
 				return Util.COLOR_YELLOW + username + " does not have an alias.";
-			
 			else
 				return Util.COLOR_YELLOW + username + "'s alias is " + Util.COLOR_WHITE + alias;
 		}
