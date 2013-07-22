@@ -238,6 +238,13 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 			
 			while (!Thread.interrupted()) {
 				long currentTime = System.currentTimeMillis();
+				
+				long increment = (long)Math.floor((currentTime - lastConnectTime) / (connectSecondsPerBuffer * 1000L));
+				if (increment >= 1L) {
+					retryBuffer = Math.min(connectBufferMax, retryBuffer + increment);
+					lastConnectTime += increment * connectSecondsPerBuffer * 1000L;
+				}
+				
 				retryBuffer = Math.min(connectBufferMax, retryBuffer + (long)Math.floor((currentTime - lastConnectTime) / (connectSecondsPerBuffer * 1000L)));
 				
 				try {
@@ -257,7 +264,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 				} catch (InterruptedException e) {
 					
 				} catch (RuntimeException e) {
-					// TODO: Log runtime exceptions.
+					System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());
 				}
 				
 				gateway.onWaitForReconnect();
@@ -339,6 +346,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	@Override
 	public void onSuccessfulConnect() {
 		connectAttempts = 0;
+		useGateway = true;
 	}
 	
 	@Override
@@ -346,7 +354,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 		if (useGateway && connectAttempts++ >= connectAttemptsTillFailover) {
 			useGateway = false;
 
-			ModLoader.outputInfo("Failing over to non-gateway mode.");
+			ModLoader.outputInfo("Failing over to local chat.");
 			ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Disconnected from central chat server.");
 		}
 	}
