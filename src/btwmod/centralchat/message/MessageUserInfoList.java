@@ -71,7 +71,7 @@ public class MessageUserInfoList extends Message {
 		}
 		
 		int len = uniqueUsers.size();
-		if (len > 0)
-			ChatAPI.sendChatToAllPlayers(len + " user" + (len == 1 ? "" : "s") + " available via the chat server.");
+		ChatAPI.sendChatToAllPlayers("Connected to chat server" + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " available for chat" : "") + ".");
+		gateway.onSuccessfulConnect();
 	}
 }
