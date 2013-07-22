@@ -25,6 +25,13 @@ public class MessageChat extends MessageUserMessage {
 		super(username, gateway, null, null);
 		this.message = message;
 	}
+	
+	@Override
+	public JsonObject toJson() {
+		JsonObject json = super.toJson();
+		json.addProperty("message", message);
+		return json;
+	}
 
 	@Override
 	public String getType() {
