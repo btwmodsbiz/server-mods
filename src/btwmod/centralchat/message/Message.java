@@ -80,7 +80,7 @@ public abstract class Message {
 				return new MessageUserInfoList(messageJson);
 		}
 		catch (Exception e) {
-			System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());
+			System.err.println(e.getClass().getSimpleName() + ": " + e.getMessage());
 			e.printStackTrace();
 		}
 		

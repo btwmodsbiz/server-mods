@@ -137,8 +137,7 @@ public class WSServer extends WebSocketServer {
 						message.handleAsServer(serverController, conn, config);
 				}
 				else {
-					System.err.println(conn.getRemoteSocketAddress() + " sent invalid message.");
-					System.err.println(">>" + rawMessage);
+					System.err.println(conn.getRemoteSocketAddress() + " sent invalid message: " + rawMessage);
 					conn.close(CloseFrame.PROTOCOL_ERROR, "Invalid message received.");
 				}
 			}
