@@ -127,8 +127,8 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 				break;
 				
 			case HANDLE_DEATH_MESSAGE:
-				queueMessage(new MessageDeath(event.username, serverId, event.getMessage()));
-				event.markHandled();
+				//queueMessage(new MessageDeath(event.username, serverId, event.getMessage()));
+				//event.markHandled();
 				break;
 				
 			case HANDLE_GLOBAL:
