@@ -38,20 +38,22 @@ import btwmods.util.ValuePair;
 
 public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener, IGateway, IPlayerInstanceListener {
 	
-	private volatile WSGateway wSGateway = null;
-	private volatile boolean doFailover = true;
+	private volatile WSGateway wsGateway = null;
+	private volatile boolean useGateway = false;
 	
 	private String serverHost = null;
 	private String serverId = null;
 	private String serverKey = null;
 	
-	private long reconnectWait = 1;
-	private long reconnectWaitLong = 10;
-	private int connectAttemptsBeforeFailover = 6;
+	private int connectAttempts = 1;
+	private int connectAttemptsTillFailover = 5;
+	
+	private long connectWaitSeconds = 1;
+	private long connectBufferMax = 10;
+	private long connectSecondsPerBuffer = 10;
 	
 	private URI uri;
 	private final BlockingDeque<Message> messageQueue = new LinkedBlockingDeque<Message>();
-	private int connectAttempts = 0;
 	
 	private boolean startThreads = true;
 	private CommandChatColor commandChatColor;
@@ -231,33 +233,39 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 
 		@Override
 		public void run() {
+			long retryBuffer = 1;
+			long lastConnectTime = System.currentTimeMillis();
+			
 			while (!Thread.interrupted()) {
-				connectAttempts++;
-				wSGateway = new WSGateway(gateway, uri);
+				long currentTime = System.currentTimeMillis();
+				retryBuffer = Math.min(connectBufferMax, retryBuffer + (long)Math.floor((currentTime - lastConnectTime) / (connectSecondsPerBuffer * 1000L)));
 				
 				try {
-					if (wSGateway.connectBlocking()) {
-						doFailover = false;
-						connectAttempts = 0;
-						ModLoader.outputInfo("Connected to central chat server.");
-						ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Connected to central chat server.");
+					if (retryBuffer > 0) {
+						retryBuffer--;
 						
-						wSGateway.awaitClose();
-						ModLoader.outputInfo("Disconnected from central chat server.");
-						ChatAPI.removeAllAliases();
-					}
-					else if (connectAttempts <= connectAttemptsBeforeFailover) {
-						Thread.sleep(reconnectWait * 1000L);
-					}
-					else {
-						doFailover = true;
-						if (connectAttempts == connectAttemptsBeforeFailover + 1) {
-							ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Disconnected from central chat server.");
+						wsGateway = new WSGateway(gateway, uri);
+						if (wsGateway.connectBlocking()) {
+							wsGateway.awaitClose();
+							
+							if (useGateway) {
+								ModLoader.outputInfo("Disconnected from central chat server.");
+								ChatAPI.removeAllAliases();
+							}
 						}
-						
-						Thread.sleep(reconnectWaitLong * 1000L);
 					}
 				} catch (InterruptedException e) {
+					
+				} catch (RuntimeException e) {
+					// TODO: Log runtime exceptions.
+				}
+				
+				gateway.onWaitForReconnect();
+				
+				try {
+					Thread.sleep(connectWaitSeconds * 1000L);
+				}
+				catch (InterruptedException e) {
 					
 				}
 			}
@@ -278,12 +286,9 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 				try {
 					Message message = messageQueue.take();
 					
-					if (doFailover) {
-						message.handleAsGateway(gateway);
-					}
-					else {
+					if (useGateway) {
 						try {
-							wSGateway.send(message.toJson().toString());
+							wsGateway.send(message.toJson().toString());
 						}
 						catch (Exception ex) {
 							messageQueue.addFirst(message);
@@ -296,21 +301,14 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 							}
 						}
 					}
+					else {
+						message.handleAsGateway(gateway);
+					}
 				} catch (InterruptedException e) {
 					
 				}
 			}
 		}
-	}
-
-	@Override
-	public void onConnect(MessageConnect connect) {
-		
-	}
-
-	@Override
-	public void onDisconnect(MessageDisconnect disconnect) {
-		
 	}
 	
 	@Override
@@ -336,5 +334,20 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 			ChatAPI.removeAlias(username);
 		else
 			ChatAPI.setAlias(username, alias);
+	}
+	
+	@Override
+	public void onSuccessfulConnect() {
+		connectAttempts = 0;
+	}
+	
+	@Override
+	public void onWaitForReconnect() {
+		if (useGateway && connectAttempts++ >= connectAttemptsTillFailover) {
+			useGateway = false;
+
+			ModLoader.outputInfo("Failing over to non-gateway mode.");
+			ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Disconnected from central chat server.");
+		}
 	}
 }
