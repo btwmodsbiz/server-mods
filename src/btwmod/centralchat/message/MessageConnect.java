@@ -2,6 +2,7 @@ package btwmod.centralchat.message;
 
 import org.java_websocket.WebSocket;
 
+import btwmod.centralchat.IGateway;
 import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
 import btwmods.Util;
@@ -33,6 +34,12 @@ public class MessageConnect extends MessageUserMessage {
 	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		super.handleAsServer(server, conn, config);
 		server.addLoggedInUser(this.gateway, username);
+	}
+	
+	@Override
+	public void handleAsGateway(IGateway gateway) {
+		super.handleAsGateway(gateway);
+		gateway.setAlias(username, alias);
 	}
 	
 	protected String getFormattedMessage() {
