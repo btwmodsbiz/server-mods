@@ -5,6 +5,7 @@ import org.java_websocket.WebSocket;
 import btwmod.centralchat.IGateway;
 import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
+import btwmod.centralchat.struct.User;
 import btwmods.ChatAPI;
 
 import com.google.gson.JsonArray;
@@ -83,8 +84,25 @@ public class MessageGatewayConnect extends Message {
 			}
 			server.addLoggedInUser(config.id, usernames);
 		}
-	
+
+		// Resend the message to all clients after being cleaned up.
 		server.sendToAll(toJsonCleaned(server, config).toString());
+		
+		// Send a full list of users back to the gateway.
+		sendUserInfoList(server, conn);
+	}
+	
+	@SuppressWarnings("static-method")
+	protected void sendUserInfoList(IServer server, WebSocket conn) {
+		// Send the client a list of connected users and their info.
+		User[] users = server.getLoggedInUserList();
+		MessageUserInfo[] usersInfo = new MessageUserInfo[users.length];
+		for (int i = 0, len = users.length; i < len; i++) {
+			System.out.println("Adding: " + users[i].username + ", " + users[i].gateway);
+			usersInfo[i] = new MessageUserInfo(users[i].username, users[i].gateway, server.getChatColor(users[i].username), server.getChatAlias(users[i].username));
+		}
+		System.out.println("Sending: " + new MessageUserInfoList(usersInfo).toJson().toString());
+		conn.send(new MessageUserInfoList(usersInfo).toJson().toString());
 	}
 	
 	@Override

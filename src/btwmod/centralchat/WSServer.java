@@ -79,14 +79,6 @@ public class WSServer extends WebSocketServer {
 			else {
 				if (config.clientType == ClientType.USER)
 					new MessageConnect(config.id, null).handleAsServer(serverController, conn, config);
-				
-				// Send the client a list of connected users and their info.
-				User[] users = serverController.getLoggedInUserList();
-				MessageUserInfo[] usersInfo = new MessageUserInfo[users.length];
-				for (int i = 0, len = users.length; i < len; i++) {
-					usersInfo[i] = new MessageUserInfo(users[i].username, users[i].gateway, serverController.getChatColor(users[i].username), serverController.getChatAlias(users[i].username));
-				}
-				conn.send(new MessageUserInfoList(usersInfo).toJson().toString());
 			}
 		}
 	}
