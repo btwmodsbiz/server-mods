@@ -263,7 +263,6 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 							
 							if (useGateway) {
 								ModLoader.outputInfo("Disconnected from central chat server.");
-								ChatAPI.removeAllAliases();
 							}
 						}
 					}
@@ -344,7 +343,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	@Override
 	public void setAlias(String username, String alias) {
 		if (alias == null)
-			ChatAPI.removeAlias(username);
+			ChatAPI.removeAlias(username, true);
 		else
 			ChatAPI.setAlias(username, alias);
 	}
@@ -361,7 +360,8 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 			useGateway = false;
 
 			ModLoader.outputInfo("Failing over to local chat.");
-			ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Disconnected from central chat server.");
+			ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Disconnected from chat server.");
+			ChatAPI.removeAllAliases(true);
 		}
 	}
 }
