@@ -158,6 +158,12 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 				queueMessage(new MessageDisconnect(event.username, serverId, null));
 				event.markHandled();
 				break;
+				
+			case HANDLE_DEFERRED_AUTO_COMPLETE:
+				break;
+				
+			case HANDLE_WHISPER:
+				break;
 		}
 	}
 	
