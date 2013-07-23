@@ -67,7 +67,7 @@ public class MessageUserInfoList extends Message {
 		Set<String> uniqueUsers = new HashSet<String>();
 		
 		for (MessageUserInfo user : users) {
-			gateway.setAlias(user.username, user.alias);
+			user.handleAsGateway(gateway);
 			uniqueUsers.add(user.username.toLowerCase());
 		}
 		
