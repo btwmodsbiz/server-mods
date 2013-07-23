@@ -40,7 +40,7 @@ public class MessageUserInfoList extends Message {
 		
 		users = new MessageUserInfo[usersArray.size()];
 		for (int i = 0, len = usersArray.size(); i < len; i++) {
-			users[i] = new MessageUserInfo(usersArray.get(0).getAsJsonObject());
+			users[i] = new MessageUserInfo(usersArray.get(i).getAsJsonObject());
 		}
 	}
 	
