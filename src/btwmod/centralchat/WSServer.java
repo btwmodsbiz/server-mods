@@ -15,7 +15,6 @@ import btwmod.centralchat.message.MessageConnect;
 import btwmod.centralchat.message.MessageDisconnect;
 import btwmod.centralchat.message.MessageGatewayDisconnect;
 import btwmod.centralchat.message.MessageUserInfo;
-import btwmod.centralchat.message.MessageUserInfoList;
 import btwmod.centralchat.struct.User;
 
 public class WSServer extends WebSocketServer {
