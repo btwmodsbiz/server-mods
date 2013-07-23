@@ -10,6 +10,7 @@ import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
 import btwmods.ChatAPI;
 import btwmods.ModLoader;
+import btwmods.Util;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -72,8 +73,8 @@ public class MessageUserInfoList extends Message {
 		}
 		
 		int len = uniqueUsers.size();
-		ModLoader.outputInfo("Connected to central chat server.");
-		ChatAPI.sendChatToAllPlayers("Connected to chat server" + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " available for chat" : "") + ".");
+		ModLoader.outputInfo("Connected to chat server.");
+		ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Connected to chat server."); // + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " available for chat" : "") + ".");
 		gateway.onSuccessfulConnect();
 	}
 }
