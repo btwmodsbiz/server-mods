@@ -7,10 +7,10 @@ public class User extends Username {
 	public final String gateway;
 	
 	public User(String username) {
-		this(null, username);
+		this(username, null);
 	}
 	
-	public User(String gateway, String username) {
+	public User(String username, String gateway) {
 		super(username);
 		this.gateway = gateway;
 	}
