@@ -7,7 +7,6 @@ import org.java_websocket.WebSocket;
 import btwmod.centralchat.IGateway;
 import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
-import btwmods.ChatAPI;
 import btwmods.Util;
 
 import com.google.gson.JsonElement;
@@ -111,10 +110,10 @@ public class MessageChatAlias extends Message {
 			if ("set".equalsIgnoreCase(action)) {
 				if (success == Boolean.TRUE) {
 					MinecraftServer.getServer().getLogAgent().func_98233_a("[" + message.replace(Util.COLOR_YELLOW, "").replace(Util.COLOR_WHITE, "") + "]");
-					ChatAPI.sendChatToAllPlayers(message);
+					gateway.sendChatToAllPlayers(message);
 				}
 				else
-					ChatAPI.sendChatToAllAdmins(message);
+					gateway.sendChatToAdmins(message);
 				
 				gateway.setAlias(username, alias);
 			}

@@ -5,7 +5,6 @@ import org.java_websocket.WebSocket;
 import btwmod.centralchat.IGateway;
 import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
-import btwmods.ChatAPI;
 
 import com.google.gson.JsonObject;
 
@@ -41,7 +40,7 @@ public class MessageGatewayDisconnect extends MessageGatewayConnect {
 	public void handleAsGateway(IGateway gateway) {
 		if (!gateway.getId().equalsIgnoreCase(this.gateway)) {
 			int len = users == null ? 0 : users.length;
-			ChatAPI.sendChatToAllPlayers("Server " + this.gateway + " disconnected" + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " no longer available for chat" : "") + ".");
+			gateway.sendChatToAllPlayers("Server " + this.gateway + " disconnected" + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " no longer available for chat" : "") + ".");
 		}
 	}
 }

@@ -6,7 +6,6 @@ import net.minecraft.server.MinecraftServer;
 import btwmod.centralchat.IGateway;
 import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
-import btwmods.ChatAPI;
 
 import com.google.gson.JsonObject;
 
@@ -29,7 +28,7 @@ public abstract class MessageUserMessage extends MessageUser {
 		MinecraftServer.getServer().getLogAgent().func_98233_a(getLoggedMessage());
 		
 		String message = getFormattedMessage();
-		ChatAPI.sendChatToAllPlayers(username, message);
+		gateway.sendChatToAllPlayers(message, username);
 		gateway.addRestorableChat(message);
 	}
 

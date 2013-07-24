@@ -6,7 +6,6 @@ import btwmod.centralchat.IGateway;
 import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
 import btwmod.centralchat.struct.User;
-import btwmods.ChatAPI;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -109,7 +108,7 @@ public class MessageGatewayConnect extends Message {
 	public void handleAsGateway(IGateway gateway) {
 		if (!gateway.getId().equalsIgnoreCase(this.gateway)) {
 			int len = users == null ? 0 : users.length;
-			ChatAPI.sendChatToAllPlayers("Server " + this.gateway + " connected" + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " available for chat" : "") + ".");
+			gateway.sendChatToAllPlayers("Server " + this.gateway + " connected" + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " available for chat" : "") + ".");
 		}
 	}
 }

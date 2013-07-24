@@ -19,24 +19,27 @@ import btwmod.centralchat.message.MessageConnect;
 import btwmod.centralchat.message.MessageDeath;
 import btwmod.centralchat.message.MessageDisconnect;
 import btwmod.centralchat.message.MessageEmote;
+import btwmod.centralchat.task.TaskAliasClear;
+import btwmod.centralchat.task.TaskAliasSet;
+import btwmod.centralchat.task.TaskMessage;
 import btwmods.ChatAPI;
 import btwmods.CommandsAPI;
 import btwmods.IMod;
 import btwmods.ModLoader;
 import btwmods.PlayerAPI;
-import btwmods.ServerAPI;
 import btwmods.Util;
+import btwmods.WorldAPI;
 import btwmods.chat.IPlayerChatListener;
 import btwmods.chat.PlayerChatEvent;
 import btwmods.io.Settings;
 import btwmods.player.IPlayerInstanceListener;
 import btwmods.player.PlayerInstanceEvent;
-import btwmods.server.ITickListener;
-import btwmods.server.TickEvent;
 import btwmods.util.CaselessKey;
 import btwmods.util.ValuePair;
+import btwmods.world.IWorldTickListener;
+import btwmods.world.WorldTickEvent;
 
-public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener, IGateway, IPlayerInstanceListener {
+public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPlayerInstanceListener, IWorldTickListener {
 	
 	private volatile WSGateway wsGateway = null;
 	private volatile boolean useGateway = false;
@@ -66,6 +69,8 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	private Map<String, Long> logoutTime = new HashMap<String, Long>();
 	private volatile Set<CaselessKey> usernames = new HashSet<CaselessKey>();
 	
+	private Deque<Runnable> mainThreadTasks = new ArrayDeque<Runnable>();
+	
 	@Override
 	public String getName() {
 		return "Central Chat";
@@ -93,7 +98,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 			uri = new URI(urlString);
 			
 			ChatAPI.addListener(this);
-			ServerAPI.addListener(this);
+			WorldAPI.addListener(this);
 			PlayerAPI.addListener(this);
 			CommandsAPI.registerCommand(commandChatColor = new CommandChatColor(this), this);
 			CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
@@ -106,7 +111,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	@Override
 	public void unload() throws Exception {
 		ChatAPI.removeListener(this);
-		ServerAPI.removeListener(this);
+		WorldAPI.removeListener(this);
 		PlayerAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandChatColor);
 		CommandsAPI.unregisterCommand(commandChatAlias);
@@ -180,11 +185,18 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	}
 
 	@Override
-	public void onTick(TickEvent event) {
-		if (startThreads && event.getType() == TickEvent.TYPE.START) {
-			startThreads = false;
-			startConnectionThread();
-			startQueueThread();
+	public void onWorldTick(WorldTickEvent event) {
+		if (event.getType() == WorldTickEvent.TYPE.START) {
+			if (startThreads) {
+				startThreads = false;
+				startConnectionThread();
+				startQueueThread();
+			}
+			
+			Runnable task;
+			while ((task  = mainThreadTasks.poll()) != null) {
+				task.run();
+			}
 		}
 	}
 	
@@ -342,10 +354,12 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 	
 	@Override
 	public void setAlias(String username, String alias) {
-		if (alias == null)
-			ChatAPI.removeAlias(username, true);
-		else
-			ChatAPI.setAlias(username, alias);
+		mainThreadTasks.push(new TaskAliasSet(username, alias));
+	}
+	
+	@Override
+	public void removeAllAliases() {
+		mainThreadTasks.push(new TaskAliasClear());
 	}
 	
 	@Override
@@ -360,8 +374,23 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, ITickListener
 			useGateway = false;
 
 			ModLoader.outputInfo("Failing over to local chat.");
-			ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Disconnected from chat server.");
-			ChatAPI.removeAllAliases(true);
+			sendChatToAllPlayers(Util.COLOR_YELLOW + "Disconnected from chat server.");
+			removeAllAliases();
 		}
+	}
+
+	@Override
+	public void sendChatToAllPlayers(String message) {
+		mainThreadTasks.push(new TaskMessage(message));
+	}
+	
+	@Override
+	public void sendChatToAllPlayers(String message, String username) {
+		mainThreadTasks.push(new TaskMessage(message, username));
+	}
+
+	@Override
+	public void sendChatToAdmins(String message) {
+		
 	}
 }
