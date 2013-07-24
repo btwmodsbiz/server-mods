@@ -77,7 +77,7 @@ public class WSServer extends WebSocketServer {
 			
 			else {
 				if (config.clientType == ClientType.USER)
-					new MessageConnect(config.id, null).handleAsServer(serverController, conn, config);
+					new MessageConnect(serverController.getActualUsername(config.id), null, serverController.getChatColor(config.id), serverController.getChatAlias(config.id)).handleAsServer(serverController, conn, config);
 			}
 		}
 	}
