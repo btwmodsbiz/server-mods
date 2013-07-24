@@ -1,3 +1,10 @@
+Version 4.891.0-b (vMC 1.5.2 BTW 4.891)
+
+  - Added missing information to a MessageConnect instantiation.
+
+  - Fixed concurrency issue when sending messages to all players by queuing
+    messages as tasks so they run in the main thread.
+
 Version 4.87.1 (vMC 1.5.2 BTW 4.87)
 
   - Removed old chat mod and added a central chat server mod.
