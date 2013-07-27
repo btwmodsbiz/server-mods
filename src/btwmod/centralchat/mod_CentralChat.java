@@ -215,10 +215,10 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 
 	@Override
 	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
-		long currentTimeMillis = System.currentTimeMillis();
+		//long currentTimeMillis = System.currentTimeMillis();
 		
 		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN) {
-			String userKey = event.getPlayerInstance().username.toLowerCase();
+			/*String userKey = event.getPlayerInstance().username.toLowerCase();
 			
 			Long loginSessionStart = loginTime.get(userKey);
 			Long lastLogout = logoutTime.get(userKey);
@@ -227,18 +227,18 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 			if (loginTime == null || lastLogout == null || lastLogout.longValue() < currentTimeMillis - chatRestoreTimeout * 1000L) {
 				loginTime.put(userKey, loginSessionStart = new Long(currentTimeMillis));
 			}
-			else {
+			else {*/
 				EntityPlayer player = event.getPlayerInstance();
 				for (ValuePair<String, Long> message : chatRestoreBuffer) {
-					if (message.value.longValue() >= loginSessionStart)
+					//if (message.value.longValue() >= loginSessionStart)
 						player.sendChatToPlayer(message.key);
 				}
-			}
+			//}
 				
 		}
-		else if (event.getType() == PlayerInstanceEvent.TYPE.LOGOUT_POST) {
-			logoutTime.put(event.getPlayerInstance().username.toLowerCase(), new Long(System.currentTimeMillis()));
-		}
+		//else if (event.getType() == PlayerInstanceEvent.TYPE.LOGOUT_POST) {
+		//	logoutTime.put(event.getPlayerInstance().username.toLowerCase(), new Long(System.currentTimeMillis()));
+		//}
 	}
 	
 	private class ConnectionWatcher implements Runnable {
