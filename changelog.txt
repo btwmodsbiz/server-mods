@@ -1,3 +1,9 @@
+Version 4.891.2 (vMC 1.5.2 BTW 4.891 BoP 0.0.9)
+
+  - Temporarily disabled the login/logout time checking for restoring chat.
+  
+  - Removed the old tickmonitor mod.
+
 Version 4.891.0-b (vMC 1.5.2 BTW 4.891)
 
   - Added missing information to a MessageConnect instantiation.
