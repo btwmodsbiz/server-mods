@@ -22,6 +22,7 @@ import btwmod.centralchat.message.MessageEmote;
 import btwmod.centralchat.task.TaskAliasClear;
 import btwmod.centralchat.task.TaskAliasSet;
 import btwmod.centralchat.task.TaskMessage;
+import btwmod.centralchat.task.TaskMessageTargetted;
 import btwmods.ChatAPI;
 import btwmods.CommandsAPI;
 import btwmods.IMod;
@@ -354,12 +355,12 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 	
 	@Override
 	public void setAlias(String username, String alias) {
-		mainThreadTasks.push(new TaskAliasSet(username, alias));
+		mainThreadTasks.add(new TaskAliasSet(username, alias));
 	}
 	
 	@Override
 	public void removeAllAliases() {
-		mainThreadTasks.push(new TaskAliasClear());
+		mainThreadTasks.add(new TaskAliasClear());
 	}
 	
 	@Override
@@ -381,16 +382,26 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 
 	@Override
 	public void sendChatToAllPlayers(String message) {
-		mainThreadTasks.push(new TaskMessage(message));
+		mainThreadTasks.add(new TaskMessage(message));
 	}
 	
 	@Override
-	public void sendChatToAllPlayers(String message, String username) {
-		mainThreadTasks.push(new TaskMessage(message, username));
+	public void sendChatToAllPlayers(String message, String senderUsername) {
+		mainThreadTasks.add(new TaskMessage(message, senderUsername));
+	}
+
+	@Override
+	public void sendChatToPlayer(String message, String targetUsername) {
+		mainThreadTasks.add(new TaskMessageTargetted(message, targetUsername));
 	}
 
 	@Override
 	public void sendChatToAdmins(String message) {
 		
+	}
+
+	@Override
+	public void requestKey(String username, boolean forceNew) {
+		queueMessage(new MessageChatKey(username, null, forceNew));
 	}
 }
