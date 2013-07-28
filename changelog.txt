@@ -1,3 +1,23 @@
+Version 4.891.3 (vMC 1.5.2 BTW 4.891 BoP 0.0.9)
+
+  - Added MessageChatKey and CommandChatKey to request a chat key.
+
+  - Added getUserKey to IServer and ServerController
+
+  - Added new IGateway methods in mod_CentralChat and finished
+    implementing TaskMessageTargetted.
+
+  - Added sendChatToPlayer and requestKey to IGateway.
+  
+  - Changed MessageGatewayDisconnect's handleAsServer to use toJsonCleaned.
+  
+  - Further cleaned up JSON in MessageGatewayConnect's toJsonCleaned.
+  
+  - Fixed missing synchronized() block in ServerController.
+
+  - Fixed bug in MessageUser's toJsonCleaned where it did not use the
+    cleaned username later in the method.
+
 Version 4.891.2-b (vMC 1.5.2 BTW 4.891 BoP 0.0.9)
 
   - Moved MessageGatewayConnect's sendUserInfoList to MessageUserInfoList as
