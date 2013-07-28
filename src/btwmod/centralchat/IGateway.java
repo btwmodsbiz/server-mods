@@ -9,6 +9,8 @@ public interface IGateway {
 	public void onSuccessfulConnect();
 	public void onWaitForReconnect();
 	public void sendChatToAllPlayers(String message);
-	public void sendChatToAllPlayers(String message, String username);
+	public void sendChatToAllPlayers(String message, String senderUsername);
+	public void sendChatToPlayer(String message, String targetUsername);
 	public void sendChatToAdmins(String message);
+	public void requestKey(String username, boolean forceNew);
 }
