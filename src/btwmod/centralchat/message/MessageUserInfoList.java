@@ -8,6 +8,7 @@ import org.java_websocket.WebSocket;
 import btwmod.centralchat.IGateway;
 import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
+import btwmod.centralchat.struct.User;
 import btwmods.ModLoader;
 import btwmods.Util;
 
@@ -75,5 +76,15 @@ public class MessageUserInfoList extends Message {
 		ModLoader.outputInfo("Connected to chat server.");
 		gateway.sendChatToAllPlayers(Util.COLOR_YELLOW + "Connected to chat server."); // + (len > 0 ? " making " + len + " user" + (len == 1 ? "" : "s") + " available for chat" : "") + ".");
 		gateway.onSuccessfulConnect();
+	}
+	
+	public static MessageUserInfoList build(IServer server) {
+		// Send the client a list of connected users and their info.
+		User[] users = server.getLoggedInUserList();
+		MessageUserInfo[] usersInfo = new MessageUserInfo[users.length];
+		for (int i = 0, len = users.length; i < len; i++) {
+			usersInfo[i] = new MessageUserInfo(users[i].username, users[i].gateway, server.getChatColor(users[i].username), server.getChatAlias(users[i].username));
+		}
+		return new MessageUserInfoList(usersInfo);
 	}
 }
