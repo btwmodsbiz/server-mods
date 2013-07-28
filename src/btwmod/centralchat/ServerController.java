@@ -106,6 +106,13 @@ public class ServerController implements IServer {
 	}
 	
 	@Override
+	public String getUserKey(String id) {
+		synchronized (data) {
+			return data.get("UserKeys", id);
+		}
+	}
+	
+	@Override
 	public void addUserKey(String id, String key) {
 		synchronized (data) {
 			data.set("UserKeys", id, key);

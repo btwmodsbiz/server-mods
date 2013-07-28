@@ -12,6 +12,7 @@ public interface IServer {
 	public String getActualUsername(String username);
 	public String getActualUsername(String username, String defaultValue);
 	
+	public String getUserKey(String id);
 	public void addUserKey(String id, String key);
 	public void removeUserKey(String id);
 	public boolean validateUserKey(String id, String key);
