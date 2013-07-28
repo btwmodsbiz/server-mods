@@ -33,7 +33,7 @@ public class MessageGatewayDisconnect extends MessageGatewayConnect {
 	@Override
 	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		// Not necessary to clean up the JSON as this originates only from the server.
-		server.sendToAll(toJson().toString());
+		server.sendToAll(toJsonCleaned(server, config).toString());
 	}
 	
 	@Override
