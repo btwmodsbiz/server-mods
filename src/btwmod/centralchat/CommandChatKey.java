@@ -19,6 +19,11 @@ public class CommandChatKey extends CommandBaseExtended {
 	}
 
 	@Override
+	public boolean canCommandSenderUseCommand(ICommandSender par1iCommandSender) {
+		return par1iCommandSender instanceof EntityPlayer;
+	}
+
+	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
 		if (args.length == 0 && sender instanceof EntityPlayer) {
 			gateway.requestKey(sender.getCommandSenderName(), false);
