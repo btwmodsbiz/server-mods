@@ -15,6 +15,7 @@ import btwmod.centralchat.message.MessageConnect;
 import btwmod.centralchat.message.MessageDisconnect;
 import btwmod.centralchat.message.MessageGatewayDisconnect;
 import btwmod.centralchat.message.MessageUserInfo;
+import btwmod.centralchat.message.MessageUserInfoList;
 import btwmod.centralchat.struct.User;
 
 public class WSServer extends WebSocketServer {
@@ -76,8 +77,10 @@ public class WSServer extends WebSocketServer {
 			}
 			
 			else {
-				if (config.clientType == ClientType.USER)
+				if (config.clientType == ClientType.USER) {
+					conn.send(MessageUserInfoList.build(serverController).toJson().toString());
 					new MessageConnect(serverController.getActualUsername(config.id), null, serverController.getChatColor(config.id), serverController.getChatAlias(config.id)).handleAsServer(serverController, conn, config);
+				}
 			}
 		}
 	}
