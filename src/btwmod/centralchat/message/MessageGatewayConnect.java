@@ -5,7 +5,6 @@ import org.java_websocket.WebSocket;
 import btwmod.centralchat.IGateway;
 import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
-import btwmod.centralchat.struct.User;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -61,7 +60,8 @@ public class MessageGatewayConnect extends Message {
 		
 		MessageUserInfo[] cleanedUsers = new MessageUserInfo[users.length];
 		for (int i = 0, len = users.length; i < len; i++) {
-			cleanedUsers[i] = new MessageUserInfo(server.getActualUsername(users[i].username), null, server.getChatColor(users[i].username), server.getChatAlias(users[i].username));
+			String actualUsername = server.getActualUsername(users[i].username);
+			cleanedUsers[i] = new MessageUserInfo(actualUsername, config.id, server.getChatColor(actualUsername), server.getChatAlias(actualUsername));
 		}
 
 		JsonArray userArray = new JsonArray();
