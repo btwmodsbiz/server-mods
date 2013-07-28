@@ -1,6 +1,7 @@
 package btwmod.centralchat.message;
 
 import btwmod.centralchat.ClientType;
+import btwmod.centralchat.IServer;
 import btwmod.centralchat.ResourceConfig;
 
 import com.google.gson.JsonObject;
@@ -24,6 +25,13 @@ public class MessageChat extends MessageUserMessage {
 	public MessageChat(String username, String gateway, String message) {
 		super(username, gateway, null, null);
 		this.message = message;
+	}
+	
+	@Override
+	public JsonObject toJsonCleaned(IServer server, ResourceConfig config) {
+		JsonObject json = super.toJsonCleaned(server, config);
+		json.addProperty("message", message.trim().substring(0, Math.min(100, message.trim().length())));
+		return json;
 	}
 	
 	@Override
