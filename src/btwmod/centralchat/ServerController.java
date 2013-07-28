@@ -274,14 +274,15 @@ public class ServerController implements IServer {
 	
 	@Override
 	public UserAlias[] getChatAliases() {
-		
-		Set<CaselessKey> usernames = data.getSectionKeys("ChatAliases");
-		UserAlias[] aliases = new UserAlias[usernames.size()];
-		int i = 0;
-		for (CaselessKey username : usernames) { 
-			aliases[i++] = new UserAlias(username.key, data.get("ChatAliases", username.key));
+		synchronized (data) {
+			Set<CaselessKey> usernames = data.getSectionKeys("ChatAliases");
+			UserAlias[] aliases = new UserAlias[usernames.size()];
+			int i = 0;
+			for (CaselessKey username : usernames) { 
+				aliases[i++] = new UserAlias(username.key, data.get("ChatAliases", username.key));
+			}
+			return aliases;
 		}
-		return aliases;
 	}
 	
 	@Override
