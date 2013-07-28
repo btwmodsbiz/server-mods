@@ -15,6 +15,7 @@ import net.minecraft.src.EntityPlayer;
 
 import btwmod.centralchat.message.Message;
 import btwmod.centralchat.message.MessageChat;
+import btwmod.centralchat.message.MessageChatKey;
 import btwmod.centralchat.message.MessageConnect;
 import btwmod.centralchat.message.MessageDeath;
 import btwmod.centralchat.message.MessageDisconnect;
@@ -62,6 +63,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 	private boolean startThreads = true;
 	private CommandChatColor commandChatColor;
 	private CommandChatAlias commandChatAlias;
+	private CommandChatKey commandChatKey;
 
 	public int chatRestoreLines = 30;
 	private long chatRestoreTimeout = 20L;
@@ -103,6 +105,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 			PlayerAPI.addListener(this);
 			CommandsAPI.registerCommand(commandChatColor = new CommandChatColor(this), this);
 			CommandsAPI.registerCommand(commandChatAlias = new CommandChatAlias(this), this);
+			CommandsAPI.registerCommand(commandChatKey = new CommandChatKey(this), this);
 		}
 		catch (URISyntaxException e) {
 			ModLoader.outputError(e, "Invalid URI: " + urlString);
@@ -116,6 +119,7 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 		PlayerAPI.removeListener(this);
 		CommandsAPI.unregisterCommand(commandChatColor);
 		CommandsAPI.unregisterCommand(commandChatAlias);
+		CommandsAPI.unregisterCommand(commandChatKey);
 	}
 
 	@Override
