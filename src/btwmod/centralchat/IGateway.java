@@ -1,5 +1,7 @@
 package btwmod.centralchat;
 
+import btwmod.centralchat.message.Message;
+
 public interface IGateway {
 	public String getId();
 	public void addRestorableChat(String chat);
@@ -13,4 +15,5 @@ public interface IGateway {
 	public void sendChatToPlayer(String message, String targetUsername);
 	public void sendChatToAdmins(String message);
 	public void requestKey(String username, boolean forceNew);
+	public void send(Message message);
 }

@@ -408,4 +408,9 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 	public void requestKey(String username, boolean forceNew) {
 		queueMessage(new MessageChatKey(username, null, forceNew));
 	}
+	
+	@Override
+	public void send(Message message) {
+		queueMessage(message);
+	}
 }
