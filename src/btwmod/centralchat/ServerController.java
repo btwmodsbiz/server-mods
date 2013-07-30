@@ -378,8 +378,12 @@ public class ServerController implements IServer {
 		Collection<WebSocket> connections = wsServer.connections();
 		synchronized (connections) {
 			for (WebSocket connection : connections) {
-				if (connection != conn && config.isSameClient(ResourceConfig.parse(connection.getResourceDescriptor())))
-					connection.close(CloseFrame.NORMAL, CloseMessage.LOGIN_OTHER_LOCATION.toString());
+				if (connection != conn && config.isSameClient(ResourceConfig.parse(connection.getResourceDescriptor()))) {
+					try {
+						connection.close(CloseFrame.NORMAL, CloseMessage.LOGIN_OTHER_LOCATION.toString());
+					}
+					catch (RuntimeException e) { }
+				}
 			}
 		}
 	}
