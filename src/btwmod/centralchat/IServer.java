@@ -44,5 +44,5 @@ public interface IServer {
 	public User[] getLoggedInUserList(String gateway);
 	
 	public boolean hasConnectedClient(WebSocket conn, ResourceConfig config);
-	public void disconnectSameClient(WebSocket conn, ResourceConfig config);
+	public boolean disconnectSameClient(WebSocket conn, ResourceConfig config);
 }

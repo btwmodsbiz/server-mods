@@ -374,18 +374,21 @@ public class ServerController implements IServer {
 	}
 	
 	@Override
-	public void disconnectSameClient(WebSocket conn, ResourceConfig config) {
+	public boolean disconnectSameClient(WebSocket conn, ResourceConfig config) {
 		Collection<WebSocket> connections = wsServer.connections();
+		boolean disconnectedClient = false;
 		synchronized (connections) {
 			for (WebSocket connection : connections) {
 				if (connection != conn && config.isSameClient(ResourceConfig.parse(connection.getResourceDescriptor()))) {
 					try {
 						connection.close(CloseFrame.NORMAL, CloseMessage.LOGIN_OTHER_LOCATION.toString());
+						disconnectedClient = true;
 					}
 					catch (RuntimeException e) { }
 				}
 			}
 		}
+		return disconnectedClient;
 	}
 	
 	@Override
