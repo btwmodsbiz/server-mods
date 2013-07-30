@@ -78,6 +78,7 @@ public class WSServer extends WebSocketServer {
 			
 			else {
 				if (config.clientType == ClientType.USER) {
+					serverController.disconnectSameClient(conn, config);
 					conn.send(MessageUserInfoList.build(serverController).toJson().toString());
 					new MessageConnect(serverController.getActualUsername(config.id), null, serverController.getChatColor(config.id), serverController.getChatAlias(config.id)).handleAsServer(serverController, conn, config);
 				}
