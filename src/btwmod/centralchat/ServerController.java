@@ -17,6 +17,8 @@ import java.util.Set;
 import org.java_websocket.WebSocket;
 import org.java_websocket.framing.CloseFrame;
 
+import btwmod.centralchat.message.MessagePing;
+import btwmod.centralchat.message.MessagePong;
 import btwmod.centralchat.struct.User;
 import btwmod.centralchat.struct.UserAlias;
 import btwmods.io.Settings;
@@ -51,9 +53,12 @@ public class ServerController implements IServer {
 	protected final Settings data;
 	protected final Map<String, Map<String, String>> loggedInUsers = new HashMap<String, Map<String, String>>();
 	
+	protected final PingManager pingManager;
+	
 	public ServerController(File dataFile, InetSocketAddress address) throws IOException {
 		wsServer = new WSServer(this, address);
 		this.data = loadSettings(dataFile);
+		new Thread(pingManager = new PingManager(this, 5L, 12L), "").start();
 	}
 	
 	public void start() {
@@ -83,6 +88,34 @@ public class ServerController implements IServer {
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public void onOpen(WebSocket conn, ResourceConfig config) {
+		pingManager.onOpen(conn);
+	}
+	
+	@Override
+	public void onClose(WebSocket conn, ResourceConfig config) {
+		pingManager.onClose(conn);
+	}
+	
+	@Override
+	public void onPing(WebSocket conn, ResourceConfig config, MessagePing ping) {
+		pingManager.onPing(conn, ping);
+	}
+	
+	@Override
+	public void onPong(WebSocket conn, ResourceConfig config, MessagePong pong) {
+		pingManager.onPong(conn, pong);
+	}
+
+	@Override
+	public WebSocket[] getConnections() {
+		Collection<WebSocket> connections = wsServer.connections();
+		synchronized (connections) {
+			return connections.toArray(new WebSocket[connections.size()]);
+		}
 	}
 
 	@Override

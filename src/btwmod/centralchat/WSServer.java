@@ -82,6 +82,8 @@ public class WSServer extends WebSocketServer {
 					conn.send(MessageUserInfoList.build(serverController).toJson().toString());
 					new MessageConnect(serverController.getActualUsername(config.id), null, serverController.getChatColor(config.id), serverController.getChatAlias(config.id)).handleAsServer(serverController, conn, config);
 				}
+				
+				serverController.onOpen(conn, config);
 			}
 		}
 	}
@@ -101,10 +103,10 @@ public class WSServer extends WebSocketServer {
 
 		ResourceConfig config = ResourceConfig.parse(conn.getResourceDescriptor());
 		if (serverController.isValidConfig(config)) {
-			 if (config.clientType == ClientType.USER) {
+			if (config.clientType == ClientType.USER) {
 				new MessageDisconnect(config.id, null, null).handleAsServer(serverController, conn, config);
-			 }
-			 else if (config.clientType == ClientType.GATEWAY) {
+			}
+			else if (config.clientType == ClientType.GATEWAY) {
 				User[] users = serverController.getLoggedInUserList(config.id);
 				serverController.removeLoggedInUsers(config.id);
 				
@@ -114,8 +116,9 @@ public class WSServer extends WebSocketServer {
 				}
 				 
 				 new MessageGatewayDisconnect(config.id, cleanedUsers).handleAsServer(serverController, conn, config);
-			 }
+			}
 		}
+		serverController.onClose(conn, config);
 	}
 
 	@Override

@@ -2,11 +2,21 @@ package btwmod.centralchat;
 
 import org.java_websocket.WebSocket;
 
+import btwmod.centralchat.message.MessagePing;
+import btwmod.centralchat.message.MessagePong;
 import btwmod.centralchat.struct.User;
 import btwmod.centralchat.struct.UserAlias;
 
 public interface IServer {
 	public boolean saveSettings();
+	
+	public void onOpen(WebSocket conn, ResourceConfig config);
+	public void onClose(WebSocket conn, ResourceConfig config);
+	
+	public void onPing(WebSocket conn, ResourceConfig config, MessagePing ping);
+	public void onPong(WebSocket conn, ResourceConfig config, MessagePong pong);
+	
+	public WebSocket[] getConnections();
 	
 	public void addActualUsername(String username);
 	public String getActualUsername(String username);
