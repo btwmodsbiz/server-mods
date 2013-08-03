@@ -40,6 +40,11 @@ public class MessagePing extends Message {
 	public String getType() {
 		return TYPE;
 	}
+	
+	@Override
+	public boolean canSendMessage(ResourceConfig config) {
+		return true;
+	}
 
 	@Override
 	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
