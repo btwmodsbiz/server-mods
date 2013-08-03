@@ -45,10 +45,8 @@ public class PingManager implements Runnable {
 				
 				// Clean up old connection entries.
 				List<WebSocket> disconnectList = new ArrayList<WebSocket>();
-				System.out.println("Checking time...");
 				synchronized (lastPongTime) {
 					for (Entry<WebSocket, Long> entry : lastPongTime.entrySet()) {
-						System.out.println("Checking time: " + (System.currentTimeMillis() - entry.getValue().longValue()) + " > " + (timeoutSeconds * 1000L));
 						if (System.currentTimeMillis() - entry.getValue().longValue() > timeoutSeconds * 1000L) {
 							disconnectList.add(entry.getKey());
 						}
