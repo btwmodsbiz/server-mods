@@ -1,3 +1,19 @@
+Version 4.891.4-b (vMC 1.5.2 BTW 4.891 BoP 0.0.9-fix)
+
+  - Added send method to IGateway and implemented it in mod_CentralChat.
+  
+  - Added method of checking client connection with ping/pong messages.
+
+  - Changed WSServer so it disconnects any already connected user
+    clients when a new one logs in.
+    
+  - Changed ServerController's disconnectSameClient implementation so it
+    ignores any thrown exceptions when attempting to close a client.
+    
+  - Changed IServer's disconnectSameClient so it returns a boolean
+    indicating if any clients were disconnected. Changed ServerController's
+    implementation to match.
+
 Version 4.891.4 (vMC 1.5.2 BTW 4.891 BoP 0.0.9-fix)
 
   - Changed MessageChat so it crops the message to 100 characters.
