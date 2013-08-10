@@ -43,10 +43,7 @@ public abstract class Message {
 			JsonObject messageJson = new JsonParser().parse(message).getAsJsonObject();
 			String type = messageJson.get("type").getAsString();
 			
-			if (MessageAuth.TYPE.equalsIgnoreCase(type))
-				return new MessageAuth(messageJson);
-			
-			else if (MessageChat.TYPE.equalsIgnoreCase(type))
+			if (MessageChat.TYPE.equalsIgnoreCase(type))
 				return new MessageChat(messageJson);
 			
 			else if (MessageChatAlias.TYPE.equalsIgnoreCase(type))
