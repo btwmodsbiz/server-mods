@@ -38,6 +38,11 @@ public abstract class Message {
 		
 	}
 	
+	@SuppressWarnings("static-method")
+	public boolean includeInLogs() {
+		return true;
+	}
+	
 	public static Message parse(String message) {
 		try {
 			JsonObject messageJson = new JsonParser().parse(message).getAsJsonObject();

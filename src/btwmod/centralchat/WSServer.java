@@ -129,7 +129,8 @@ public class WSServer extends WebSocketServer {
 				Message message = Message.parse(rawMessage);
 				
 				if (message != null && message.canSendMessage(config)) {
-					System.out.println("<" + conn.getRemoteSocketAddress() + "> " + message.toJson());
+					if (message.includeInLogs())
+						System.out.println("<" + conn.getRemoteSocketAddress() + "> " + message.toJson());
 					
 					if (message.canSendMessage(config))
 						message.handleAsServer(serverController, conn, config);

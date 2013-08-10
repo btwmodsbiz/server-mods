@@ -56,4 +56,9 @@ public class MessagePing extends Message {
 	public void handleAsGateway(IGateway gateway) {
 		gateway.send(new MessagePong(id));
 	}
+	
+	@Override
+	public boolean includeInLogs() {
+		return false;
+	}
 }
