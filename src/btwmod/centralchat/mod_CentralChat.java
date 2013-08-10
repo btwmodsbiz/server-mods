@@ -74,6 +74,11 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 	
 	private Deque<Runnable> mainThreadTasks = new ArrayDeque<Runnable>();
 	
+	private volatile boolean unload = false;
+
+	private Thread connectionWatcher = null;
+	private Thread queueWatcher = null;
+	
 	@Override
 	public String getName() {
 		return "Central Chat";
@@ -114,6 +119,19 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 
 	@Override
 	public void unload() throws Exception {
+		unload = true;
+		
+		try {
+			if (connectionWatcher != null)
+				connectionWatcher.interrupt();
+			if (queueWatcher != null)
+				queueWatcher.interrupt();
+			}
+		catch (RuntimeException e) {
+			
+		}
+		
+		ChatAPI.removeAllAliases(true);
 		ChatAPI.removeListener(this);
 		WorldAPI.removeListener(this);
 		PlayerAPI.removeListener(this);
@@ -129,6 +147,9 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 
 	@Override
 	public void onPlayerChatAction(PlayerChatEvent event) {
+		if (unload)
+			return;
+		
 		switch (event.type) {
 			case AUTO_COMPLETE:
 			case GLOBAL:
@@ -182,16 +203,32 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 	}
 	
 	private void startConnectionThread() {
-		new Thread(new ConnectionWatcher(this), getName() + ": Connection Watcher").start();
+		connectionWatcher = new Thread(new ConnectionWatcher(this), getName() + ": Connection Watcher");
+		connectionWatcher.start();
 	}
 		
 	private void startQueueThread() {
-		new Thread(new QueueWatcher(this), getName() + ": Queue Watcher").start();
+		queueWatcher = new Thread(new QueueWatcher(this), getName() + ": Queue Watcher");
+		queueWatcher.start();
 	}
 
 	@Override
 	public void onWorldTick(WorldTickEvent event) {
-		if (event.getType() == WorldTickEvent.TYPE.START) {
+		if (unload) {
+			try {
+				unload();
+			}
+			catch (Exception e) {
+				ModLoader.outputError(e, "Exception while calling unload(): " + e.getMessage());
+			}
+			try {
+				ChatAPI.sendChatToAllPlayers(Util.COLOR_YELLOW + "Chat server mod encountered an error and has been unloaded.");
+			}
+			catch (Exception e) {
+				ModLoader.outputError(e, "Exception while sending unload message to players: " + e.getMessage());
+			}
+		}
+		else if (event.getType() == WorldTickEvent.TYPE.START) {
 			if (startThreads) {
 				startThreads = false;
 				startConnectionThread();
@@ -220,6 +257,10 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 
 	@Override
 	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
+		unload = true;
+		if (unload)
+			return;
+
 		//long currentTimeMillis = System.currentTimeMillis();
 		
 		if (event.getType() == PlayerInstanceEvent.TYPE.LOGIN) {
@@ -259,44 +300,51 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 			long retryBuffer = 1;
 			long lastConnectTime = System.currentTimeMillis();
 			
-			while (!Thread.interrupted()) {
-				long currentTime = System.currentTimeMillis();
-				
-				long increment = (long)Math.floor((currentTime - lastConnectTime) / (connectSecondsPerBuffer * 1000L));
-				if (increment >= 1L) {
-					retryBuffer = Math.min(connectBufferMax, retryBuffer + increment);
-					lastConnectTime += increment * connectSecondsPerBuffer * 1000L;
-				}
-				
-				retryBuffer = Math.min(connectBufferMax, retryBuffer + (long)Math.floor((currentTime - lastConnectTime) / (connectSecondsPerBuffer * 1000L)));
-				
-				try {
-					if (retryBuffer > 0) {
-						retryBuffer--;
-						
-						wsGateway = new WSGateway(gateway, uri);
-						if (wsGateway.connectBlocking()) {
-							wsGateway.awaitClose();
+			try {
+				while (!Thread.interrupted() && !unload) {
+					long currentTime = System.currentTimeMillis();
+					
+					long increment = (long)Math.floor((currentTime - lastConnectTime) / (connectSecondsPerBuffer * 1000L));
+					if (increment >= 1L) {
+						retryBuffer = Math.min(connectBufferMax, retryBuffer + increment);
+						lastConnectTime += increment * connectSecondsPerBuffer * 1000L;
+					}
+					
+					retryBuffer = Math.min(connectBufferMax, retryBuffer + (long)Math.floor((currentTime - lastConnectTime) / (connectSecondsPerBuffer * 1000L)));
+					
+					try {
+						if (retryBuffer > 0) {
+							retryBuffer--;
 							
-							if (useGateway) {
-								ModLoader.outputInfo("Disconnected from central chat server.");
+							wsGateway = new WSGateway(gateway, uri);
+							if (wsGateway.connectBlocking()) {
+								wsGateway.awaitClose();
+								
+								if (useGateway) {
+									ModLoader.outputInfo("Disconnected from central chat server.");
+								}
 							}
 						}
 					}
-				} catch (InterruptedException e) {
+					catch (InterruptedException e) {
+						
+					}
 					
-				} catch (RuntimeException e) {
-					System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());
+					if (!unload) {
+						gateway.onWaitForReconnect();
+
+						try {
+							Thread.sleep(connectWaitSeconds * 1000L);
+						}
+						catch (InterruptedException e) {
+							
+						}
+					}
 				}
-				
-				gateway.onWaitForReconnect();
-				
-				try {
-					Thread.sleep(connectWaitSeconds * 1000L);
-				}
-				catch (InterruptedException e) {
-					
-				}
+			}
+			catch (RuntimeException e) {
+				unload = true;
+				ModLoader.outputError(e, "ConnectionWatcher failed (" + e.getClass().getSimpleName() + "): " + e.getMessage());
 			}
 		}
 	}
@@ -311,31 +359,37 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 
 		@Override
 		public void run() {
-			while (!Thread.interrupted()) {
-				try {
-					Message message = messageQueue.take();
-					
-					if (useGateway) {
-						try {
-							wsGateway.send(message.toJson().toString());
-						}
-						catch (Exception ex) {
-							messageQueue.addFirst(message);
-							
-							// Wait if sending it via the client failed.
+			try {
+				while (!Thread.interrupted() && !unload) {
+					try {
+						Message message = messageQueue.take();
+						
+						if (useGateway) {
 							try {
-								Thread.sleep(250L);
-							} catch (InterruptedException e) {
+								wsGateway.send(message.toJson().toString());
+							}
+							catch (Exception ex) {
+								messageQueue.addFirst(message);
 								
+								// Wait if sending it via the client failed.
+								try {
+									Thread.sleep(250L);
+								} catch (InterruptedException e) {
+									
+								}
 							}
 						}
+						else {
+							message.handleAsGateway(gateway);
+						}
+					} catch (InterruptedException e) {
+						
 					}
-					else {
-						message.handleAsGateway(gateway);
-					}
-				} catch (InterruptedException e) {
-					
 				}
+			}
+			catch (RuntimeException e) {
+				unload = true;
+				ModLoader.outputError(e, "QueueWatcher failed (" + e.getClass().getSimpleName() + "): " + e.getMessage());
 			}
 		}
 	}
