@@ -55,4 +55,6 @@ public interface IServer {
 	
 	public boolean hasConnectedClient(WebSocket conn, ResourceConfig config);
 	public boolean disconnectSameClient(WebSocket conn, ResourceConfig config);
+
+	public void addRestorableMessage(String message);
 }
