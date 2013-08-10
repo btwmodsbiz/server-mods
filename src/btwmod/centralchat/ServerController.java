@@ -3,8 +3,10 @@ package btwmod.centralchat;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import btwmod.centralchat.struct.User;
 import btwmod.centralchat.struct.UserAlias;
 import btwmods.io.Settings;
 import btwmods.util.CaselessKey;
+import btwmods.util.ValuePair;
 
 public class ServerController implements IServer {
 	
@@ -52,6 +55,10 @@ public class ServerController implements IServer {
 	protected final WSServer wsServer;
 	protected final Settings data;
 	protected final Map<String, Map<String, String>> loggedInUsers = new HashMap<String, Map<String, String>>();
+	
+	public int restoreMessagesMax = 50;
+	public long chatRestoreTimeout = 20L;
+	private Deque<ValuePair<String, Long>> restoreMessages = new ArrayDeque<ValuePair<String, Long>>();
 	
 	protected final PingManager pingManager;
 	
@@ -93,6 +100,19 @@ public class ServerController implements IServer {
 	@Override
 	public void onOpen(WebSocket conn, ResourceConfig config) {
 		pingManager.onOpen(conn);
+		
+		if (config.clientType == ClientType.USER) {
+			// Restore chat.
+			List<String> messages = new ArrayList<String>();
+			synchronized (restoreMessages) {
+				for (ValuePair<String, Long> pair : restoreMessages) {
+					messages.add(pair.key);
+				}
+			}
+			for (String message : messages) {
+				conn.send(message);
+			}
+		}
 	}
 	
 	@Override
@@ -435,6 +455,15 @@ public class ServerController implements IServer {
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public void addRestorableMessage(String message) {
+		synchronized (restoreMessages) {
+			restoreMessages.add(new ValuePair(message, new Long(System.currentTimeMillis())));
+			if (restoreMessages.size() > restoreMessagesMax)
+				restoreMessages.pollFirst();
+		}
 	}
 	
 	protected void attachShutDownHook() {
