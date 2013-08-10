@@ -35,6 +35,7 @@ public abstract class MessageUserMessage extends MessageUser {
 	@Override
 	public void handleAsServer(IServer server, WebSocket conn, ResourceConfig config) {
 		server.sendToAll(toJsonCleaned(server, config).toString());
+		server.addRestorableMessage(toJsonCleaned(server, config).toString());
 	}
 	
 	protected abstract String getFormattedMessage();
