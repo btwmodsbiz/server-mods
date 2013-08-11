@@ -1,3 +1,7 @@
+Version 4.8911.0-c (vMC 1.5.2 BTW 4.8911 BoP 0.0.9-fix)
+
+  - Removed debug code from mod_CentralChat.
+
 Version 4.8911.0-b (vMC 1.5.2 BTW 4.8911 BoP 0.0.9-fix)
 
   - Added addRestorableMessage to IServer.
