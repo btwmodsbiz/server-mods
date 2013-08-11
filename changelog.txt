@@ -1,3 +1,23 @@
+Version 4.8911.0-b (vMC 1.5.2 BTW 4.8911 BoP 0.0.9-fix)
+
+  - Added addRestorableMessage to IServer.
+  
+  - Added a includeInLogs method to Message, changed MessagePing to override
+    it and return false, and changed WSServer to check the method when logging.
+  
+  - Changed ServerController to implement addRestorableMessage, and also
+    changed it so it buffers messages and sends the last X to 'user' client
+    types that connect.
+    
+  - Changed MessageUserMessage to add a call to addRestorableMessage.
+  
+  - Changed mod_CentralChat to handle death messages.
+  
+  - Changed mod_CentralChat so it properly handles errors that would stop
+    the server from running correctly.
+
+  - Removed unnecessary MessageAuth.
+
 Version 4.891.4-b (vMC 1.5.2 BTW 4.891 BoP 0.0.9-fix)
 
   - Added send method to IGateway and implemented it in mod_CentralChat.
