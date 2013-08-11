@@ -257,7 +257,6 @@ public class mod_CentralChat implements IMod, IPlayerChatListener, IGateway, IPl
 
 	@Override
 	public void onPlayerInstanceAction(PlayerInstanceEvent event) {
-		unload = true;
 		if (unload)
 			return;
 
